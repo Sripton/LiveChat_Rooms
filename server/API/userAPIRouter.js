@@ -34,4 +34,31 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+router.post("/signin", async (req, res) => {
+  const { login, password } = req.body;
+  try {
+    // Ищем пользователя в базе данных по логину
+    const findUserLogin = await User.findOne({ where: { login } });
+
+    // Если пользователь найден, сравниваем введённый пароль с хэшем в базе данных
+    const comparePassword = await bcrypt.compare(
+      password,
+      findUserLogin.password
+    );
+
+    // Если пароль верный, сохраняем ID и имя пользователя в сессии
+    if (comparePassword) {
+      req.session.userID = findUserLogin.id;
+      req.session.userName = findUserLogin.name;
+    }
+
+    res.json({
+      userID: findUserLogin.id,
+      userName: findUserLogin.name,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 module.exports = router;

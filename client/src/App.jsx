@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Routes, Route } from "react-router-dom";
-import axios from "axios";
 import Navbar from "./components/Navbar";
 import Signup from "./components/Signup";
-import UserContextProvider from "./components/Context/UserContext";
+import Signin from "./components/Signin";
 function App() {
   return (
     <>
       <Navbar />
       <Routes>
         <Route path="/signup" element={<Signup />} />
+        <Route path="/signin" element={<Signin />} />
       </Routes>
     </>
   );

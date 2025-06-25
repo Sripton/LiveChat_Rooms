@@ -1,16 +1,14 @@
 import React, { useContext, useMemo, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const UserContext = React.createContext();
 export default function UserContextProvider({ children }) {
   const [userIDSession, setUserIDSession] = useState(null);
   const [userNameSession, setUserNameSession] = useState(null);
 
-  const [inputs, setInputs] = useState({
-    login: "",
-    password: "",
-    name: "",
-  });
+  const navigate = useNavigate();
+  const [inputs, setInputs] = useState({});
 
   const signupInputsHandler = (e) => {
     setInputs((prevEvents) => ({
@@ -28,9 +26,28 @@ export default function UserContextProvider({ children }) {
         name: inputs.name,
       });
       if (response.status === 200) {
-        const data = response.data;
+        const data = response;
         setUserIDSession(data.userID);
         setUserNameSession(data.userName);
+        navigate("/");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const signinSubmitHandler = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`/api/users/signin`, {
+        login: inputs.login,
+        password: inputs.password,
+      });
+      if (response.status === 200) {
+        const data = response;
+        setUserIDSession(data.userID);
+        setUserNameSession(data.userName);
+        navigate("/");
       }
     } catch (error) {
       console.log(error);
@@ -45,6 +62,7 @@ export default function UserContextProvider({ children }) {
       userNameSession,
       signupInputsHandler,
       signupSubmitHandler,
+      signinSubmitHandler,
     }),
     [inputs, userIDSession, userNameSession] // 📌 В useMemo, массив зависимостей [inputs, userIDSession, userNameSession] означает:
     // «Пересоздавай contextValue только тогда, когда inputs, userIDSession или userNameSession изменятся.»

@@ -24,7 +24,7 @@ export default function Navbar() {
 
   const handleMenuClick = (text) => {
     if (text === "Войти") {
-      navigate("/signup");
+      navigate("/signin");
     } else if (text === "Выход") {
       navigate("/");
     }
