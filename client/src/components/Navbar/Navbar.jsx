@@ -7,14 +7,39 @@ import {
   List,
   ListItem,
   Typography,
+  Button,
 } from "@mui/material";
+import AddHomeIcon from "@mui/icons-material/AddHome";
+import LogoutIcon from "@mui/icons-material/Logout";
 import "./navbar.css";
+import { useNavigate } from "react-router-dom";
 export default function Navbar() {
   const [openMenu, setOpenMenu] = useState(false);
 
   const toggleDrawerMenu = () => {
     setOpenMenu(!openMenu);
   };
+
+  const navigate = useNavigate();
+
+  const handleMenuClick = (text) => {
+    if (text === "Войти") {
+      navigate("/signup");
+    } else if (text === "Выход") {
+      navigate("/");
+    }
+  };
+
+  // const handleMenuClick = (text) => {
+  //   if (text === "Войти") {
+  //     navigate("/signup"); // ⬅️ переход на /signup
+  //   }
+  //   if (text === "Выход") {
+  //     // можно добавить логику logout
+  //     console.log("Выход");
+  //   }
+  //   setOpenMenu(false); // закрыть меню
+  // };
   return (
     <>
       <CssBaseline />
@@ -22,8 +47,9 @@ export default function Navbar() {
         <Box
           sx={{
             px: 3,
+            background:
+              "linear-gradient(0deg,rgba(232, 232, 232, 1) 0%,rgba(250, 230, 250, 1) 100%);",
             height: "64px",
-            bgcolor: "#111827",
             width: "100%",
             zIndex: 1201,
             position: "fixed",
@@ -36,7 +62,7 @@ export default function Navbar() {
           <Typography
             variant="h6"
             sx={{
-              color: "#ffF",
+              color: "#000",
               fontWeight: "bold",
               fontFamily: "Tinos, serif",
               letterSpacing: 1,
@@ -64,10 +90,15 @@ export default function Navbar() {
         <Drawer
           anchor="left"
           open={openMenu}
+          sx={{
+            background:
+              "linear-gradient(0deg,rgba(232, 232, 232, 1) 0%,rgba(250, 230, 250, 1) 100%);",
+          }}
           PaperProps={{
             sx: {
-              bgcolor: "#1f2937",
-              color: "#fff",
+              background:
+                "linear-gradient(0deg,rgba(232, 232, 232, 1) 0%,rgba(250, 230, 250, 1) 100%);",
+              color: "#676565",
               width: 280,
               pt: 8,
               px: 2,
@@ -76,22 +107,30 @@ export default function Navbar() {
           onClose={() => toggleDrawerMenu(false)}
         >
           <List>
-            {["Регистрация", "Войти", "Выход"].map((text) => (
+            {["Войти", "Выход"].map((text) => (
               <ListItem
                 key={text}
                 className="menu-list"
-                sx={{
-                  fontSize: "1.3rem",
-                  fontFamily: "Tinos, serif",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                  py: 1.5,
-                  transition: "color 0.3s",
-                  "&:hover": { color: "#60a5fa" },
-                }}
                 onClick={() => toggleDrawerMenu(false)}
               >
-                <Typography>{text}</Typography>
+                <Button
+                  onClick={() => handleMenuClick(text)}
+                  // startIcon - проп компонента Button из MUI, который добавляет иконку слева от текста кнопки.
+                  startIcon={
+                    text === "Войти" ? <AddHomeIcon /> : <LogoutIcon />
+                  }
+                  sx={{
+                    fontSize: "1rem",
+                    fontFamily: "Tinos, serif",
+                    textTransform: "uppercase",
+                    justifyContent: "flex-start",
+                    width: "100%",
+                    color: "#676565",
+                    "&:hover": { color: "#60a5fa", background: "transparent" },
+                  }}
+                >
+                  {text}
+                </Button>
               </ListItem>
             ))}
           </List>

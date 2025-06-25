@@ -7,6 +7,7 @@
   box-sizing: border-box;
 }
 
+
 .menu-icon {
   width: 30px;
   height: 18px;
@@ -23,7 +24,7 @@
   position: absolute;
   width: 100%;
   height: 3px;
-  background-color: #fff;
+  background-color: #676565;
   transition: 0.3s all ease 0s;
 }
 
@@ -51,6 +52,5 @@
   transform: rotate(-45deg) translate(0px, -50%);
 }
 .menu-list {
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
-

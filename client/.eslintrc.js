@@ -28,5 +28,8 @@ module.exports = {
     "comma-dangle": 0,
     "import/no-extraneous-dependencies": 0,
     "object-curly-newline": 0,
+    "max-len": 0,
+    "operator-linebreak": 0,
+    "react/prop-types": 0,
   },
 };
