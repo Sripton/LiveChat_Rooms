@@ -1,13 +1,24 @@
 import { SET_REGISTER_USER, SET_LOGIN_USER, LOGOUT_USER } from "../types/types";
-export default function userReducer(state = {}, action) {
+
+// Начальное состояние
+const initialState = {
+  userID: null,
+  userName: null,
+  isAuthenticated: false,
+};
+export default function userReducer(state = initialState, action) {
   const { type, payload } = action;
   switch (type) {
     case SET_REGISTER_USER:
-      return payload;
     case SET_LOGIN_USER:
-      return payload;
+      return {
+        ...state,
+        userID: payload.userID,
+        userName: payload.userName,
+        isAuthenticated: true,
+      };
     case LOGOUT_USER:
-      return {};
+      return initialState;
     default:
       return state;
   }

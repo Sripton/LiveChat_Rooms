@@ -9,12 +9,14 @@ import {
 } from "@mui/material";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import KeyIcon from "@mui/icons-material/Key";
+import { NavLink } from "react-router-dom";
 import { UserContext } from "../Context/UserContext";
 
 import "./signin.css";
 export default function Signin() {
   const { inputs, signupInputsHandler, signinSubmitHandler } =
     useContext(UserContext);
+
   return (
     <Container maxWidth="false" className="wrapper__register">
       <Box className="form">
@@ -27,7 +29,7 @@ export default function Signin() {
             color: "rgb(128, 128, 128)",
           }}
         >
-          Регистрация
+          Вход
         </Typography>
         <form
           onSubmit={signinSubmitHandler}
@@ -104,6 +106,9 @@ export default function Signin() {
             Войти
           </Button>
         </form>
+        <NavLink to="/signup" type="submit" className="navlink-auth">
+          Зарегистрироваться
+        </NavLink>
       </Box>
     </Container>
   );

@@ -51,7 +51,7 @@ router.post("/signin", async (req, res) => {
       req.session.userID = findUserLogin.id;
       req.session.userName = findUserLogin.name;
     }
-
+    // Отправляем клиенту ID и имя пользователя
     res.json({
       userID: findUserLogin.id,
       userName: findUserLogin.name,
@@ -61,4 +61,22 @@ router.post("/signin", async (req, res) => {
   }
 });
 
+// Обработчик GET-запроса на маршрут "/checkUser" для проверки авторизованного пользователя
+router.get("/checkuser", (req, res) => {
+  try {
+    // Проверяем, есть ли userID в сессии (то есть, авторизован ли пользователь)
+    if (req.session.userID) {
+      // Если пользователь авторизован, отправляем его ID и имя
+      return res.json({
+        userID: req.session.userID,
+        userName: req.session.userName,
+      });
+    }
+    // Если пользователь не авторизован, отправляем статус 401 (Unauthorized)
+    return res.status(401).json({ message: "Пользователь не авторизован" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Ошибка сервера" });
+  }
+});
 module.exports = router;

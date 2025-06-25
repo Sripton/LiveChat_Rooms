@@ -1,14 +1,33 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
 const UserContext = React.createContext();
 export default function UserContextProvider({ children }) {
   const [userIDSession, setUserIDSession] = useState(null);
   const [userNameSession, setUserNameSession] = useState(null);
-
-  const navigate = useNavigate();
   const [inputs, setInputs] = useState({});
+  const [loading, setLoading] = useState(true); // можно использовать для спиннера
+  const navigate = useNavigate();
+
+  // 🚀 Проверка текущей сессии при монтировании
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await axios.get(`/api/users/checkuser`);
+        if (response.status === 200) {
+          const { data } = response;
+          setUserIDSession(data.userID);
+          setUserNameSession(data.userName);
+          navigate("/");
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkSession();
+  }, []);
 
   const signupInputsHandler = (e) => {
     setInputs((prevEvents) => ({
@@ -19,6 +38,7 @@ export default function UserContextProvider({ children }) {
 
   const signupSubmitHandler = async (e) => {
     e.preventDefault();
+    //  dispatch(registersUser(inputs, navigate));
     try {
       const response = await axios.post(`/api/users/signup`, {
         login: inputs.login,
@@ -26,7 +46,7 @@ export default function UserContextProvider({ children }) {
         name: inputs.name,
       });
       if (response.status === 200) {
-        const data = response;
+        const { data } = response;
         setUserIDSession(data.userID);
         setUserNameSession(data.userName);
         navigate("/");
@@ -38,13 +58,14 @@ export default function UserContextProvider({ children }) {
 
   const signinSubmitHandler = async (e) => {
     e.preventDefault();
+    // dispatch(loginUser(inputs, navigate));
     try {
       const response = await axios.post(`/api/users/signin`, {
         login: inputs.login,
         password: inputs.password,
       });
       if (response.status === 200) {
-        const data = response;
+        const { data } = response;
         setUserIDSession(data.userID);
         setUserNameSession(data.userName);
         navigate("/");
@@ -63,6 +84,7 @@ export default function UserContextProvider({ children }) {
       signupInputsHandler,
       signupSubmitHandler,
       signinSubmitHandler,
+      loading,
     }),
     [inputs, userIDSession, userNameSession] // 📌 В useMemo, массив зависимостей [inputs, userIDSession, userNameSession] означает:
     // «Пересоздавай contextValue только тогда, когда inputs, userIDSession или userNameSession изменятся.»

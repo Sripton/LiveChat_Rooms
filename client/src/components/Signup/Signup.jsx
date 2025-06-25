@@ -12,11 +12,10 @@ import KeyIcon from "@mui/icons-material/Key";
 import PersonIcon from "@mui/icons-material/Person";
 import "./signup.css";
 import { UserContext } from "../Context/UserContext";
-
 export default function Signup() {
   const { inputs, signupInputsHandler, signupSubmitHandler } =
     useContext(UserContext);
-  console.log("inputs", inputs);
+
   return (
     <Container maxWidth="false" className="wrapper__register">
       <Box className="form">

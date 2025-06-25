@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Box,
   Container,
@@ -13,6 +13,7 @@ import AddHomeIcon from "@mui/icons-material/AddHome";
 import LogoutIcon from "@mui/icons-material/Logout";
 import "./navbar.css";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../Context/UserContext";
 export default function Navbar() {
   const [openMenu, setOpenMenu] = useState(false);
 
@@ -40,6 +41,11 @@ export default function Navbar() {
   //   }
   //   setOpenMenu(false); // закрыть меню
   // };
+
+  const { userIDSession, userNameSession } = useContext(UserContext);
+  console.log("userIDSession", userIDSession);
+  console.log("userNameSession", userNameSession);
+
   return (
     <>
       <CssBaseline />

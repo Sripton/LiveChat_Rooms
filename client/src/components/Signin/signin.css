@@ -36,3 +36,16 @@
   box-shadow: 0 8px 32px rgba(139, 78, 196, 0.37);
   padding: 20px;
 }
+.navlink-auth {
+  text-decoration: none;
+  color: gray;
+  text-transform: uppercase;
+  margin-top: 10px;
+  display: block;
+  transition: color 0.3s ease 0s;
+  font-size: 0.9rem;
+}
+
+.navlink-auth:hover {
+  color: #60a5fa;
+}

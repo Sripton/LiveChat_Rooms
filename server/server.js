@@ -10,6 +10,16 @@ const PORT = process.env.PORT; // Устанавливаем порт из пе�
 const userAPIRouter = require("./API/userAPIRouter");
 const FileStore = session_file_store(session);
 
+app.use(
+  cors({
+    credentials: true,
+    origin: true,
+  })
+); // Настраиваем CORS, чтобы разрешить кросс-доменные запросы с передачей куков
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const sessionConfig = {
   name: "user_live", // Название cookie сессии
   secret: process.env.SESSION_SECRET ?? "test", // Секретный ключ для подписи сессий (из .env или дефолтное "test")
@@ -23,15 +33,6 @@ const sessionConfig = {
     secure: false, // Должно быть true в продакшене (только HTTPS)
   },
 };
-app.use(
-  cors({
-    credentials: true,
-    origin: true,
-  })
-); // Настраиваем CORS, чтобы разрешить кросс-доменные запросы с передачей куков
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(session(sessionConfig));
 
 app.use("/api/users", userAPIRouter);
