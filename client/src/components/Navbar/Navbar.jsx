@@ -42,9 +42,9 @@ export default function Navbar() {
   //   setOpenMenu(false); // закрыть меню
   // };
 
-  const { userIDSession, userNameSession } = useContext(UserContext);
-  console.log("userIDSession", userIDSession);
-  console.log("userNameSession", userNameSession);
+  const { userID, userName } = useContext(UserContext);
+  console.log("userID", userID);
+  console.log("userName", userName);
 
   return (
     <>
