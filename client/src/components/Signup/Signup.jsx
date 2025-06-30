@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React from "react";
 import {
   Box,
   Button,
@@ -11,10 +11,9 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import KeyIcon from "@mui/icons-material/Key";
 import PersonIcon from "@mui/icons-material/Person";
 import "./signup.css";
-import { UserContext } from "../Context/UserContext";
-export default function Signup() {
-  const { inputs, signupInputsHandler, signupSubmitHandler } =
-    useContext(UserContext);
+
+export default function Signup({ userPropsData }) {
+  const { inputs, inputsUsersHandler, signupSubmitHandler } = userPropsData;
 
   return (
     <Container maxWidth="false" className="wrapper__register">
@@ -43,7 +42,7 @@ export default function Signup() {
           <TextField
             name="login"
             value={inputs.login || ""}
-            onChange={signupInputsHandler}
+            onChange={inputsUsersHandler}
             variant="outlined"
             placeholder="Введите логин"
             InputProps={{
@@ -71,7 +70,7 @@ export default function Signup() {
           <TextField
             name="password"
             value={inputs.password || ""}
-            onChange={signupInputsHandler}
+            onChange={inputsUsersHandler}
             variant="outlined"
             placeholder="Введите пароль"
             InputProps={{
@@ -98,7 +97,7 @@ export default function Signup() {
           <TextField
             name="name"
             value={inputs.name || ""}
-            onChange={signupInputsHandler}
+            onChange={inputsUsersHandler}
             variant="outlined"
             placeholder="Введите имя"
             InputProps={{

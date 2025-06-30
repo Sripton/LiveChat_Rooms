@@ -10,12 +10,10 @@ import {
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import KeyIcon from "@mui/icons-material/Key";
 import { NavLink } from "react-router-dom";
-import { UserContext } from "../Context/UserContext";
 
 import "./signin.css";
-export default function Signin() {
-  const { inputs, signupInputsHandler, signinSubmitHandler } =
-    useContext(UserContext);
+export default function Signin({ userPropsData }) {
+  const { inputs, inputsUsersHandler, signinSubmitHandler } = userPropsData;
 
   return (
     <Container maxWidth="false" className="wrapper__register">
@@ -44,7 +42,7 @@ export default function Signin() {
           <TextField
             name="login"
             value={inputs.login || ""}
-            onChange={signupInputsHandler}
+            onChange={inputsUsersHandler}
             variant="outlined"
             placeholder="Введите логин"
             InputProps={{
@@ -72,7 +70,7 @@ export default function Signin() {
           <TextField
             name="password"
             value={inputs.password || ""}
-            onChange={signupInputsHandler}
+            onChange={inputsUsersHandler}
             variant="outlined"
             placeholder="Введите пароль"
             InputProps={{

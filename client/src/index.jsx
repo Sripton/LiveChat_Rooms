@@ -5,7 +5,6 @@ import { Provider } from "react-redux";
 import axios from "axios";
 import store from "./redux/stores/store";
 import App from "./App";
-import UserContextProvider from "./components/Context/UserContext";
 axios.defaults.baseURL = process.env.REACT_APP_BASEURL;
 axios.defaults.withCredentials = true;
 
@@ -13,9 +12,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={store}>
     <BrowserRouter>
-      <UserContextProvider>
-        <App />
-      </UserContextProvider>
+      <App />
     </BrowserRouter>
   </Provider>
 );

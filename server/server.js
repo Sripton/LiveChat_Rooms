@@ -9,6 +9,7 @@ const app = express(); // Создаём экземпляр Express-прилож
 const PORT = process.env.PORT; // Устанавливаем порт из переменной окружения
 const userAPIRouter = require("./API/userAPIRouter");
 const FileStore = session_file_store(session);
+const path = require("path");
 
 app.use(
   cors({
@@ -19,11 +20,19 @@ app.use(
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
 
 const sessionConfig = {
   name: "user_live", // Название cookie сессии
   secret: process.env.SESSION_SECRET ?? "test", // Секретный ключ для подписи сессий (из .env или дефолтное "test")
-  resave: true, // Принудительное сохранение сессии в хранилище при каждом запросе
+
+  //resave: false - Этот параметр управляет поведением express-session при первой инициализации сессии — т.е. когда в req.session ещё ничего нет.
+  // saveUninitialized: true
+  //     — сохраняет даже пустую сессию в хранилище при первом запросе.
+  // saveUninitialized: false
+  //     — НЕ сохраняет сессию, пока ты не положишь туда данные вручную (например, req.session.userID = ...).
+  // saveUninitialized: false — это нормально и правильно, особенно если ты работаешь с логином, профилем, пользовательскими данными.
+  resave: false, // Принудительное сохранение сессии в хранилище при каждом запросе
   store: new FileStore(), // Хранилище сессий в файлах
   saveUninitialized: false, // Не сохраняем сессию, если она пустая
   cookie: {

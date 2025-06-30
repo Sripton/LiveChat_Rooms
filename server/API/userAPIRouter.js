@@ -2,7 +2,7 @@ const express = require("express");
 const { User } = require("../db/models");
 const bcrypt = require("bcrypt");
 const router = express.Router();
-
+const upload = require("../MiddleWares/upload");
 // Обработчик POST-запроса на маршрут "/signup" для регистрации пользователя
 
 router.post("/signup", async (req, res) => {
@@ -61,15 +61,65 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-// Обработчик GET-запроса на маршрут "/checkUser" для проверки авторизованного пользователя
-router.get("/checkuser", (req, res) => {
+// upload.single("avatar") — это middleware, который:
+// ожидает одно поле с именем avatar;
+// сохраняет загруженный файл в папку public/usersimg;
+// в объект req.file кладёт информацию о файле (имя, путь и т.п.).
+
+router.patch("/uploadprofile", upload.single("avatar"), async (req, res) => {
+  const { name } = req.body;
   try {
+    const userID = req.session.userID;
+    const user = await User.findOne({ where: { id: userID } });
+    if (!user) {
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
+
+    // Обновляем имя, если оно передано
+    if (name && name.trim() !== "") {
+      user.name = name.trim();
+    }
+
+    // Обновляем аватар, если файл был загружен
+    if (req.file) {
+      user.avatar = `/usersimg/${req.file.filename}`;
+    }
+
+    await user.save();
+    req.session.userName = user.name;
+    req.session.userAvatar = user.avatar;
+
+    // Если нужно — сохраняем сессию вручную
+    req.session.save((err) => {
+      if (err) {
+        console.error("Ошибка при сохранении сессии:", err);
+        return res.status(500).json({ message: "Ошибка сохранения сессии" });
+      }
+
+      res.json({
+        userName: user.name,
+        userAvatar: user.avatar,
+      });
+    });
+    
+  } catch (error) {
+    console.error("Ошибка при обновлении профиля:", error);
+    res.status(500).json({ message: "Внутренняя ошибка сервера" });
+  }
+});
+
+// Обработчик GET-запроса на маршрут "/checkUser" для проверки авторизованного пользователя
+router.get("/checkuser", async (req, res) => {
+  try {
+    const userID = req.session.userID;
+    const findUser = await User.findOne({ where: { id: userID } });
     // Проверяем, есть ли userID в сессии (то есть, авторизован ли пользователь)
-    if (req.session.userID) {
+    if (userID) {
       // Если пользователь авторизован, отправляем его ID и имя
       return res.json({
         userID: req.session.userID,
         userName: req.session.userName,
+        userAvatar: findUser.avatar,
       });
     }
     // Если пользователь не авторизован, отправляем статус 401 (Unauthorized)
@@ -79,4 +129,5 @@ router.get("/checkuser", (req, res) => {
     return res.status(500).json({ message: "Ошибка сервера" });
   }
 });
+
 module.exports = router;
