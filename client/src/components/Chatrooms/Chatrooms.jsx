@@ -13,19 +13,9 @@ import {
   Divider,
   Fade,
   Button,
-  Dialog,
-  DialogTitle,
-  IconButton,
-  DialogContent,
-  TextField,
-  DialogActions,
-  Checkbox,
 } from "@mui/material";
-import LockIcon from "@mui/icons-material/Lock";
-import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import CloseIcon from "@mui/icons-material/Close"; // крестик
-
+import ModalRoomCreate from "../ModalRoomCreate/ModalRoomCreate";
 export default function Chatrooms() {
   const [openRoomExpanded, setOpenRoomExpanded] = useState(false);
   const [privateRoomExpanded, setPrivateRoomExpanded] = useState(false);
@@ -286,12 +276,19 @@ export default function Chatrooms() {
             >
               Создать комнату
             </Button>
+            <ModalRoomCreate
+              openModal={openModal}
+              roomCreate={roomCreate}
+              closeModal={() => setOpenModal(false)}
+              roomInputsHandler={roomInputsHandler}
+              roomSubmitHandler={roomSubmitHandler}
+            />
           </Box>
         </Grid>
       </Grid>
 
       {/* МОДАЛЬНОЕ ОКНО */}
-      <Dialog
+      {/* <Dialog
         open={openModal}
         onClose={() => setOpenModal(false)}
         paperpops={{
@@ -417,7 +414,7 @@ export default function Chatrooms() {
             </Button>
           </DialogActions>
         </form>
-      </Dialog>
+      </Dialog> */}
 
       {/* <TestDialog /> */}
       <Grid
