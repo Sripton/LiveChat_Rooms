@@ -43,9 +43,7 @@ export default function Navbar({ userPropsData }) {
   const handleProfileDropDown = () => {
     setProfileDropActive(!profileDropActive);
   };
-  console.log('userID', userID);
-  console.log('userName', userName);
-  console.log('userAvatar', userAvatar);
+
   return (
     <>
       <CssBaseline />
@@ -142,7 +140,7 @@ export default function Navbar({ userPropsData }) {
           sx={{
             background:
               "linear-gradient(0deg,rgb(233, 243, 201) 0%,rgb(240, 168, 240) 100%);",
-            opacity: "0.7",
+            opacity: "1",
           }}
           PaperProps={{
             sx: {

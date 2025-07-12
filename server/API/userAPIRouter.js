@@ -101,7 +101,6 @@ router.patch("/uploadprofile", upload.single("avatar"), async (req, res) => {
         userAvatar: user.avatar,
       });
     });
-    
   } catch (error) {
     console.error("Ошибка при обновлении профиля:", error);
     res.status(500).json({ message: "Внутренняя ошибка сервера" });

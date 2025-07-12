@@ -63,13 +63,13 @@ export default function ProfileEditor() {
   return (
     <Container maxWidth="false" className="wrapper__register">
       <Box className="form">
-        <Button className="avatar-edit">
+        {/* <Button className="avatar-edit">
           <img
             className="avatar-eidt-img"
             src={editAvatar || "/default-avatar.png"}
             alt=""
           />
-        </Button>
+        </Button> */}
         <form
           onSubmit={handleSubmit}
           style={{
@@ -100,6 +100,7 @@ export default function ProfileEditor() {
                 border: "none",
                 borderBottom: "2px solid rgba(139, 78, 196, 0.37)",
                 color: "rgb(78, 75, 75)",
+                marginBottom: "25px",
               },
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "none",
@@ -111,7 +112,7 @@ export default function ProfileEditor() {
             variant="contained"
             component="label"
             startIcon={<PhotoCamera />}
-            sx={{ mt: 1 }}
+            sx={{ mt: 1, marginBottom: "25px" }}
           >
             Загрузить аватар
             <input

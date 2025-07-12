@@ -8,6 +8,7 @@ dotenv.config(); // Загружаем переменные окружения �
 const app = express(); // Создаём экземпляр Express-приложения
 const PORT = process.env.PORT; // Устанавливаем порт из переменной окружения
 const userAPIRouter = require("./API/userAPIRouter");
+const roomAPIRouter = require("./API/roomsAPIRouters");
 const FileStore = session_file_store(session);
 const path = require("path");
 
@@ -45,5 +46,6 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 
 app.use("/api/users", userAPIRouter);
+app.use("/api/rooms", roomAPIRouter);
 
 app.listen(PORT, () => console.log(`---> Server started on ${PORT} port <---`));

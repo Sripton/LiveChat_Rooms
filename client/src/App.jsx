@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector, editUser } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Navbar from "./components/Navbar";
 import Signup from "./components/Signup";
 import Signin from "./components/Signin";
 import ProfileEditor from "./components/ProfileEditor";
+import ChatRooms from "./components/ChatRooms";
+
 import {
   checkUserSession,
   registersUser,
@@ -101,6 +103,7 @@ function App() {
       <Navbar userPropsData={userPropsData} />
       {/* Роуты регистрации и входа */}
       <Routes>
+        <Route path="/" element={<ChatRooms />} />
         <Route
           path="/signup"
           element={<Signup userPropsData={userPropsData} />}
