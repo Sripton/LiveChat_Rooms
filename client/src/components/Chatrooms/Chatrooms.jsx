@@ -10,7 +10,6 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Divider,
   Fade,
   Button,
 } from "@mui/material";
@@ -53,27 +52,70 @@ export default function Chatrooms() {
     },
   ];
 
-  const animationPlayed = useRef(false);
+  // Старая логика для анимации
+  // const animationPlayed = useRef(false);
+  // useEffect(() => {
+  //   if (!animationPlayed.current) {
+  //     let i = 0;
+  //     const interval = setInterval(() => {
+  //       if (i < messages.length) {
+  //         setVisibleMessages((prev) => [...prev, messages[i]]);
+  //         i += 1;
+  //       } else {
+  //         clearInterval(interval);
+  //       }
+  //     }, 1100);
+  //     // После первого запуска эффекта  реф всегда остаётся true (пока компонент не размонтируется),
+  //     //  и анимация больше не проигрывается повторно, даже если произойдёт ререндер по другим причинам.
+  //     animationPlayed.current = true;
 
+  //     return () => clearInterval(interval);
+  //   }
+  //   return undefined;
+  // }, []);
+
+  // Новая логика для анимации
+  const intervalRef = useRef();
   useEffect(() => {
-    if (!animationPlayed.current) {
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i < messages.length) {
-          setVisibleMessages((prev) => [...prev, messages[i]]);
-          i += 1;
-        } else {
-          clearInterval(interval);
-        }
-      }, 1100);
-      // После первого запуска эффекта  реф всегда остаётся true (пока компонент не размонтируется),
-      //  и анимация больше не проигрывается повторно, даже если произойдёт ререндер по другим причинам.
-      animationPlayed.current = true;
-
-      return () => clearInterval(interval);
+    // Если открыта модалка создания комнаты
+    if (openModal) {
+      // Если ранее был создан setInterval — очищаем его,
+      // чтобы анимация сообщений остановилась на паузе.
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return; // Выходим из эффекта — не запускаем новый интервал.
     }
-    return undefined;
-  }, []);
+    // Если не все сообщения показаны — продолжаем анимацию
+    if (visibleMessages.length < messages.length) {
+      // i — индекс следующего сообщения, начинаем с уже показанного количества
+      let i = visibleMessages.length;
+      // Запускаем setInterval — каждую 1.2 сек добавляем следующее сообщение
+      intervalRef.current = setInterval(() => {
+        setVisibleMessages((prev) => {
+          if (i < messages.length) {
+            const next = [...prev, messages[i]]; // добавляем следующее сообщение
+            i += 1;
+            return next;
+          }
+
+          // Если все сообщения показаны — очищаем интервал
+          clearInterval(intervalRef.current);
+          return prev;
+        });
+      }, 1200);
+    }
+    //  Когда  эффект создаёт “асинхронные” вещи (setInterval, setTimeout, подписки, слушатели событий),
+    // Надо обязательно их удалить или “отписаться”, чтобы не было утечек памяти и багов.
+    // Если не почистить setInterval, он будет продолжать тикать даже когда компонент уже не нужен!
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [openModal, visibleMessages.length]);
+  console.log("intervalRef.current after ", intervalRef.current);
 
   // Открытые комнаты
   const openRooms = [
