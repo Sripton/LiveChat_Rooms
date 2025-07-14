@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class RoomAccess extends Model {
+  class RoomAdmission extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -9,20 +9,19 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate({ User, Room }) {
       // define association here
-      // напрямую получать данные через include.
       this.belongsTo(User, { foreignKey: "user_id" });
       this.belongsTo(Room, { foreignKey: "room_id" });
     }
   }
-  RoomAccess.init(
+  RoomAdmission.init(
     {
       user_id: DataTypes.INTEGER,
       room_id: DataTypes.INTEGER,
     },
     {
       sequelize,
-      modelName: "RoomAccess",
+      modelName: "RoomAdmission",
     }
   );
-  return RoomAccess;
+  return RoomAdmission;
 };

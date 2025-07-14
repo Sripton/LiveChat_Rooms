@@ -139,7 +139,7 @@ export default function Navbar({ userPropsData }) {
           open={openMenu}
           sx={{
             background:
-              "linear-gradient(0deg,rgb(233, 243, 201) 0%,rgb(240, 168, 240) 100%);",
+              "linear-gradient(0deg,rgb(238, 216, 237) 0%,rgb(238, 201, 238) 100%);",
             opacity: "1",
           }}
           PaperProps={{

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+
 import {
   Box,
   Paper,
@@ -15,42 +15,15 @@ import {
   Button,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
+import LockIcon from "@mui/icons-material/Lock";
 import ModalRoomCreate from "../ModalRoomCreate/ModalRoomCreate";
+
 export default function Chatrooms() {
   const [openRoomExpanded, setOpenRoomExpanded] = useState(false);
   const [privateRoomExpanded, setPrivateRoomExpanded] = useState(false);
   const [visibleMessages, setVisibleMessages] = useState([]);
   const [openModal, setOpenModal] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
-
-  const [rooms, setRooms] = useState([]);
-  const [roomCreate, setRoomCreate] = useState({
-    nameroom: "",
-    description: "",
-  });
-
-  const inputFocusRef = useRef(null);
-  const roomInputsHandler = (e) => {
-    setRoomCreate((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-  const roomSubmitHandler = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(`/api/rooms`, {
-        nameroom: roomCreate.nameroom,
-        description: roomCreate.description,
-        isPrivate,
-      });
-      if (response.status === 200) {
-        const { data } = response;
-        setRooms((prev) => [...prev, data]);
-        setRoomCreate({ nameroom: "", description: "" });
-        setOpenModal(false);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const handlerIsExpanded = (state) => {
     if (state === "open") {
@@ -276,147 +249,16 @@ export default function Chatrooms() {
             >
               Создать комнату
             </Button>
+            {/* Модальное окно */}
             <ModalRoomCreate
               openModal={openModal}
-              roomCreate={roomCreate}
+              setOpenModal={setOpenModal}
               closeModal={() => setOpenModal(false)}
-              roomInputsHandler={roomInputsHandler}
-              roomSubmitHandler={roomSubmitHandler}
             />
           </Box>
         </Grid>
       </Grid>
 
-      {/* МОДАЛЬНОЕ ОКНО */}
-      {/* <Dialog
-        open={openModal}
-        onClose={() => setOpenModal(false)}
-        paperpops={{
-          sx: {
-            background: "linear-gradient(135deg, #ffe4ef 0%, #ffe3e3 100%)",
-            boxShadow:
-              "0 12px 48px 0 rgba(230, 30, 99, 0.15), 0 1.5px 4px 0 #fff1f7",
-            minWidth: 420,
-            p: 0,
-            borderRadius: 5,
-          },
-        }}
-        transitionDuration={400}
-      >
-        <DialogTitle
-          sx={{
-            fontWeight: 700,
-            color: "#d81b60",
-            letterSpacing: 1,
-            fontSize: 22,
-            pb: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            background: "#fde4ec",
-            borderBottom: "1.5px solid #fad5e6",
-            mb: 4,
-          }}
-        >
-          Новая комната
-          <IconButton
-            aria-label="close"
-            sx={{
-              color: "#ec407a",
-              ml: 2,
-              "&:hover": {
-                background: "#fff0f6",
-              },
-            }}
-            size="small"
-            onClick={() => setOpenModal(false)}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <form onSubmit={roomSubmitHandler}>
-          <DialogContent
-            sx={{
-              px: 4,
-              py: 3,
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              background: "transparent",
-            }}
-          >
-            <TextField
-              name="nameroom"
-              value={roomCreate.nameroom}
-              inputRef={inputFocusRef}
-              onChange={roomInputsHandler}
-              margin="dense"
-              fullWidth
-              variant="outlined"
-              label="Название комнаты"
-              sx={{
-                background: "#fff",
-                borderRadius: 2,
-                input: { color: "#ad1457", fontWeight: 500 },
-                label: { color: "#d81b60" },
-              }}
-            />
-            <TextField
-              name="description"
-              value={roomCreate.description}
-              onChange={roomInputsHandler}
-              margin="dense"
-              fullWidth
-              variant="outlined"
-              label="Описание комнаты"
-              sx={{
-                background: "#fff",
-                borderRadius: 2,
-                input: {
-                  color: "#ad1457",
-                  fontWeight: 500,
-                },
-                label: { color: "#d81b60" },
-              }}
-            />
-            <Fade in timeout={600}>
-              <Box>
-                <Checkbox
-                  icon=<MeetingRoomIcon />
-                  checkedIcon=<LockIcon />
-                  sx={{
-                    "&.Mui-checked": { color: "#d81b60" },
-                  }}
-                  onChange={(e) => setIsPrivate(e.target.checked)}
-                />
-                <Typography sx={{ color: "#d81b60", fontWeight: 500 }}>
-                  Приватная комната
-                </Typography>
-              </Box>
-            </Fade>
-          </DialogContent>
-          <DialogActions sx={{ justifyContent: "flex-end", pr: 3, pb: 2 }}>
-            <Button
-              sx={{
-                background: "#f8bbd0",
-                color: "#d81b60",
-                fontWeight: 700,
-                borderRadius: 3,
-                px: 3,
-                boxShadow: "0 2px 12px 0 #ffd6e6",
-                "&:hover": {
-                  background: "#f06292",
-                  color: "#fff",
-                },
-              }}
-            >
-              Создать
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog> */}
-
-      {/* <TestDialog /> */}
       <Grid
         container
         spacing={4}
@@ -456,16 +298,37 @@ export default function Chatrooms() {
                 <React.Fragment key={room.name + index}>
                   <ListItem sx={{ padding: "10px 0" }}>
                     <ListItemIcon>
-                      <MeetingRoomIcon color="secondary" sx={{ mr: 1 }} />
+                      <MeetingRoomIcon
+                        color="secondary"
+                        sx={{
+                          mr: 1,
+                        }}
+                      />
                       <ListItemText
                         primary={`${room.name}`}
                         sx={{
-                          cursor: "pointer",
+                          background:
+                            "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
+                          color: "#d81b60",
+                          fontWeight: 900,
+                          borderRadius: 3,
+                          width: "100%",
+                          boxShadow: "0 2px 12px 0 #ffd6e6",
+                          fontSize: 24,
+                          letterSpacing: 0.6,
+                          textTransform: "none",
+                          px: 3,
+                          py: -1.5,
+                          "&:hover": {
+                            background:
+                              "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
+                            color: "#fff",
+                          },
+                          transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
                         }}
                       />
                     </ListItemIcon>
                   </ListItem>
-                  <Divider />
                 </React.Fragment>
               ))}
             </List>
@@ -482,7 +345,11 @@ export default function Chatrooms() {
         >
           <Typography
             variant="h6"
-            sx={{ color: "#d81b60", textTransform: "uppercase", mb: 2 }}
+            sx={{
+              color: "#d81b60",
+              textTransform: "uppercase",
+              mb: 2,
+            }}
           >
             <KeyboardArrowDownIcon
               sx={{
@@ -502,11 +369,37 @@ export default function Chatrooms() {
                 <React.Fragment key={index}>
                   <ListItem sx={{ padding: "15px 0" }}>
                     <ListItemIcon>
-                      <LockIcon color="secondary" sx={{ mr: 1 }} />
-                      <ListItemText primary={room.name} />
+                      <LockIcon
+                        color="secondary"
+                        sx={{
+                          mr: 1,
+                        }}
+                      />
+                      <ListItemText
+                        primary={room.name}
+                        sx={{
+                          background:
+                            "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
+                          color: "#d81b60",
+                          fontWeight: 900,
+                          borderRadius: 3,
+                          width: "100%",
+                          boxShadow: "0 2px 12px 0 #ffd6e6",
+                          fontSize: 24,
+                          letterSpacing: 0.6,
+                          textTransform: "none",
+                          px: 3,
+                          py: -1.5,
+                          "&:hover": {
+                            background:
+                              "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
+                            color: "#fff",
+                          },
+                          transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
+                        }}
+                      />
                     </ListItemIcon>
                   </ListItem>
-                  <Divider />
                 </React.Fragment>
               ))}
             </List>

@@ -1,5 +1,5 @@
 const express = require("express");
-const { Room, RoomAccess } = require("../db/models");
+const { Room, RoomAdmission } = require("../db/models");
 const router = express.Router();
 
 router.post("/", async (req, res) => {
@@ -17,13 +17,13 @@ router.post("/", async (req, res) => {
 
     // 2. Если комната приватная — добавляем создателя в RoomAccess
     if (isPrivate) {
-      await RoomAccess.create({
+      await RoomAdmission.create({
         user_id: userID,
         room_id: newRoom.id,
       });
     }
     // 3. Возвращаем созданную комнату
-    res.status(201).json(newRoom);
+    res.status(200).json(newRoom);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Ошибка при создании комнаты" });
