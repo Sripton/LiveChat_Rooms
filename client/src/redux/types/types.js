@@ -12,3 +12,10 @@ export const SET_EDIT_USER = "SET_EDIT_USER";
 
 // Тип экшена для выхода пользователя (очистка пользовательских данных из хранилища)
 export const LOGOUT_USER = "LOGOUT_USER";
+
+// ------- Room -------
+// Тип экшена для создания комнаты пользователем
+export const SET_CREATE_ROOM = "SET_CREATE_ROOM";
+
+// Тип экшена для получения всех комнат
+export const GET_USER_ROOM = "GET_USER_ROOM";

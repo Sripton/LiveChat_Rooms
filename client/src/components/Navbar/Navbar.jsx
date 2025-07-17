@@ -16,10 +16,12 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import LogoutIcon from "@mui/icons-material/Logout";
 import "./navbar.css";
 import { useNavigate, NavLink } from "react-router-dom";
-
+import { useDispatch } from "react-redux";
+import { logoutUser } from "../../redux/actions/userActions";
 export default function Navbar({ userPropsData }) {
   const { userID, userName, userAvatar } = userPropsData;
   const [openMenu, setOpenMenu] = useState(false);
+  const dispatch = useDispatch();
   const toggleDrawerMenu = () => {
     setOpenMenu(!openMenu);
   };
@@ -28,7 +30,7 @@ export default function Navbar({ userPropsData }) {
     if (text === "Войти") {
       navigate("/signin");
     } else if (text === "Выход") {
-      navigate("/");
+      dispatch(logoutUser(navigate));
     }
     setOpenMenu(false);
   };
@@ -116,7 +118,9 @@ export default function Navbar({ userPropsData }) {
               />
               <i className="fa-solid fa-circle" />
               <ul
-                className={`profile-dropdown-list ${profileDropActive ? "active-dropmenu" : ""}`}
+                className={`profile-dropdown-list ${
+                  profileDropActive ? "active-dropmenu" : ""
+                }`}
               >
                 <li className="profile-dropdown-item">
                   <NavLink to="/profileeditor">

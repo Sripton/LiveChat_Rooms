@@ -129,4 +129,18 @@ router.get("/checkuser", async (req, res) => {
   }
 });
 
+router.get("/logout", (req, res) => {
+  try {
+    // Удаляем текущую сессию пользователя на сервере
+    req.session.destroy();
+    // Очищаем cookie с идентификатором сессии на клиенте
+    res.clearCookie("user_live");
+    // Отправляем клиенту статус 200 (ОК), указывая, что выход выполнен успешно
+    res.sendStatus(200);
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: "Ошибка при удалении" });
+  }
+});
+
 module.exports = router;

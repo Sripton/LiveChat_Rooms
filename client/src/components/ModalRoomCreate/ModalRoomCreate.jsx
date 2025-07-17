@@ -12,13 +12,14 @@ import ReactDOM from "react-dom";
 import CloseIcon from "@mui/icons-material/Close";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import LockIcon from "@mui/icons-material/Lock";
-
+import { useDispatch } from "react-redux";
+import { createRoomsSubmit } from "../../redux/actions/roomActions";
 export default function ModalRoomCreate({
   openModal,
   closeModal,
   setOpenModal,
 }) {
-  const [rooms, setRooms] = useState([]);
+  const dispatch = useDispatch();
   const [roomCreate, setRoomCreate] = useState({
     nameroom: "",
     description: "",
@@ -36,25 +37,25 @@ export default function ModalRoomCreate({
 
   const roomSubmitHandler = async (e) => {
     e.preventDefault();
-
-    try {
-      console.log("roomSubmitHandler called");
-      const response = await axios.post(`/api/rooms`, {
-        nameroom: roomCreate.nameroom,
-        description: roomCreate.description,
-        isPrivate: roomCreate.isPrivate,
-      });
-      if (response.status === 200) {
-        const { data } = response;
-        setRooms((prev) => [...prev, data]);
-        setRoomCreate({ nameroom: "", description: "", isPrivate: false });
-        setOpenModal(false);
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    await dispatch(createRoomsSubmit(roomCreate));
+    setOpenModal(false);
+    // try {
+    //   console.log("roomSubmitHandler called");
+    //   const response = await axios.post(`/api/rooms`, {
+    //     nameroom: roomCreate.nameroom,
+    //     description: roomCreate.description,
+    //     isPrivate: roomCreate.isPrivate,
+    //   });
+    //   if (response.status === 200) {
+    //     const { data } = response;
+    //     setRooms((prev) => [...prev, data]);
+    //     setRoomCreate({ nameroom: "", description: "", isPrivate: false });
+    //     setOpenModal(false);
+    //   }
+    // } catch (error) {
+    //   console.log(error);
+    // }
   };
-  console.log("roomCreate", roomCreate);
 
   return ReactDOM.createPortal(
     <Fade in={openModal}>
@@ -170,10 +171,12 @@ export default function ModalRoomCreate({
                 <Typography
                   sx={{ color: "#d81b60", fontWeight: 500 }}
                   // onClick={() => setIsPrivate(true)}
-                  onClick={() => setRoomCreate((prev) => ({
-                    ...prev,
-                    isPrivate: !roomCreate.isPrivate,
-                  }))}
+                  onClick={() =>
+                    setRoomCreate((prev) => ({
+                      ...prev,
+                      isPrivate: !roomCreate.isPrivate,
+                    }))
+                  }
                 >
                   Приватная комната
                 </Typography>

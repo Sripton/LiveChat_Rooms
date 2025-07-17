@@ -78,3 +78,15 @@ export const editUser = (inputs, navigate) => async (dispatch) => {
     console.error("Ошибка при обновлении профиля:", error);
   }
 };
+
+export const logoutUser = (navigate) => async (dispatch) => {
+  try {
+    const response = await axios.get("/api/users/logout");
+    if (response.status === 200) {
+      dispatch({ type: LOGOUT_USER }); // Сброс состояния
+      navigate("/"); // Перенаправление
+    }
+  } catch (error) {
+    console.error("Ошибка при выходе", error);
+  }
+};

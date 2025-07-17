@@ -30,4 +30,13 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const findAllRoom = await Room.findAll();
+    res.json(findAllRoom);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 module.exports = router;

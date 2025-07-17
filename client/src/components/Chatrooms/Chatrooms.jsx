@@ -10,19 +10,78 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Tooltip,
   Fade,
   Button,
 } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import LockIcon from "@mui/icons-material/Lock";
+import { useDispatch, useSelector } from "react-redux";
 import ModalRoomCreate from "../ModalRoomCreate/ModalRoomCreate";
+import { fetchAllRooms } from "../../redux/actions/roomActions";
 
 export default function Chatrooms() {
   const [openRoomExpanded, setOpenRoomExpanded] = useState(false);
   const [privateRoomExpanded, setPrivateRoomExpanded] = useState(false);
   const [visibleMessages, setVisibleMessages] = useState([]);
   const [openModal, setOpenModal] = useState(false);
+
+  // -------------------- Плавное отображение описания комнат ---------------
+  const [tooltip, setToolTip] = useState({
+    visible: false,
+    text: "",
+    x: 0,
+    y: 0,
+  });
+  const [showTooltip, setShowTooltip] = useState(false);
+  const showTimeoutRef = useRef(null);
+  const hideTimeOutRef = useRef(null);
+
+  const handleMouseEnter = (e, text) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    clearTimeout(hideTimeOutRef.current);
+    showTimeoutRef.current = setTimeout(() => {
+      setToolTip({
+        visible: true,
+        text,
+        x: rect.left + rect.width / 2,
+        y: rect.top - 10,
+      });
+      setShowTooltip(true);
+    }, 400); // Задержка перед появлением
+  };
+
+  const handleMouseLeave = () => {
+    clearTimeout(showTimeoutRef.current);
+    hideTimeOutRef.current = setTimeout(() => {
+      setShowTooltip(false); // Начать исчезновение
+      setTimeout(() => {
+        setToolTip({
+          visible: false,
+          text: "",
+          x: 0,
+          y: 0,
+        });
+      }, 300);
+    }, 100); // После окончания анимации скрытия
+    setToolTip({ ...tooltip, visible: false });
+  };
+
+  //  Очистка таймеров при размонтировании (безопасность)
+  useEffect(() => {
+    clearTimeout(showTimeoutRef.current);
+    clearTimeout(hideTimeOutRef.current);
+  }, []);
+
+  // -------------------- Получение всех комнат с сервера -----------------------
+  const allRooms = useSelector((store) => store.room.allRooms);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchAllRooms());
+  }, [dispatch]);
+  const openRooms = allRooms.filter((rooms) => rooms.isPrivate === false);
+  const privateRooms = allRooms.filter((rooms) => rooms.isPrivate === true);
 
   const handlerIsExpanded = (state) => {
     if (state === "open") {
@@ -32,7 +91,7 @@ export default function Chatrooms() {
       setPrivateRoomExpanded((prev) => !prev);
     }
   };
-  // Данные для чата
+  // ------------------------------------- Данные для чата --------------------------
   const messages = [
     {
       sender: "user",
@@ -52,6 +111,7 @@ export default function Chatrooms() {
     },
   ];
 
+  // -------------------------------- Анимация -----------------------------
   // Старая логика для анимации
   // const animationPlayed = useRef(false);
   // useEffect(() => {
@@ -115,137 +175,6 @@ export default function Chatrooms() {
       }
     };
   }, [openModal, visibleMessages.length]);
-  console.log("intervalRef.current after ", intervalRef.current);
-
-  // Открытые комнаты
-  const openRooms = [
-    {
-      name: "General Chat",
-      description: "Открытый чат для всех тем и свободного общения.",
-    },
-    {
-      name: "Music Lovers",
-      description:
-        "Обсуждаем любимые песни, исполнителей и делимся плейлистами.",
-    },
-    {
-      name: "Book Club",
-      description: "Читаем, обсуждаем и советуем книги друг другу.",
-    },
-    {
-      name: "Tech Talks",
-      description: "Всё о технологиях, гаджетах и цифровом мире.",
-    },
-    {
-      name: "Book Club",
-      description: "Читаем, обсуждаем и советуем книги друг другу.",
-    },
-    {
-      name: "Tech Talks",
-      description: "Всё о технологиях, гаджетах и цифровом мире.",
-    },
-    {
-      name: "Music Lovers",
-      description:
-        "Обсуждаем любимые песни, исполнителей и делимся плейлистами.",
-    },
-    {
-      name: "Book Club",
-      description: "Читаем, обсуждаем и советуем книги друг другу.",
-    },
-    {
-      name: "Tech Talks",
-      description: "Всё о технологиях, гаджетах и цифровом мире.",
-    },
-    {
-      name: "Book Club",
-      description: "Читаем, обсуждаем и советуем книги друг другу.",
-    },
-    {
-      name: "Tech Talks",
-      description: "Всё о технологиях, гаджетах и цифровом мире.",
-    },
-    {
-      name: "Book Club",
-      description: "Читаем, обсуждаем и советуем книги друг другу.",
-    },
-    {
-      name: "Tech Talks",
-      description: "Всё о технологиях, гаджетах и цифровом мире.",
-    },
-  ];
-
-  // Приватные комнаты
-  const privateRooms = [
-    {
-      name: "Team Alpha",
-      description: "Закрытая комната для внутреннего общения команды Alpha.",
-    },
-    {
-      name: "Project X",
-      description: "Обсуждение и координация секретного проекта X.",
-    },
-    {
-      name: "Family Space",
-      description: "Личное пространство для общения с семьёй.",
-    },
-    {
-      name: "Startup Founders",
-      description: "Приватная группа для обсуждения стартап-идей.",
-    },
-    {
-      name: "Project X",
-      description: "Обсуждение и координация секретного проекта X.",
-    },
-    {
-      name: "Family Space",
-      description: "Личное пространство для общения с семьёй.",
-    },
-    {
-      name: "Team Alpha",
-      description: "Закрытая комната для внутреннего общения команды Alpha.",
-    },
-    {
-      name: "Project X",
-      description: "Обсуждение и координация секретного проекта X.",
-    },
-    {
-      name: "Family Space",
-      description: "Личное пространство для общения с семьёй.",
-    },
-    {
-      name: "Startup Founders",
-      description: "Приватная группа для обсуждения стартап-идей.",
-    },
-    {
-      name: "Project X",
-      description: "Обсуждение и координация секретного проекта X.",
-    },
-    {
-      name: "Family Space",
-      description: "Личное пространство для общения с семьёй.",
-    },
-    {
-      name: "Team Alpha",
-      description: "Закрытая комната для внутреннего общения команды Alpha.",
-    },
-    {
-      name: "Project X",
-      description: "Обсуждение и координация секретного проекта X.",
-    },
-    {
-      name: "Family Space",
-      description: "Личное пространство для общения с семьёй.",
-    },
-    {
-      name: "Startup Founders",
-      description: "Приватная группа для обсуждения стартап-идей.",
-    },
-    {
-      name: "Project X",
-      description: "Обсуждение и координация секретного проекта X.",
-    },
-  ];
 
   const Root = styled(Box)({
     minHeight: "100vh",
@@ -307,6 +236,7 @@ export default function Chatrooms() {
         justifyContent="center"
         sx={{ position: "relative", mt: 8 }}
       >
+        {/* Блок открытых комнат */}
         <Grid
           item
           sx={{
@@ -337,38 +267,95 @@ export default function Chatrooms() {
           <RoomList>
             <List>
               {openRooms.map((room, index) => (
-                <React.Fragment key={room.name + index}>
+                <React.Fragment key={index}>
                   <ListItem sx={{ padding: "10px 0" }}>
                     <ListItemIcon>
                       <MeetingRoomIcon
-                        color="secondary"
+                        // color="secondary"
                         sx={{
                           mr: 1,
+                          color: "#76ce7e",
                         }}
                       />
-                      <ListItemText
-                        primary={`${room.name}`}
-                        sx={{
-                          background:
-                            "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-                          color: "#d81b60",
-                          fontWeight: 900,
-                          borderRadius: 3,
-                          width: "100%",
-                          boxShadow: "0 2px 12px 0 #ffd6e6",
-                          fontSize: 24,
-                          letterSpacing: 0.6,
-                          textTransform: "none",
-                          px: 3,
-                          py: -1.5,
-                          "&:hover": {
-                            background:
-                              "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
-                            color: "#fff",
+                      {/* <Tooltip
+                        title={`${room.description}`}
+                        arrow
+                        placement="top"
+                        // можно задать стили тултипа напрямую через slotProps
+                        slotProps={{
+                          tooltip: {
+                            sx: {
+                              backgroundColor: "#f06292", // розовый фон
+                              color: "#fff", // белый текст
+                              fontSize: 25,
+                              fontWeight: 500,
+                              boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+                              borderRadius: 1.5,
+                              px: 2,
+                              py: 1,
+                            },
                           },
-                          transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
+                          arrow: {
+                            sx: {
+                              color: "#f06292", // цвет стрелки — как фон тултипа
+                            },
+                          },
                         }}
-                      />
+                      >
+                        <ListItemText
+                          primary={`${room.nameroom}`}
+                          sx={{
+                            background:
+                              "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
+                            color: "#d81b60",
+                            fontWeight: 900,
+                            borderRadius: 3,
+                            width: "100%",
+                            boxShadow: "0 2px 12px 0 #ffd6e6",
+                            fontSize: 24,
+                            letterSpacing: 0.6,
+                            textTransform: "none",
+                            px: 3,
+                            py: -1.5,
+                            "&:hover": {
+                              background:
+                                "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
+                              color: "#fff",
+                            },
+                            transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
+                          }}
+                        />
+                      </Tooltip> */}
+                      <Box
+                        onMouseEnter={(e) =>
+                          handleMouseEnter(e, room.description)
+                        }
+                        onMouseLeave={handleMouseLeave}
+                      >
+                        <ListItemText
+                          primary={`${room.nameroom}`}
+                          sx={{
+                            background:
+                              "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
+                            color: "#d81b60",
+                            fontWeight: 900,
+                            borderRadius: 3,
+                            width: "100%",
+                            boxShadow: "0 2px 12px 0 #ffd6e6",
+                            fontSize: 24,
+                            letterSpacing: 0.6,
+                            textTransform: "none",
+                            px: 3,
+                            py: -1.5,
+                            "&:hover": {
+                              background:
+                                "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
+                              color: "#fff",
+                            },
+                            transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
+                          }}
+                        />
+                      </Box>
                     </ListItemIcon>
                   </ListItem>
                 </React.Fragment>
@@ -376,6 +363,8 @@ export default function Chatrooms() {
             </List>
           </RoomList>
         </Grid>
+
+        {/* Блок приватных комнат */}
         <Grid
           item
           sx={{
@@ -412,34 +401,42 @@ export default function Chatrooms() {
                   <ListItem sx={{ padding: "15px 0" }}>
                     <ListItemIcon>
                       <LockIcon
-                        color="secondary"
+                        // color="secondary"
                         sx={{
                           mr: 1,
+                          color: "#f26f6f",
                         }}
                       />
-                      <ListItemText
-                        primary={room.name}
-                        sx={{
-                          background:
-                            "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-                          color: "#d81b60",
-                          fontWeight: 900,
-                          borderRadius: 3,
-                          width: "100%",
-                          boxShadow: "0 2px 12px 0 #ffd6e6",
-                          fontSize: 24,
-                          letterSpacing: 0.6,
-                          textTransform: "none",
-                          px: 3,
-                          py: -1.5,
-                          "&:hover": {
+                      <Box
+                        onMouseEnter={(e) =>
+                          handleMouseEnter(e, room.description)
+                        }
+                        onMouseLeave={handleMouseLeave}
+                      >
+                        <ListItemText
+                          primary={room.nameroom}
+                          sx={{
                             background:
-                              "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
-                            color: "#fff",
-                          },
-                          transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
-                        }}
-                      />
+                              "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
+                            color: "#d81b60",
+                            fontWeight: 900,
+                            borderRadius: 3,
+                            width: "100%",
+                            boxShadow: "0 2px 12px 0 #ffd6e6",
+                            fontSize: 24,
+                            letterSpacing: 0.6,
+                            textTransform: "none",
+                            px: 3,
+                            py: -1.5,
+                            "&:hover": {
+                              background:
+                                "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
+                              color: "#fff",
+                            },
+                            transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
+                          }}
+                        />
+                      </Box>
                     </ListItemIcon>
                   </ListItem>
                 </React.Fragment>
@@ -501,6 +498,30 @@ export default function Chatrooms() {
           </Paper>
         </Grid>
       </Grid>
+      {tooltip.visible && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: tooltip.y,
+            left: tooltip.x,
+            backgroundColor: "#f06292",
+            color: "#fff",
+            px: 2,
+            py: 1,
+            borderRadius: 2,
+            fontSize: 14,
+            whiteSpace: "nowrap",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            pointerEvents: "none",
+            zIndex: 1500,
+            opacity: showTooltip ? 1 : 0,
+            transform: showTooltip ? "translateY(0)" : "translateY(10px)",
+            transition: "opacity 0.3s ease, transform 0.3s ease",
+          }}
+        >
+          {tooltip.text}
+        </Box>
+      )}
     </Root>
   );
 }
