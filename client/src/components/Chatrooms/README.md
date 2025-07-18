@@ -25,7 +25,7 @@ showTimeoutRef.current = setTimeout(() => {
 const newX = rect.left + rect.width / 2;
 const newY = rect.top - 10;
 
-    // 🔒 Только если данные изменились — обновляем стейт
+    //  Только если данные изменились — обновляем стейт
     if (
       tooltip.text !== text ||
       tooltip.x !== newX ||

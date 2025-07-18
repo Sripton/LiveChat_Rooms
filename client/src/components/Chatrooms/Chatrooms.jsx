@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Box,
@@ -11,23 +11,33 @@ import {
   ListItemIcon,
   ListItemText,
   Tooltip,
-  Fade,
   Button,
 } from "@mui/material";
+
+// Иконки
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import LockIcon from "@mui/icons-material/Lock";
+
+// Redux
 import { useDispatch, useSelector } from "react-redux";
-import ModalRoomCreate from "../ModalRoomCreate/ModalRoomCreate";
 import { fetchAllRooms } from "../../redux/actions/roomActions";
 
+// Компоненты
+import ModalRoomCreate from "../ModalRoomCreate";
+import TooltipFloating from "../TooltipFloating";
+import ChatMessage from "../ChatMessage";
+
 export default function Chatrooms() {
+  // Состояния раскрытия блоков с комнатами
   const [openRoomExpanded, setOpenRoomExpanded] = useState(false);
   const [privateRoomExpanded, setPrivateRoomExpanded] = useState(false);
+
+  // Состояния сообщений и модального окна
   const [visibleMessages, setVisibleMessages] = useState([]);
   const [openModal, setOpenModal] = useState(false);
 
-  // -------------------- Плавное отображение описания комнат ---------------
+  // -------------------- Tooltip для описания комнат ---------------
   const [tooltip, setToolTip] = useState({
     visible: false,
     text: "",
@@ -38,6 +48,7 @@ export default function Chatrooms() {
   const showTimeoutRef = useRef(null);
   const hideTimeOutRef = useRef(null);
 
+  // Обработка наведения мыши на комнату — позиционируем тултип и показываем его
   const handleMouseEnter = (e, text) => {
     const rect = e.currentTarget.getBoundingClientRect();
     clearTimeout(hideTimeOutRef.current);
@@ -63,10 +74,11 @@ export default function Chatrooms() {
     }, 400); // Задержка перед появлением
   };
 
+  // Убираем тултип при уходе мыши
   const handleMouseLeave = () => {
     clearTimeout(showTimeoutRef.current);
     hideTimeOutRef.current = setTimeout(() => {
-      setShowTooltip(false); // Начать исчезновение
+      setShowTooltip(false); // Плавно скрываем
       setTimeout(() => {
         setToolTip({
           visible: false,
@@ -76,24 +88,25 @@ export default function Chatrooms() {
         });
       }, 300);
     }, 100); // После окончания анимации скрытия
-    setToolTip({ ...tooltip, visible: false });
+    setToolTip({ ...tooltip, visible: false }); // Принудительно скрываем
   };
 
-  //  Очистка таймеров при размонтировании (безопасность)
+  // Очистка таймеров при размонтировании компонента
   useEffect(() => {
     clearTimeout(showTimeoutRef.current);
     clearTimeout(hideTimeOutRef.current);
   }, []);
 
-  // -------------------- Получение всех комнат с сервера -----------------------
+  // -------------------- Получение всех комнат из Redux -----------------------
   const allRooms = useSelector((store) => store.room.allRooms);
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(fetchAllRooms());
+    dispatch(fetchAllRooms()); // Запрашиваем комнаты при монтировании
   }, [dispatch]);
   const openRooms = allRooms.filter((rooms) => rooms.isPrivate === false);
   const privateRooms = allRooms.filter((rooms) => rooms.isPrivate === true);
 
+  // Переключение блоков: открытые / закрытые комнаты
   const handlerIsExpanded = (state) => {
     if (state === "open") {
       setOpenRoomExpanded((prev) => !prev);
@@ -105,24 +118,28 @@ export default function Chatrooms() {
   // ------------------------------------- Данные для чата --------------------------
   const messages = [
     {
+      id: 1,
       sender: "user",
       text: "Привет. Я Мария. Ты когда-нибудь задумывался, что наш выбор еды влияет на климат сильнее, чем кажется?",
     },
     {
+      id: 2,
       sender: "bot",
       text: "Привет Мария. Я Джон. Да, особенно когда читаешь, сколько воды уходит на килограмм говядины — пугает.",
     },
     {
+      id: 3,
       sender: "user",
       text: "Вот почему я отказалась от мяса — не из моды, а ради планеты и будущего детей",
     },
     {
+      id: 4,
       sender: "bot",
       text: "Звучит честно… Я давно хотел начать с малого — может, ты мне подскажешь?",
     },
   ];
 
-  // -------------------------------- Анимация -----------------------------
+  // -------------------------------- Анимация сообщений -----------------------------
   // Старая логика для анимации
   // const animationPlayed = useRef(false);
   // useEffect(() => {
@@ -148,7 +165,7 @@ export default function Chatrooms() {
   // Новая логика для анимации
   const intervalRef = useRef();
   useEffect(() => {
-    // Если открыта модалка создания комнаты
+    // Останавливаем анимацию, если открыта модалка
     if (openModal) {
       // Если ранее был создан setInterval — очищаем его,
       // чтобы анимация сообщений остановилась на паузе.
@@ -159,6 +176,7 @@ export default function Chatrooms() {
       return; // Выходим из эффекта — не запускаем новый интервал.
     }
     // Если не все сообщения показаны — продолжаем анимацию
+    // Добавляем сообщения по одному
     if (visibleMessages.length < messages.length) {
       // i — индекс следующего сообщения, начинаем с уже показанного количества
       let i = visibleMessages.length;
@@ -187,6 +205,16 @@ export default function Chatrooms() {
     };
   }, [openModal, visibleMessages.length]);
 
+  // -------------------- Мемоизированный рендер сообщений --------------------
+  const renderedMessages = useMemo(
+    () =>
+      visibleMessages.map((msg) => (
+        <ChatMessage id={msg.id} sender={msg.sender} text={msg.text} />
+      )),
+    [visibleMessages]
+  );
+
+  // -------------------- Стили через styled --------------------
   const Root = styled(Box)({
     minHeight: "100vh",
     background: "#fde4ec",
@@ -201,19 +229,9 @@ export default function Chatrooms() {
     boxShadow: "0 4px 16px 0 rgba(230, 30, 99, 0.04)",
   });
 
-  // const ChatAnimation = styled(motion.div)(({ sender }) => ({
-  //   alignSelf: sender === "user" ? "flex-end" : "flex-start",
-  //   background: sender === "user" ? "#f8bbd0" : "#fff",
-  //   color: "#7b1fa2",
-  //   margin: "8px 0",
-  //   padding: "14px 20px",
-  //   borderRadius: 18,
-  //   maxWidth: "90%",
-  //   boxShadow: "0 1px 8px rgba(230,30,99,0.06)",
-  // }));
-
   return (
     <Root>
+      {/* Кнопка для создания новой комнаты */}
       <Grid
         container
         sx={{
@@ -241,6 +259,7 @@ export default function Chatrooms() {
         </Grid>
       </Grid>
 
+      {/* Основной контент: комнаты и чат */}
       <Grid
         container
         spacing={4}
@@ -279,7 +298,7 @@ export default function Chatrooms() {
             <List>
               {openRooms.map((room, index) => (
                 <React.Fragment key={index}>
-                  <ListItem sx={{ padding: "10px 0" }}>
+                  <ListItem sx={{ padding: "15px 0" }}>
                     <ListItemIcon>
                       <MeetingRoomIcon
                         // color="secondary"
@@ -487,8 +506,8 @@ export default function Chatrooms() {
                   <Typography variant="body1">{msg.text}</Typography>
                 </ChatAnimation>
               ))} */}
-              {visibleMessages.map((msg, index) => (
-                <Fade in key={msg.text + msg.sender} timeout={600}>
+              {/* {visibleMessages.map((msg) => (
+                <Fade in key={msg.id} timeout={600}>
                   <Paper
                     sx={{
                       alignSelf:
@@ -504,34 +523,20 @@ export default function Chatrooms() {
                     <Typography>{msg.text}</Typography>
                   </Paper>
                 </Fade>
-              ))}
+              ))} */}
+              {renderedMessages}
             </Box>
           </Paper>
         </Grid>
       </Grid>
       {tooltip.visible && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: tooltip.y,
-            left: tooltip.x,
-            backgroundColor: "#f06292",
-            color: "#fff",
-            px: 2,
-            py: 1,
-            borderRadius: 2,
-            fontSize: 14,
-            whiteSpace: "nowrap",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-            pointerEvents: "none",
-            zIndex: 1500,
-            opacity: showTooltip ? 1 : 0,
-            transform: showTooltip ? "translateY(0)" : "translateY(10px)",
-            transition: "opacity 0.3s ease, transform 0.3s ease",
-          }}
-        >
-          {tooltip.text}
-        </Box>
+        <TooltipFloating
+          tooltipVisible={tooltip.visible}
+          showTooltip={showTooltip}
+          tooltipX={tooltip.x}
+          tooltipY={tooltip.y}
+          tooltipText={tooltip.text}
+        />
       )}
     </Root>
   );

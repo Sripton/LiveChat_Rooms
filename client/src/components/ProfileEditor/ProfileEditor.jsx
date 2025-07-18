@@ -70,6 +70,17 @@ export default function ProfileEditor() {
             alt=""
           />
         </Button> */}
+        <Typography
+          variant="h6"
+          sx={{
+            color: "#60a5fa",
+            textTransform: "uppercase",
+            mb: 2,
+            fontWeight: 700,
+          }}
+        >
+          Изменение профиля
+        </Typography>
         <form
           onSubmit={handleSubmit}
           style={{
@@ -126,7 +137,11 @@ export default function ProfileEditor() {
           <Button
             type="submit"
             sx={{
-              "&:hover": { color: "#60a5fa", background: "transparent" },
+              "&:hover": {
+                color: "#60a5fa",
+                background: "transparent",
+                fontWeight: 500,
+              },
             }}
           >
             Сохранить изменения

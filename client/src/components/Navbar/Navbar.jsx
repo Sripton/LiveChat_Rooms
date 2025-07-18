@@ -14,6 +14,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import LogoutIcon from "@mui/icons-material/Logout";
+import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import "./navbar.css";
 import { useNavigate, NavLink } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -124,14 +125,17 @@ export default function Navbar({ userPropsData }) {
               >
                 <li className="profile-dropdown-item">
                   <NavLink to="/profileeditor">
-                    <EditIcon sx={{ color: "gray" }} />
+                    <EditIcon sx={{ color: "#4685df" }} />
                   </NavLink>
                 </li>
                 <li className="profile-dropdown-item">
-                  <ContactMailIcon sx={{ color: "gray" }} />
+                  <ContactMailIcon sx={{ color: "#4685df" }} />
                 </li>
                 <li className="profile-dropdown-item">
-                  <FavoriteIcon sx={{ color: "gray" }} />
+                  <FavoriteIcon sx={{ color: "#4685df" }} />
+                </li>
+                <li className="profile-dropdown-item">
+                  <MeetingRoomIcon sx={{ color: "#4685df" }} />
                 </li>
               </ul>
             </Button>
