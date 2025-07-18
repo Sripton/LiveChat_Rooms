@@ -42,12 +42,23 @@ export default function Chatrooms() {
     const rect = e.currentTarget.getBoundingClientRect();
     clearTimeout(hideTimeOutRef.current);
     showTimeoutRef.current = setTimeout(() => {
-      setToolTip({
-        visible: true,
-        text,
-        x: rect.left + rect.width / 2,
-        y: rect.top - 10,
-      });
+      const newX = rect.left + rect.width / 2;
+      const newY = rect.top - 10;
+
+      // Только если данные изменились — обновляем стейт
+      if (
+        !tooltip.visible ||
+        tooltip.text !== text ||
+        tooltip.x !== newX ||
+        tooltip.y !== newY
+      ) {
+        setToolTip({
+          visible: true,
+          text,
+          x: newX,
+          y: newY,
+        });
+      }
       setShowTooltip(true);
     }, 400); // Задержка перед появлением
   };
@@ -477,7 +488,7 @@ export default function Chatrooms() {
                 </ChatAnimation>
               ))} */}
               {visibleMessages.map((msg, index) => (
-                <Fade in key={index} timeout={600}>
+                <Fade in key={msg.text + msg.sender} timeout={600}>
                   <Paper
                     sx={{
                       alignSelf:
