@@ -1,6 +1,7 @@
 // Импорт типов действий (action types), которые редьюсер будет обрабатывать
 import {
   SET_REGISTER_USER,
+  SET_REGISTER_ERROR,
   SET_LOGIN_USER,
   SET_EDIT_USER,
   LOGOUT_USER,
@@ -12,6 +13,7 @@ const initialState = {
   userName: null, // Имя пользователя
   userAvatar: null,
   isAuthenticated: false, // Флаг, указывающий, вошёл ли пользователь в систему
+  error: null,
 };
 
 // Редьюсер, отвечающий за изменения состояния, связанные с пользователем
@@ -31,6 +33,7 @@ export default function userReducer(state = initialState, action) {
         userAvatar: payload.userAvatar || null, // можно получить сразу после логина
         isAuthenticated: true, // Отмечаем, что пользователь авторизован
       };
+
     // Изменяем данные польователя. Меняем имя и добаляем аватар
     case SET_EDIT_USER:
       return {
@@ -42,6 +45,11 @@ export default function userReducer(state = initialState, action) {
     // При выходе из системы возвращаем состояние к начальному (все данные сбрасываются)
     case LOGOUT_USER:
       return initialState;
+
+    // Обрабатываем ошибку если пользователь использует логин который существует в базе данных
+    case SET_REGISTER_ERROR:
+      return { ...state, error: payload }; // сохраняем ошибку
+
     // Если тип действия не распознан — возвращаем текущее состояние без изменений
     default:
       return state;

@@ -12,7 +12,9 @@ import {
   ListItemText,
   Tooltip,
   Button,
+  Link,
 } from "@mui/material";
+import { NavLink } from "react-router-dom";
 
 // Иконки
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -71,7 +73,7 @@ export default function Chatrooms() {
         });
       }
       setShowTooltip(true);
-    }, 400); // Задержка перед появлением
+    }, 100); // Задержка перед появлением
   };
 
   // Убираем тултип при уходе мыши
@@ -205,11 +207,11 @@ export default function Chatrooms() {
     };
   }, [openModal, visibleMessages.length]);
 
-  // -------------------- Мемоизированный рендер сообщений --------------------
+  // -------------------- Мемоизированный рендер  сообщений для анимации --------------------
   const renderedMessages = useMemo(
     () =>
       visibleMessages.map((msg) => (
-        <ChatMessage id={msg.id} sender={msg.sender} text={msg.text} />
+        <ChatMessage key={msg.id} sender={msg.sender} text={msg.text} />
       )),
     [visibleMessages]
   );
@@ -244,7 +246,11 @@ export default function Chatrooms() {
         <Grid item>
           <Box>
             <Button
-              sx={{ color: "#d81b60", fontWeight: 700 }}
+              sx={{
+                color: "#d81b60",
+                fontWeight: 700,
+                fontFamily: "monospace",
+              }}
               onClick={() => setOpenModal(true)}
             >
               Создать комнату
@@ -282,6 +288,8 @@ export default function Chatrooms() {
               color: "#d81b60",
               textTransform: "uppercase",
               mb: 2,
+              fontFamily: "monospace",
+              fontWeight: "bold",
             }}
           >
             <KeyboardArrowDownIcon
@@ -361,30 +369,43 @@ export default function Chatrooms() {
                           handleMouseEnter(e, room.description)
                         }
                         onMouseLeave={handleMouseLeave}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-around",
+                        }}
                       >
-                        <ListItemText
-                          primary={`${room.nameroom}`}
-                          sx={{
-                            background:
-                              "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-                            color: "#d81b60",
-                            fontWeight: 900,
-                            borderRadius: 3,
-                            width: "100%",
-                            boxShadow: "0 2px 12px 0 #ffd6e6",
-                            fontSize: 24,
-                            letterSpacing: 0.6,
-                            textTransform: "none",
-                            px: 3,
-                            py: -1.5,
-                            "&:hover": {
+                        <Link
+                          component={NavLink}
+                          to={`/chatcards/${room.id}`}
+                          sx={{ textDecoration: "none" }}
+                        >
+                          <Typography
+                            sx={{
                               background:
-                                "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
-                              color: "#fff",
-                            },
-                            transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
-                          }}
-                        />
+                                "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
+                              color: "#d81b60",
+                              fontWeight: 900,
+                              borderRadius: 3,
+                              width: "100%",
+                              boxShadow: "0 2px 12px 0 #ffd6e6",
+                              fontSize: 18,
+                              letterSpacing: 0.6,
+                              textTransform: "none",
+                              px: 3,
+                              py: 1,
+                              fontFamily: "monospace",
+                              "&:hover": {
+                                background:
+                                  "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
+                                color: "#fff",
+                              },
+                              transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
+                            }}
+                          >
+                            {" "}
+                            {`${room.nameroom}`}
+                          </Typography>
+                        </Link>
                       </Box>
                     </ListItemIcon>
                   </ListItem>
@@ -410,6 +431,8 @@ export default function Chatrooms() {
               color: "#d81b60",
               textTransform: "uppercase",
               mb: 2,
+              fontFamily: "monospace",
+              fontWeight: "bold",
             }}
           >
             <KeyboardArrowDownIcon
@@ -443,8 +466,7 @@ export default function Chatrooms() {
                         }
                         onMouseLeave={handleMouseLeave}
                       >
-                        <ListItemText
-                          primary={room.nameroom}
+                        <Typography
                           sx={{
                             background:
                               "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
@@ -453,11 +475,12 @@ export default function Chatrooms() {
                             borderRadius: 3,
                             width: "100%",
                             boxShadow: "0 2px 12px 0 #ffd6e6",
-                            fontSize: 24,
+                            fontSize: 18,
                             letterSpacing: 0.6,
                             textTransform: "none",
                             px: 3,
-                            py: -1.5,
+                            py: 1,
+                            fontFamily: "monospace",
                             "&:hover": {
                               background:
                                 "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
@@ -465,7 +488,10 @@ export default function Chatrooms() {
                             },
                             transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
                           }}
-                        />
+                        >
+                          {" "}
+                          {`${room.nameroom}`}
+                        </Typography>
                       </Box>
                     </ListItemIcon>
                   </ListItem>

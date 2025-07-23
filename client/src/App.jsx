@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { Toolbar } from "@mui/material";
 import Navbar from "./components/Navbar";
 import Signup from "./components/Signup";
 import Signin from "./components/Signin";
 import ProfileEditor from "./components/ProfileEditor";
 import ChatRooms from "./components/ChatRooms";
-
+import ChatCards from "./components/ChatCards";
 import {
   checkUserSession,
   registersUser,
@@ -28,6 +29,10 @@ function App() {
   // Обработчик изменения инпутов
   // Обернут в useCallback — создаётся один раз, не зависит от внешних переменных
   const inputsUsersHandler = useCallback((e) => {
+    if (e.target.name === "reset_all" && e.target.reset) {
+      setInputs({}); // или начальное состояние формы
+      return;
+    }
     setInputs((prevInputs) => ({
       ...prevInputs,
       [e.target.name]: e.target.value,
@@ -101,6 +106,8 @@ function App() {
   return (
     <>
       <Navbar userPropsData={userPropsData} />
+      {/* Toolbar <-- автоматический отступ вниз */}
+      <Toolbar />
       {/* Роуты регистрации и входа */}
       <Routes>
         <Route path="/" element={<ChatRooms />} />
@@ -113,6 +120,7 @@ function App() {
           element={<Signin userPropsData={userPropsData} />}
         />
         <Route path="/profileeditor" element={<ProfileEditor />} />
+        <Route path="/chatcards/:id" element={<ChatCards />} />
       </Routes>
     </>
   );

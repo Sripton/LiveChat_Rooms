@@ -8,6 +8,7 @@ import {
   ListItem,
   Typography,
   Button,
+  Link,
 } from "@mui/material";
 import AddHomeIcon from "@mui/icons-material/AddHome";
 import EditIcon from "@mui/icons-material/Edit";
@@ -124,9 +125,9 @@ export default function Navbar({ userPropsData }) {
                 }`}
               >
                 <li className="profile-dropdown-item">
-                  <NavLink to="/profileeditor">
+                  <Link component={NavLink} to="/profileeditor">
                     <EditIcon sx={{ color: "#4685df" }} />
-                  </NavLink>
+                  </Link>
                 </li>
                 <li className="profile-dropdown-item">
                   <ContactMailIcon sx={{ color: "#4685df" }} />

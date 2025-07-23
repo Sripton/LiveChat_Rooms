@@ -8,6 +8,14 @@ const upload = require("../MiddleWares/upload");
 router.post("/signup", async (req, res) => {
   const { login, password, name } = req.body;
   try {
+    // Проверяем, существует ли пользователь с таким логином
+    const existingUserLogin = await User.findOne({ where: { login } });
+    if (existingUserLogin) {
+      return res
+        .status(400)
+        .json({ error: "Пользователь с таким логином уже существует" });
+    }
+
     // Хэширование пароля:
     // 10 количество раундов хэширования (чем больше, тем сложнее взломать, но это увеличивает время обработки).
     const hashPassword = await bcrypt.hash(password, 10);

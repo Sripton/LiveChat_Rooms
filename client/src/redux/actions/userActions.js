@@ -3,6 +3,7 @@ import {
   SET_REGISTER_USER,
   SET_LOGIN_USER,
   SET_EDIT_USER,
+  SET_REGISTER_ERROR,
   LOGOUT_USER,
 } from "../types/types";
 
@@ -17,7 +18,6 @@ export const checkUserSession = () => async (dispatch) => {
       dispatch({ type: SET_LOGIN_USER, payload: data }); // записываем пользователя в state
     }
   } catch (error) {
-    // Ошибка может возникнуть, если сессия не найдена или сервер недоступен
     console.log(error);
   }
 };
@@ -36,8 +36,11 @@ export const registersUser = (inputs, navigate) => async (dispatch) => {
       navigate("/");
     }
   } catch (error) {
-    // В случае ошибки (например, пользователь уже существует) выводим ошибку в консоль
-    console.log(error);
+    const errorMessage =
+      error.response?.data?.error ||
+      "Пользователь с таким логином уже существует";
+    //  Сохраняем ошибку в Redux
+    dispatch({ type: SET_REGISTER_ERROR, payload: errorMessage });
   }
 };
 

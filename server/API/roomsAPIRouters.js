@@ -36,7 +36,20 @@ router.get("/", async (req, res) => {
     res.json(findAllRoom);
   } catch (error) {
     console.log(error);
+    return res.status(500).json({ message: "Ошибка сервера" });
   }
 });
+
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const findRoomID = await Room.findOne({ where: { id } });
+    res.status(200).json(findRoomID);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Не удалось найти комнату" });
+  }
+});
+
 
 module.exports = router;

@@ -1,10 +1,11 @@
-import { SET_CREATE_ROOM, GET_USER_ROOM } from "../types/types";
+import { SET_CREATE_ROOM, GET_USER_ROOM, GET_ONE_ROOM } from "../types/types";
 
 const initialState = {
   nameroom: null,
   description: null,
   isPrivate: false,
   allRooms: [], // сюда сохраняем все комнаты
+  currentRoom: null,
 };
 
 export default function roomReducer(state = initialState, action) {
@@ -25,7 +26,12 @@ export default function roomReducer(state = initialState, action) {
     case GET_USER_ROOM:
       return {
         ...state,
-        allRooms: action.payload, //  массив комнат. allRooms теперь содержит эти данные.
+        allRooms: payload, //  массив комнат. allRooms теперь содержит эти данные.
+      };
+    case GET_ONE_ROOM:
+      return {
+        ...state,
+        currentRoom: payload,
       };
     default:
       return state;

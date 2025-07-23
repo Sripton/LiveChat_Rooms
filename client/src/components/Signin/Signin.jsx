@@ -6,6 +6,7 @@ import {
   InputAdornment,
   TextField,
   Typography,
+  Link,
 } from "@mui/material";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import KeyIcon from "@mui/icons-material/Key";
@@ -98,15 +99,32 @@ export default function Signin({ userPropsData }) {
           <Button
             type="submit"
             sx={{
-              "&:hover": { color: "#60a5fa", background: "transparent" },
+              fontSize: "1.1em",
+              "&:hover": {
+                color: "#60a5fa",
+                background: "transparent",
+                fontWeight: "bold",
+              },
             }}
           >
             Войти
           </Button>
         </form>
-        <NavLink to="/signup" type="submit" className="navlink-auth">
+        <Link
+          component={NavLink}
+          to="/signup"
+          sx={{
+            textDecoration: "none",
+            textTransform: "uppercase",
+            "&:hover": {
+              bgcolor: "transparent",
+              color: "#60a5fa",
+              fontWeight: "bold",
+            },
+          }}
+        >
           Зарегистрироваться
-        </NavLink>
+        </Link>
       </Box>
     </Container>
   );

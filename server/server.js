@@ -9,6 +9,7 @@ const app = express(); // Создаём экземпляр Express-прилож
 const PORT = process.env.PORT; // Устанавливаем порт из переменной окружения
 const userAPIRouter = require("./API/userAPIRouter");
 const roomAPIRouter = require("./API/roomsAPIRouters");
+const postAPIRouter = require("./API/postAPIRouter");
 const FileStore = session_file_store(session);
 const path = require("path");
 
@@ -47,5 +48,6 @@ app.use(session(sessionConfig));
 
 app.use("/api/users", userAPIRouter);
 app.use("/api/rooms", roomAPIRouter);
+app.use("/api/posts", postAPIRouter);
 
 app.listen(PORT, () => console.log(`---> Server started on ${PORT} port <---`));

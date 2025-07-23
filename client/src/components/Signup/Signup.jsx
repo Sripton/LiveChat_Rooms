@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -6,14 +6,32 @@ import {
   TextField,
   Typography,
   InputAdornment,
+  Collapse,
+  Alert,
 } from "@mui/material";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import KeyIcon from "@mui/icons-material/Key";
 import PersonIcon from "@mui/icons-material/Person";
 import "./signup.css";
+import { useDispatch, useSelector } from "react-redux";
+import { SET_REGISTER_ERROR } from "../../redux/types/types";
 
 export default function Signup({ userPropsData }) {
   const { inputs, inputsUsersHandler, signupSubmitHandler } = userPropsData;
+  const dispatch = useDispatch();
+  const errorMessage = useSelector((store) => store.user.error);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      dispatch({ type: SET_REGISTER_ERROR, payload: "" }); // очищаем ошибку
+      // Cбрасываем форму:
+      // если все поля заполнены. Во избежание принудительного сбрасывания поля преждевременно
+      if (inputs.login || inputs.password || inputs.name) {
+        inputsUsersHandler({ target: { name: "reset_all", reset: true } });
+      }
+    }, 2000);
+    return () => clearTimeout(timer); // чистим таймер
+  }, [errorMessage]);
 
   return (
     <Container maxWidth="false" className="wrapper__register">
@@ -39,33 +57,42 @@ export default function Signup({ userPropsData }) {
             textAlign: "center",
           }}
         >
-          <TextField
-            name="login"
-            value={inputs.login || ""}
-            onChange={inputsUsersHandler}
-            variant="outlined"
-            placeholder="Введите логин"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <LockOpenIcon />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              backgroundColor: "transparent",
-              input: {
-                outline: "none",
-                border: "none",
-                borderBottom: "2px solid rgba(139, 78, 196, 0.37)",
-                color: "rgb(78, 75, 75)",
-              },
-              "& .MuiOutlinedInput-notchedOutline": {
-                border: "none",
-              },
-              marginBottom: "20px",
-            }}
-          />
+          <Box>
+            <Collapse in={Boolean(errorMessage)}>
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {errorMessage}
+              </Alert>
+            </Collapse>
+            <TextField
+              name="login"
+              value={inputs.login || ""}
+              onChange={inputsUsersHandler}
+              variant="outlined"
+              placeholder="Введите логин"
+              // error={Boolean(errorMessage)}
+              // helperText={errorMessage || ""}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <LockOpenIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                backgroundColor: "transparent",
+                input: {
+                  outline: "none",
+                  border: "none",
+                  borderBottom: "2px solid rgba(139, 78, 196, 0.37)",
+                  color: "rgb(78, 75, 75)",
+                },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                marginBottom: "20px",
+              }}
+            />
+          </Box>
 
           <TextField
             name="password"
