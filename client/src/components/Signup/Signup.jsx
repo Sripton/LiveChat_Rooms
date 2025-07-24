@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -20,11 +20,24 @@ export default function Signup({ userPropsData }) {
   const { inputs, inputsUsersHandler, signupSubmitHandler } = userPropsData;
   const dispatch = useDispatch();
   const errorMessage = useSelector((store) => store.user.error);
-
+  const prevErrorRef = useRef("");
+  console.log("errorMessage", errorMessage);
   useEffect(() => {
+    // сохраняем предыдущее значение errorMessage, которое хранится в ref (prevErrorRef.current).
+    // Это значение было запомнено при предыдущем вызове useEffect
+    const prevError = prevErrorRef.current; // null
+
+    // // обновляем ref новым значением errorMessage, чтобы оно стало "предыдущим" на следующий вызов useEffect.
+    prevErrorRef.current = errorMessage;
+
+    // // условие "не выполнять сброс", если:
+    // // !errorMessage — т.е. ошибки нет (она пустая, null, undefined и т.п.).
+    // // errorMessage === prevError — т.е. ошибка не изменилась с прошлого раза.
+    if (!errorMessage || errorMessage === prevError) return;
+
     const timer = setTimeout(() => {
-      dispatch({ type: SET_REGISTER_ERROR, payload: "" }); // очищаем ошибку
       // Cбрасываем форму:
+      dispatch({ type: SET_REGISTER_ERROR, payload: "" }); // очищаем ошибку
       // если все поля заполнены. Во избежание принудительного сбрасывания поля преждевременно
       if (inputs.login || inputs.password || inputs.name) {
         inputsUsersHandler({ target: { name: "reset_all", reset: true } });
