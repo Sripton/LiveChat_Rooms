@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import {
   Box,
   Button,
@@ -8,56 +7,41 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import ReactDOM from "react-dom";
+import ReactDOM from "react-dom"; // для создания портала
 import CloseIcon from "@mui/icons-material/Close";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import LockIcon from "@mui/icons-material/Lock";
 import { useDispatch } from "react-redux";
 import { createRoomsSubmit } from "../../redux/actions/roomActions";
 export default function ModalRoomCreate({
-  openModal,
-  closeModal,
-  setOpenModal,
+  openModal, // флаг — открыто ли модальное окно
+  closeModal, // функция для закрытия окна
+  setOpenModal, // сеттер состояния для модального окна
 }) {
   const dispatch = useDispatch();
   const [roomCreate, setRoomCreate] = useState({
-    nameroom: "",
-    description: "",
-    isPrivate: false,
+    nameroom: "", // название комнаты
+    description: "", // описание
+    isPrivate: false, // приватность
   });
 
   const roomInputsHandler = (e) => {
     const { name, value, type, checked } = e.target;
     setRoomCreate((prev) => ({
       ...prev,
-      // [name]: type === "checkbox" ? checked : value,
-      [e.target.name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? checked : value, // обрабатываем чекбокс отдельно
+      // [e.target.name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const roomSubmitHandler = async (e) => {
-    e.preventDefault();
-    await dispatch(createRoomsSubmit(roomCreate));
-    setOpenModal(false);
-    // try {
-    //   console.log("roomSubmitHandler called");
-    //   const response = await axios.post(`/api/rooms`, {
-    //     nameroom: roomCreate.nameroom,
-    //     description: roomCreate.description,
-    //     isPrivate: roomCreate.isPrivate,
-    //   });
-    //   if (response.status === 200) {
-    //     const { data } = response;
-    //     setRooms((prev) => [...prev, data]);
-    //     setRoomCreate({ nameroom: "", description: "", isPrivate: false });
-    //     setOpenModal(false);
-    //   }
-    // } catch (error) {
-    //   console.log(error);
-    // }
+    e.preventDefault(); // предотвращаем перезагрузку страницы
+    await dispatch(createRoomsSubmit(roomCreate)); // отправляем данные через Redux action
+    setOpenModal(false); // закрываем модалку
   };
 
   return ReactDOM.createPortal(
+    // Обёртка модального окна с полупрозрачным фоном
     <Fade in={openModal}>
       <Box
         sx={{
@@ -72,8 +56,9 @@ export default function ModalRoomCreate({
           px: 2,
           py: 2,
         }}
-        onClick={closeModal}
+        onClick={closeModal} // закрытие при клике вне модалки
       >
+        {/* Контейнер самой модалки */}
         <Box
           sx={{
             // адаптивную минимальную ширину компонента, которая меняется в зависимости от размера экрана
@@ -90,8 +75,9 @@ export default function ModalRoomCreate({
             transition: "box-shadow .3s",
             borderRadius: "10px",
           }}
-          onClick={(e) => e.stopPropagation()} // Модальные окна и диалоги – чтобы клик внутри модалки не закрывал её.
+          onClick={(e) => e.stopPropagation()} // чтобы внутренний клик не закрыл окно
         >
+          {/* Кнопка закрытия */}
           <Button
             sx={{
               position: "absolute",
@@ -110,7 +96,8 @@ export default function ModalRoomCreate({
           >
             <CloseIcon sx={{ fontSize: "24px" }} />
           </Button>
-          {/* Форма */}
+
+          {/* Форма создания комнаты */}
           <form
             style={{
               display: "flex",
@@ -119,6 +106,7 @@ export default function ModalRoomCreate({
             }}
             onSubmit={roomSubmitHandler}
           >
+            {/* Поле "Название комнаты" */}
             <TextField
               name="nameroom"
               value={roomCreate.nameroom}
@@ -136,6 +124,7 @@ export default function ModalRoomCreate({
                 width: "95%",
               }}
             />
+            {/* Поле Описание комнаты */}
             <TextField
               name="description"
               value={roomCreate.description}
@@ -155,6 +144,7 @@ export default function ModalRoomCreate({
                 width: "95%",
               }}
             />
+            {/* Чекбокс приватности + подпись */}
             <Fade in timeout={450}>
               <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
                 <Checkbox
@@ -182,6 +172,7 @@ export default function ModalRoomCreate({
                 </Typography>
               </Box>
             </Fade>
+            {/* Кнопка Создать */}
             <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
               <Button
                 variant="contained"
@@ -213,6 +204,7 @@ export default function ModalRoomCreate({
         </Box>
       </Box>
     </Fade>,
-    document.getElementById("modal-root") || document.body
+    // Завершение портала
+    document.getElementById("modal-root") || document.body // если нет modal-root — fallback в body
   );
 }

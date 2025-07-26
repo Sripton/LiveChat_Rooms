@@ -7,22 +7,23 @@ const session_file_store = require("session-file-store"); // Используе�
 dotenv.config(); // Загружаем переменные окружения из файла .env
 const app = express(); // Создаём экземпляр Express-приложения
 const PORT = process.env.PORT; // Устанавливаем порт из переменной окружения
-const userAPIRouter = require("./API/userAPIRouter");
-const roomAPIRouter = require("./API/roomsAPIRouters");
-const postAPIRouter = require("./API/postAPIRouter");
-const FileStore = session_file_store(session);
+const userAPIRouter = require("./API/userAPIRouter"); // Импортируем маршруты API для пользователей
+const roomAPIRouter = require("./API/roomsAPIRouters"); // Импортируем маршруты API для комнат
+const postAPIRouter = require("./API/postAPIRouter"); // Импортируем маршруты API для постов
+const FileStore = session_file_store(session); // Используем FileStore для хранения сессий в файлах
 const path = require("path");
 
+// Настраиваем CORS, чтобы разрешить кросс-доменные запросы с передачей куков
 app.use(
   cors({
     credentials: true,
     origin: true,
   })
 ); // Настраиваем CORS, чтобы разрешить кросс-доменные запросы с передачей куков
-app.use(morgan("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(morgan("dev")); // Включаем логирование HTTP-запросов в режиме "dev"
+app.use(express.json()); // Подключаем встроенный middleware для обработки JSON-запросов
+app.use(express.urlencoded({ extended: true })); // Подключаем middleware для обработки данных формы
+app.use(express.static(path.join(__dirname, "public"))); // Делаем папку "public" доступной для статики (картинки, CSS, JS)
 
 const sessionConfig = {
   name: "user_live", // Название cookie сессии
@@ -46,8 +47,8 @@ const sessionConfig = {
 };
 app.use(session(sessionConfig));
 
-app.use("/api/users", userAPIRouter);
-app.use("/api/rooms", roomAPIRouter);
-app.use("/api/posts", postAPIRouter);
+app.use("/api/users", userAPIRouter); // Маршрут для пользователя
+app.use("/api/rooms", roomAPIRouter); // Маршрут для комнат
+app.use("/api/posts", postAPIRouter); // Маршрут для постов
 
 app.listen(PORT, () => console.log(`---> Server started on ${PORT} port <---`));

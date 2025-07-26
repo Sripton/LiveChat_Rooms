@@ -15,6 +15,6 @@ export default configureStore({
   reducer: {
     user: userReducer, // Ключ `user` определяет ветку состояния Redux: state.user будет обрабатываться userReducer'ом
     room: roomReducer, // Ключ `room` определяет ветку состояния Redux: state.room будет обрабатываться roomReducer'ом
-    post: postReducer,
+    post: postReducer, // Ключ `post` определяет ветку состояния Redux: state.post будет обрабатываться postReducer'ом
   },
 });

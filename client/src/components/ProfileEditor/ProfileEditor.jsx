@@ -26,7 +26,7 @@ export default function ProfileEditor() {
   const [editAvatar, setEditAvatar] = useState(userAvatar || "");
 
   const handleFileChange = (e) => {
-    // Поле e.target.files — это FileList, а не просто один файл. Даже если ты разрешаешь выбрать один файл,
+    // Поле e.target.files — это FileList, а не просто один файл. Даже если  разрешить выбрать один файл,
     // браузер всегда возвращает массив файлов, потому что: <input type="file"> по умолчанию поддерживает выбор нескольких файлов
     // <input type="file" multiple /> multiple - выбор нескольких файлов.
     //     FileList {
@@ -48,28 +48,22 @@ export default function ProfileEditor() {
     }
   };
 
+  // Обработка изменения имени
   const handleNameChange = (e) => {
     setEditName(e.target.value);
   };
 
+  // Отправка формы
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formData = new FormData();
-    if (editName.trim()) formData.append("name", editName);
-    if (addFile) formData.append("avatar", addFile);
-    await dispatch(editUser(formData, navigate));
+    const formData = new FormData(); // Создаем объект для отправки файлов и данных
+    if (editName.trim()) formData.append("name", editName); // Добавляем имя, если заполнено
+    if (addFile) formData.append("avatar", addFile); // Добавляем файл, если выбран
+    await dispatch(editUser(formData)); // Отправляем действие редактирования пользователя
   };
   return (
     <Container maxWidth="false" className="wrapper__register">
       <Box className="form">
-        {/* <Button className="avatar-edit">
-          <img
-            className="avatar-eidt-img"
-            src={editAvatar || "/default-avatar.png"}
-            alt=""
-          />
-        </Button> */}
         <Typography
           variant="h6"
           sx={{
@@ -81,6 +75,8 @@ export default function ProfileEditor() {
         >
           Изменение профиля
         </Typography>
+
+        {/* Форма изменения профиля */}
         <form
           onSubmit={handleSubmit}
           style={{
@@ -91,6 +87,7 @@ export default function ProfileEditor() {
             textAlign: "center",
           }}
         >
+          {/* Поле ввода имени */}
           <TextField
             name="name"
             value={editName}
@@ -119,6 +116,8 @@ export default function ProfileEditor() {
               marginBottom: "20px",
             }}
           />
+
+          {/* Кнопка загрузки аватара */}
           <Button
             variant="contained"
             component="label"
@@ -134,6 +133,8 @@ export default function ProfileEditor() {
               accept="image/*"
             />
           </Button>
+
+          {/* Кнопка отправки формы */}
           <Button
             type="submit"
             sx={{

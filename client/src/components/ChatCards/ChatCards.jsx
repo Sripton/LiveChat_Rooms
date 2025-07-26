@@ -13,14 +13,20 @@ import { fetchAllPosts } from "../../redux/actions/postActions";
 import "./chatcards.css";
 
 export default function ChatCards() {
+  //  Управление отображением модального окна создания поста
   const [openModalPost, setOpenModalPost] = useState(false);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const currentRoom = useSelector((store) => store.room.currentRoom);
+
+  const dispatch = useDispatch(); // useDispatch — отправка действий
+  const navigate = useNavigate(); // переход по маршрутам
+  const { id } = useParams(); //  извлекает id комнаты из URL
+
+  //  Извлечение данных комнаты, постов и ID пользователя из Redux
+  const currentRoom = useSelector((store) => store.room.currentRoom); // useSelector - доступ к состоянию Redux-хранилища
   const allPosts = useSelector((store) => store.post.allPosts);
   const userID = useSelector((store) => store.user.userID);
 
+  //  Если пользователь не авторизован, редирект на /signin
+  //  Иначе переключение отображения модального окна
   const handleAddPostClick = () => {
     if (!userID) {
       navigate("/signin");
@@ -28,15 +34,19 @@ export default function ChatCards() {
     setOpenModalPost((prev) => !prev);
   };
 
+  // Загрузка данных. При монтировании компонента (или изменении id)
+  // Загружается информация о комнате
   useEffect(() => {
     dispatch(getRoomById(id));
   }, [dispatch, id]);
 
+  // Загружаются все посты, относящиеся к комнате
   useEffect(() => {
     dispatch(fetchAllPosts(id));
   }, [dispatch, id]);
 
   return (
+    // Основной макет
     <Box
       sx={{
         display: "flex",
@@ -44,6 +54,7 @@ export default function ChatCards() {
         px: 2,
       }}
     >
+      {/* Карточка со всей информацией (включает заголовок, описание, посты) */}
       <Paper
         elevation={4}
         sx={{
@@ -63,6 +74,7 @@ export default function ChatCards() {
             flexWrap: "wrap",
           }}
         >
+          {/* Заголовок и кнопка "Добавить пост" */}
           <Box>
             <Typography
               variant="h4"
@@ -106,6 +118,7 @@ export default function ChatCards() {
             Добавить пост
           </Button>
         </Box>
+        {/* Отображение постов */}
         {openModalPost ? (
           <>
             <Box>
@@ -116,6 +129,7 @@ export default function ChatCards() {
               />
             </Box>
             <Box className="post-list">
+              {/* Рендер всех постов, связанных с комнатой */}
               {allPosts.map((post) => (
                 <Box className="post" key={post.id} sx={{ mb: 2 }}>
                   <Typography
@@ -152,6 +166,7 @@ export default function ChatCards() {
           </>
         ) : (
           <Box className="post-list">
+            {/* Рендер всех постов, связанных с комнатой */}
             {allPosts.map((post) => (
               <Box className="post" sx={{ mb: 2 }}>
                 <Typography

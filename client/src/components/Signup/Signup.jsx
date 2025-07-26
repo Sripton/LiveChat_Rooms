@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Button,
@@ -8,45 +8,46 @@ import {
   InputAdornment,
   Collapse,
   Alert,
-} from "@mui/material";
-import LockOpenIcon from "@mui/icons-material/LockOpen";
-import KeyIcon from "@mui/icons-material/Key";
-import PersonIcon from "@mui/icons-material/Person";
-import "./signup.css";
-import { useDispatch, useSelector } from "react-redux";
-import { SET_REGISTER_ERROR } from "../../redux/types/types";
+} from "@mui/material"; // Компоненты из библиотеки Material UI
+import LockOpenIcon from "@mui/icons-material/LockOpen"; // Иконка замка (логин)
+import KeyIcon from "@mui/icons-material/Key"; // Иконка ключа (пароль)
+import PersonIcon from "@mui/icons-material/Person"; // Иконка пользователя (имя)
+import "./signup.css"; // CSS-стили
+import { useDispatch, useSelector } from "react-redux"; // Хуки из Redux
+import { SET_REGISTER_ERROR } from "../../redux/types/types"; // Тип действия Redux
 
 export default function Signup({ userPropsData }) {
+  // Получаем пропсы из компонента App.jsx
   const { inputs, inputsUsersHandler, signupSubmitHandler } = userPropsData;
+
+  // Инициализация dispatch для отправки действий в Redux
   const dispatch = useDispatch();
+
+  // Получение ошибки из состояния Redux
   const errorMessage = useSelector((store) => store.user.error);
-  const prevErrorRef = useRef("");
-  console.log("errorMessage", errorMessage);
+
   useEffect(() => {
-    // сохраняем предыдущее значение errorMessage, которое хранится в ref (prevErrorRef.current).
-    // Это значение было запомнено при предыдущем вызове useEffect
-    const prevError = prevErrorRef.current; // null
+    // предотвращение выполнение кода внутри эффекта, если ошибки нет.
+    // 1. Если errorMessage пустой — выходим из эффекта, ничего не делаем.
+    if (!errorMessage) return;
 
-    // // обновляем ref новым значением errorMessage, чтобы оно стало "предыдущим" на следующий вызов useEffect.
-    prevErrorRef.current = errorMessage;
-
-    // // условие "не выполнять сброс", если:
-    // // !errorMessage — т.е. ошибки нет (она пустая, null, undefined и т.п.).
-    // // errorMessage === prevError — т.е. ошибка не изменилась с прошлого раза.
-    if (!errorMessage || errorMessage === prevError) return;
-
-    const timer = setTimeout(() => {
-      // Cбрасываем форму:
-      dispatch({ type: SET_REGISTER_ERROR, payload: "" }); // очищаем ошибку
-      // если все поля заполнены. Во избежание принудительного сбрасывания поля преждевременно
-      if (inputs.login || inputs.password || inputs.name) {
-        inputsUsersHandler({ target: { name: "reset_all", reset: true } });
-      }
-    }, 2000);
-    return () => clearTimeout(timer); // чистим таймер
-  }, [errorMessage]);
+    // Если пользователь начал править логин — очистить ошибку
+    // 2. Создаём функцию handler, которая очищает ошибку из Redux
+    const handler = () => {
+      dispatch({ type: SET_REGISTER_ERROR, payload: "" });
+    };
+    // 3. Возвращаем функцию очистки как "чистильщик" эффекта
+    // вызывается перед следующим срабатыванием эффекта или при размонтировании компонента.
+    // В нашем случае: как только пользователь начал вводить что-то в поле login — inputs.login изменился →
+    // useEffect сработал → сначала выполнился return → ошибка сбросилась.
+    return () => {
+      handler(); // при следующем изменении login — ошибка исчезнет
+    };
+    // useEffect будет срабатывать только когда меняется inputs.login (ввод логина).
+  }, [inputs.login]); // слушаем только логин
 
   return (
+    // Обертка всей формы регистрации
     <Container maxWidth="false" className="wrapper__register">
       <Box className="form">
         <Typography
@@ -60,6 +61,7 @@ export default function Signup({ userPropsData }) {
         >
           Регистрация
         </Typography>
+        {/* Форма */}
         <form
           onSubmit={signupSubmitHandler}
           style={{
@@ -71,11 +73,14 @@ export default function Signup({ userPropsData }) {
           }}
         >
           <Box>
+            {/* Сообщение об ошибке, если оно есть */}
             <Collapse in={Boolean(errorMessage)}>
               <Alert severity="error" sx={{ mb: 2 }}>
                 {errorMessage}
               </Alert>
             </Collapse>
+
+            {/* Поле логина */}
             <TextField
               name="login"
               value={inputs.login || ""}
@@ -107,6 +112,7 @@ export default function Signup({ userPropsData }) {
             />
           </Box>
 
+          {/* Поле пароля */}
           <TextField
             name="password"
             value={inputs.password || ""}
@@ -134,6 +140,8 @@ export default function Signup({ userPropsData }) {
               marginBottom: "20px",
             }}
           />
+
+          {/* Поле имени */}
           <TextField
             name="name"
             value={inputs.name || ""}
@@ -161,6 +169,8 @@ export default function Signup({ userPropsData }) {
               marginBottom: "20px",
             }}
           />
+
+          {/* Кнопка отправки формы */}
           <Button
             type="submit"
             sx={{

@@ -7,13 +7,14 @@ import {
   TextField,
   Typography,
   Link,
-} from "@mui/material";
-import LockOpenIcon from "@mui/icons-material/LockOpen";
-import KeyIcon from "@mui/icons-material/Key";
+} from "@mui/material"; // Компоненты из библиотеки Material UI
+import LockOpenIcon from "@mui/icons-material/LockOpen"; // Иконка замка (логин)
+import KeyIcon from "@mui/icons-material/Key"; // Иконка ключа (пароль)
 import { NavLink } from "react-router-dom";
 
 import "./signin.css";
 export default function Signin({ userPropsData }) {
+  // Получаем пропсы из компонента App.jsx
   const { inputs, inputsUsersHandler, signinSubmitHandler } = userPropsData;
 
   return (
@@ -40,6 +41,7 @@ export default function Signin({ userPropsData }) {
             textAlign: "center",
           }}
         >
+          {/* Поле логина */}
           <TextField
             name="login"
             value={inputs.login || ""}
@@ -68,6 +70,7 @@ export default function Signin({ userPropsData }) {
             }}
           />
 
+          {/* Поле пароля */}
           <TextField
             name="password"
             value={inputs.password || ""}
@@ -96,6 +99,7 @@ export default function Signin({ userPropsData }) {
             }}
           />
 
+          {/* Кнопка отправки формы */}
           <Button
             type="submit"
             sx={{

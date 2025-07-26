@@ -7,7 +7,7 @@ import {
   LOGOUT_USER,
 } from "../types/types";
 
-//  Проверка сессии пользователя при старте приложения или обновлении страницы
+// Проверяет, авторизован ли пользователь при загрузке страницы (например, при обновлении).
 export const checkUserSession = () => async (dispatch) => {
   try {
     // GET-запрос на сервер для проверки, авторизован ли пользователь (например, по куки или сессии)
@@ -63,11 +63,14 @@ export const loginUser = (inputs, navigate) => async (dispatch) => {
   }
 };
 
-export const editUser = (inputs, navigate) => async (dispatch) => {
+//  Обновление профиля пользователя (например, имя и аватар)
+export const editUser = (inputs) => async (dispatch) => {
   try {
+    // PATCH-запрос для частичного обновления данных
     const response = await axios.patch("/api/users/uploadprofile", inputs);
     if (response.status === 200) {
       const { data } = response;
+      // Обновляем Redux-состояние с новыми данными пользователя
       dispatch({
         type: SET_EDIT_USER,
         payload: {
@@ -75,17 +78,19 @@ export const editUser = (inputs, navigate) => async (dispatch) => {
           userAvatar: data.userAvatar,
         },
       });
-      navigate("/");
     }
   } catch (error) {
     console.error("Ошибка при обновлении профиля:", error);
   }
 };
 
+// Выход пользователя из аккаунта
 export const logoutUser = (navigate) => async (dispatch) => {
   try {
+    // GET-запрос на выход из системы (очистка куки или сессии)
     const response = await axios.get("/api/users/logout");
     if (response.status === 200) {
+      // Очищаем Redux-состояние и отправляем пользователя на главную страницу
       dispatch({ type: LOGOUT_USER }); // Сброс состояния
       navigate("/"); // Перенаправление
     }

@@ -29,14 +29,15 @@ router.post("/:id", async (req, res) => {
   }
 });
 
+// Маршрут для получения списка всех постов
 router.get("/:id", async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // Получаем ID из параметров URL
   try {
-    const findAllPostsID = await Post.findAll({ where: { room_id: id } });
-    res.json(findAllPostsID);
+    const findAllPostsID = await Post.findAll({ where: { room_id: id } }); // Ищем все посты относящиеся к определенной комнате по ID
+    res.json(findAllPostsID); // Отправляем все посты на клиент
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Ошибка при передачи постов" });
+    return res.status(500).json({ message: "Ошибка при передачи постов" }); // Отправляем сообщение об ошибке
   }
 });
 

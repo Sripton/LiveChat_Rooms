@@ -29,10 +29,6 @@ function App() {
   // Обработчик изменения инпутов
   // Обернут в useCallback — создаётся один раз, не зависит от внешних переменных
   const inputsUsersHandler = useCallback((e) => {
-    if (e.target.name === "reset_all" && e.target.reset) {
-      setInputs({}); // или начальное состояние формы
-      return;
-    }
     setInputs((prevInputs) => ({
       ...prevInputs,
       [e.target.name]: e.target.value,

@@ -100,11 +100,15 @@ export default function Chatrooms() {
   }, []);
 
   // -------------------- Получение всех комнат из Redux -----------------------
-  const allRooms = useSelector((store) => store.room.allRooms);
+  const allRooms = useSelector((store) => store.room.allRooms); // Извлечение всех комнат из хранилища Redux.
   const dispatch = useDispatch();
+
+  // Redux: Загрузка всех комнат
   useEffect(() => {
     dispatch(fetchAllRooms()); // Запрашиваем комнаты при монтировании
   }, [dispatch]);
+
+  // Разделение комнат по типу: открытые и приватные.
   const openRooms = allRooms.filter((rooms) => rooms.isPrivate === false);
   const privateRooms = allRooms.filter((rooms) => rooms.isPrivate === true);
 

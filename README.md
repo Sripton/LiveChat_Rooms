@@ -48,3 +48,8 @@ Backend: Node.js (Express + Socket.IO) (Fiber + WebSocket)
 Auth: JWT / OAuth2 / Session
 База данных: PostgreSQL 
 Реалтайм: Socket.IO, Firebase Realtime DB, or Ably
+
+
+
+
+

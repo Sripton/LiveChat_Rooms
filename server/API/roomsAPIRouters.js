@@ -1,13 +1,14 @@
 const express = require("express");
-const { Room, RoomAdmission } = require("../db/models");
+const { Room, RoomAdmission } = require("../db/models"); // Импорт моделей из базы данных
 const router = express.Router();
 
+// Маршрут для создания новой комнаты
 router.post("/", async (req, res) => {
-  const { nameroom, description, isPrivate } = req.body;
+  const { nameroom, description, isPrivate } = req.body; // Получаем данные из тела запроса
   try {
-    const userID = req.session.userID;
+    const userID = req.session.userID; // Получаем ID пользователя из сессии
 
-    // 1. Создаем комнату
+    // 1. Создаем новую комнату в базе данных
     const newRoom = await Room.create({
       nameroom,
       description,
@@ -15,14 +16,14 @@ router.post("/", async (req, res) => {
       ownerID: userID,
     });
 
-    // 2. Если комната приватная — добавляем создателя в RoomAccess
+    // 2. Если комната приватная — добавляем владельца в список допущенных (RoomAdmission)
     if (isPrivate) {
       await RoomAdmission.create({
         user_id: userID,
         room_id: newRoom.id,
       });
     }
-    // 3. Возвращаем созданную комнату
+    // 3. Возвращаем клиенту созданную комнату
     res.status(200).json(newRoom);
   } catch (error) {
     console.log(error);
@@ -30,26 +31,27 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Маршрут для получения списка всех комнат
 router.get("/", async (req, res) => {
   try {
-    const findAllRoom = await Room.findAll();
-    res.json(findAllRoom);
+    const findAllRoom = await Room.findAll(); // Получаем все комнаты из базы данных
+    res.json(findAllRoom); // Отправляем их клиенту
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Ошибка сервера" });
+    return res.status(500).json({ message: "Ошибка сервера" }); // Отправляем сообщение об ошибке клиенту
   }
 });
 
+// Маршрут для получения конкретной комнаты по её ID
 router.get("/:id", async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // Получаем ID из параметров URL
   try {
-    const findRoomID = await Room.findOne({ where: { id } });
-    res.status(200).json(findRoomID);
+    const findRoomID = await Room.findOne({ where: { id } }); // Ищем комнату по ID
+    res.status(200).json(findRoomID); // Отправляем найденную комнату клиенту
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Не удалось найти комнату" });
+    return res.status(500).json({ message: "Не удалось найти комнату" }); // Отправляем сообщение об ошибке
   }
 });
 
-
-module.exports = router;
+module.exports = router; // Экспортируем маршруты для использования в основном приложении

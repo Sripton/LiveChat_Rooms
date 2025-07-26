@@ -21,20 +21,26 @@ import { useNavigate, NavLink } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/actions/userActions";
 export default function Navbar({ userPropsData }) {
+  // Компонент Navbar получает данные о пользователе через компонент App.jsx
   const { userID, userName, userAvatar } = userPropsData;
-  const [openMenu, setOpenMenu] = useState(false);
+
+  const [openMenu, setOpenMenu] = useState(false); // Состояние бокового меню
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // Открытие/закрытие бокового меню
   const toggleDrawerMenu = () => {
     setOpenMenu(!openMenu);
   };
-  const navigate = useNavigate();
+
+  // Обработка кликов по пунктам меню
   const handleMenuClick = (text) => {
     if (text === "Войти") {
       navigate("/signin");
     } else if (text === "Выход") {
-      dispatch(logoutUser(navigate));
+      dispatch(logoutUser(navigate)); // Выход с вызовом action logoutUser
     }
-    setOpenMenu(false);
+    setOpenMenu(false); // Закрываем меню
   };
 
   // Состояние, определяющее, активно ли выпадающее меню профиля
@@ -50,8 +56,10 @@ export default function Navbar({ userPropsData }) {
 
   return (
     <>
+      {/* Сброс стандартных стилей браузера */}
       <CssBaseline />
       <Container maxWidth={false} disableGutters>
+        {/* Верхняя панель навигации */}
         <Box
           sx={{
             px: 3,
@@ -67,6 +75,7 @@ export default function Navbar({ userPropsData }) {
             boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
           }}
         >
+          {/* Иконка-гамбургер для мобильного меню */}
           <div
             className={`menu-icon ${openMenu ? "iconActive" : ""}`}
             onClick={() => toggleDrawerMenu(true)}
@@ -81,6 +90,8 @@ export default function Navbar({ userPropsData }) {
           >
             <span />
           </div>
+
+          {/* Блок с именем пользователя и аватаром */}
           <Box
             sx={{
               display: "flex",
@@ -89,6 +100,7 @@ export default function Navbar({ userPropsData }) {
               widtH: "500px",
             }}
           >
+            {/* Имя пользователя */}
             <Typography
               // variant="h6"
               sx={{
@@ -102,10 +114,11 @@ export default function Navbar({ userPropsData }) {
               {userName}
             </Typography>
 
+            {/* Кнопка-аватар с выпадающим меню */}
             <Button
               sx={{
                 "&:hover": {
-                  backgroundColor: "inherit", // Отключаем изменение фона
+                  backgroundColor: "inherit", // Убираем цвет при наведении
                   cursor: "pointer",
                 },
               }}
@@ -113,28 +126,34 @@ export default function Navbar({ userPropsData }) {
               ref={profileDropDownBtn}
               onClick={handleProfileDropDown}
             >
+              {/* Аватар пользователя */}
               <img
                 className="avatar"
                 src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
                 alt=""
               />
               <i className="fa-solid fa-circle" />
+              {/* Выпадающее меню */}
               <ul
                 className={`profile-dropdown-list ${
                   profileDropActive ? "active-dropmenu" : ""
                 }`}
               >
+                {/* Ссылка на редактирование профиля */}
                 <li className="profile-dropdown-item">
                   <Link component={NavLink} to="/profileeditor">
                     <EditIcon sx={{ color: "#4685df" }} />
                   </Link>
                 </li>
+                {/* Ко-во ответов на комменатрии */}
                 <li className="profile-dropdown-item">
                   <ContactMailIcon sx={{ color: "#4685df" }} />
                 </li>
+                {/* Ко-во лайков на действия пользователя */}
                 <li className="profile-dropdown-item">
                   <FavoriteIcon sx={{ color: "#4685df" }} />
                 </li>
+                {/* Ко-во комнат */}
                 <li className="profile-dropdown-item">
                   <MeetingRoomIcon sx={{ color: "#4685df" }} />
                 </li>
@@ -143,6 +162,7 @@ export default function Navbar({ userPropsData }) {
           </Box>
         </Box>
 
+        {/* Боковая панель Drawer */}
         <Drawer
           anchor="left"
           open={openMenu}
@@ -171,6 +191,7 @@ export default function Navbar({ userPropsData }) {
                 className="menu-list"
                 onClick={() => toggleDrawerMenu(false)}
               >
+                {/* Кнопки "Войти" и "Выход" */}
                 <Button
                   onClick={() => handleMenuClick(text)}
                   // startIcon - проп компонента Button из MUI, который добавляет иконку слева от текста кнопки.
