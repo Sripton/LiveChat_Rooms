@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 import {
   Box,
   Button,
@@ -14,11 +13,12 @@ import PersonIcon from "@mui/icons-material/Person";
 
 import "./profileeditor.css";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { editUser } from "../../redux/actions/userActions";
 export default function ProfileEditor() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const { userName, userAvatar } = useSelector((store) => store.user);
 
   const [editName, setEditName] = useState(userName || "");
@@ -60,7 +60,12 @@ export default function ProfileEditor() {
     if (editName.trim()) formData.append("name", editName); // Добавляем имя, если заполнено
     if (addFile) formData.append("avatar", addFile); // Добавляем файл, если выбран
     await dispatch(editUser(formData)); // Отправляем действие редактирования пользователя
+
+    //  Возврат назад после сохранения
+    const backTo = location.state?.from?.pathname || "/"; // вернуться на предыдущую страницу, откуда пользователь пришёл
+    navigate(backTo);
   };
+
   return (
     <Container maxWidth="false" className="wrapper__register">
       <Box className="form">

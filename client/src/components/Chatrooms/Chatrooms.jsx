@@ -1,19 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import {
-  Box,
-  Paper,
-  Grid,
-  styled,
-  Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Tooltip,
-  Button,
-  Link,
-} from "@mui/material";
+import { Box, Paper, Grid, styled, Button } from "@mui/material";
 import { NavLink } from "react-router-dom";
 
 // Иконки
@@ -29,6 +16,8 @@ import { fetchAllRooms } from "../../redux/actions/roomActions";
 import ModalRoomCreate from "../ModalRoomCreate";
 import TooltipFloating from "../TooltipFloating";
 import ChatMessage from "../ChatMessage";
+
+import "./chatrooms.css";
 
 export default function Chatrooms() {
   // Состояния раскрытия блоков с комнатами
@@ -170,6 +159,7 @@ export default function Chatrooms() {
 
   // Новая логика для анимации
   const intervalRef = useRef();
+
   useEffect(() => {
     // Останавливаем анимацию, если открыта модалка
     if (openModal) {
@@ -240,6 +230,7 @@ export default function Chatrooms() {
       {/* Кнопка для создания новой комнаты */}
       <Grid
         container
+        spacing={4}
         sx={{
           position: "relative",
           mt: 6,
@@ -270,246 +261,71 @@ export default function Chatrooms() {
       </Grid>
 
       {/* Основной контент: комнаты и чат */}
-      <Grid
-        container
-        spacing={4}
-        justifyContent="center"
-        sx={{ position: "relative", mt: 8 }}
-      >
-        {/* Блок открытых комнат */}
-        <Grid
-          item
-          sx={{
-            maxHeight: openRoomExpanded ? "none" : "628px",
-            overflow: openRoomExpanded ? "auto" : "hidden",
-            transition: "max-height 0.3s ease",
-            cursor: "pointer",
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              color: "#d81b60",
-              textTransform: "uppercase",
-              mb: 2,
-              fontFamily: "monospace",
-              fontWeight: "bold",
-            }}
-          >
-            <KeyboardArrowDownIcon
-              sx={{
-                transform: openRoomExpanded ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.3s ease",
-                mr: 1,
-              }}
-              onClick={() => handlerIsExpanded("open")}
-            />
-            Открытые комнаты
-          </Typography>
-          <RoomList>
-            <List>
-              {openRooms.map((room, index) => (
-                <React.Fragment key={index}>
-                  <ListItem sx={{ padding: "15px 0" }}>
-                    <ListItemIcon>
-                      <MeetingRoomIcon
-                        // color="secondary"
-                        sx={{
-                          mr: 1,
-                          color: "#76ce7e",
-                        }}
-                      />
-                      {/* <Tooltip
-                        title={`${room.description}`}
-                        arrow
-                        placement="top"
-                        // можно задать стили тултипа напрямую через slotProps
-                        slotProps={{
-                          tooltip: {
-                            sx: {
-                              backgroundColor: "#f06292", // розовый фон
-                              color: "#fff", // белый текст
-                              fontSize: 25,
-                              fontWeight: 500,
-                              boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-                              borderRadius: 1.5,
-                              px: 2,
-                              py: 1,
-                            },
-                          },
-                          arrow: {
-                            sx: {
-                              color: "#f06292", // цвет стрелки — как фон тултипа
-                            },
-                          },
-                        }}
-                      >
-                        <ListItemText
-                          primary={`${room.nameroom}`}
-                          sx={{
-                            background:
-                              "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-                            color: "#d81b60",
-                            fontWeight: 900,
-                            borderRadius: 3,
-                            width: "100%",
-                            boxShadow: "0 2px 12px 0 #ffd6e6",
-                            fontSize: 24,
-                            letterSpacing: 0.6,
-                            textTransform: "none",
-                            px: 3,
-                            py: -1.5,
-                            "&:hover": {
-                              background:
-                                "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
-                              color: "#fff",
-                            },
-                            transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
-                          }}
-                        />
-                      </Tooltip> */}
-                      <Box
-                        onMouseEnter={(e) =>
-                          handleMouseEnter(e, room.description)
-                        }
-                        onMouseLeave={handleMouseLeave}
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-around",
-                        }}
-                      >
-                        <Link
-                          component={NavLink}
-                          to={`/chatcards/${room.id}`}
-                          sx={{ textDecoration: "none" }}
-                        >
-                          <Typography
-                            sx={{
-                              background:
-                                "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-                              color: "#d81b60",
-                              fontWeight: 900,
-                              borderRadius: 3,
-                              width: "100%",
-                              boxShadow: "0 2px 12px 0 #ffd6e6",
-                              fontSize: 18,
-                              letterSpacing: 0.6,
-                              textTransform: "none",
-                              px: 3,
-                              py: 1,
-                              fontFamily: "monospace",
-                              "&:hover": {
-                                background:
-                                  "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
-                                color: "#fff",
-                              },
-                              transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
-                            }}
-                          >
-                            {" "}
-                            {`${room.nameroom}`}
-                          </Typography>
-                        </Link>
-                      </Box>
-                    </ListItemIcon>
-                  </ListItem>
-                </React.Fragment>
-              ))}
-            </List>
-          </RoomList>
-        </Grid>
+      <Grid container justifyContent="center" spacing={2} sx={{ mt: 10 }}>
+        <Grid item>
+          <div className="filter">
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    Открытые комнаты
+                    <span className="arrow" />
+                  </th>
+                  <th>
+                    Закрытые комнаты
+                    <span className="arrow" />
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {Math.max(openRooms.length, privateRooms.length) > 0 &&
+                  Array.from({
+                    length: Math.max(openRooms.length, privateRooms.length),
+                  }).map((_, index) => (
+                    <tr key={index}>
+                      <td>
+                        {openRooms[index] ? (
+                          <span className="room-cell">
+                            <MeetingRoomIcon
+                              sx={{
+                                mr: 2,
+                                color: "#76ce7e",
+                              }}
+                            />
+                            {openRooms[index]?.nameroom || ""}
+                          </span>
+                        ) : (
+                          <span className="room-cell" />
+                        )}
+                      </td>
 
-        {/* Блок приватных комнат */}
-        <Grid
-          item
-          sx={{
-            maxHeight: privateRoomExpanded ? "none" : "628px",
-            overflow: privateRoomExpanded ? "auto" : "hidden",
-            transition: "max-height 0.3s ease",
-            cursor: "pointer",
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              color: "#d81b60",
-              textTransform: "uppercase",
-              mb: 2,
-              fontFamily: "monospace",
-              fontWeight: "bold",
-            }}
-          >
-            <KeyboardArrowDownIcon
-              sx={{
-                transform: privateRoomExpanded
-                  ? "rotate(180deg)"
-                  : "rotate(0deg)",
-                transition: "transform 0.3s ease",
-                mr: 1,
-              }}
-              onClick={() => handlerIsExpanded("private")}
-            />
-            Закрытые комнаты
-          </Typography>
-          <RoomList>
-            <List>
-              {privateRooms.map((room, index) => (
-                <React.Fragment key={index}>
-                  <ListItem sx={{ padding: "15px 0" }}>
-                    <ListItemIcon>
-                      <LockIcon
-                        // color="secondary"
-                        sx={{
-                          mr: 1,
-                          color: "#f26f6f",
-                        }}
-                      />
-                      <Box
-                        onMouseEnter={(e) =>
-                          handleMouseEnter(e, room.description)
-                        }
-                        onMouseLeave={handleMouseLeave}
-                      >
-                        <Typography
-                          sx={{
-                            background:
-                              "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-                            color: "#d81b60",
-                            fontWeight: 900,
-                            borderRadius: 3,
-                            width: "100%",
-                            boxShadow: "0 2px 12px 0 #ffd6e6",
-                            fontSize: 18,
-                            letterSpacing: 0.6,
-                            textTransform: "none",
-                            px: 3,
-                            py: 1,
-                            fontFamily: "monospace",
-                            "&:hover": {
-                              background:
-                                "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
-                              color: "#fff",
-                            },
-                            transition: "all .23s cubic-bezier(.3,1.4,.3,1)",
-                          }}
-                        >
-                          {" "}
-                          {`${room.nameroom}`}
-                        </Typography>
-                      </Box>
-                    </ListItemIcon>
-                  </ListItem>
-                </React.Fragment>
-              ))}
-            </List>
-          </RoomList>
+                      <td>
+                        {privateRooms[index] ? (
+                          <span className="room-cell">
+                            <LockIcon
+                              sx={{
+                                mr: 2,
+                                color: "#f26f6f",
+                              }}
+                            />
+                            {privateRooms[index]?.nameroom || ""}
+                          </span>
+                        ) : (
+                          <span className="room-cell" />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </Grid>
 
         {/* Блок анимации/чата */}
         <Grid item>
           <Paper
             sx={{
-              padding: "32px 28px",
+              padding: "10px 15px",
               boxShadow: "0 8px 32px 0 rgba(230, 30, 99, 0.10)",
               borderRadius: 6,
               display: "flex",
@@ -523,37 +339,9 @@ export default function Chatrooms() {
                 display: "flex",
                 flexDirection: "column",
                 gap: 1,
+                width: "400px",
               }}
             >
-              {/* {visibleMessages.map((msg, index) => (
-                <ChatAnimation
-                  sender={msg.sender}
-                  key={index}
-                  initial={{ y: 30, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: index * 1 }}
-                >
-                  <Typography variant="body1">{msg.text}</Typography>
-                </ChatAnimation>
-              ))} */}
-              {/* {visibleMessages.map((msg) => (
-                <Fade in key={msg.id} timeout={600}>
-                  <Paper
-                    sx={{
-                      alignSelf:
-                        msg.sender === "user" ? "flex-end" : "flex-start",
-                      background: msg.sender === "user" ? "#f8bbd0" : "#fff",
-                      color: "#7b1fa2",
-                      margin: "8px 0",
-                      padding: "14px 20px",
-                      borderRadius: 18,
-                      maxWidth: "70%",
-                    }}
-                  >
-                    <Typography>{msg.text}</Typography>
-                  </Paper>
-                </Fade>
-              ))} */}
               {renderedMessages}
             </Box>
           </Paper>

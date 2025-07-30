@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -17,7 +17,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import "./navbar.css";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/actions/userActions";
 export default function Navbar({ userPropsData }) {
@@ -27,6 +27,7 @@ export default function Navbar({ userPropsData }) {
   const [openMenu, setOpenMenu] = useState(false); // Состояние бокового меню
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Открытие/закрытие бокового меню
   const toggleDrawerMenu = () => {
@@ -45,14 +46,48 @@ export default function Navbar({ userPropsData }) {
 
   // Состояние, определяющее, активно ли выпадающее меню профиля
   const [profileDropActive, setProfileDropActive] = useState(false);
+  const goToProfileEditor = () => {
+    navigate("/profileeditor", {
+      state: { from: location }, //  сохраняем текущий путь
+    });
+    setProfileDropActive(false); // Закрываем выпалающее меню
+  };
 
   // Реф для кнопки, открывающей выпадающее меню профиля
   const profileDropDownBtn = useRef(null);
+  // Реф для списка, открывающей выпадающее меню профиля
+  const profileDropDownMenu = useRef(null);
 
   // Функция для переключения состояния выпадающего меню профиля
   const handleProfileDropDown = () => {
     setProfileDropActive(!profileDropActive);
   };
+
+  useEffect(() => {
+    // Функция, которая обрабатывает клик вне элементов профиля
+    const handleClickOutside = (event) => {
+      // Проверяем:
+      // 1. Меню открыто (profileDropActive)
+      // 2. Есть ссылки на DOM-элементы кнопки и меню (ref.current)
+      // 3. Клик был не по кнопке профиля и не по самому меню
+      if (
+        profileDropActive &&
+        profileDropDownBtn.current &&
+        !profileDropDownBtn.current.contains(event.target) &&
+        !profileDropDownMenu.current.contains(event.target)
+      ) {
+        // Если всё условие выполняется — закрываем выпадающее меню
+        setProfileDropActive(false);
+      }
+    };
+    // Назначаем обработчик события на весь документ
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      // Очищаем обработчик при размонтировании компонента или изменении зависимости
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [profileDropActive]);
 
   return (
     <>
@@ -123,8 +158,12 @@ export default function Navbar({ userPropsData }) {
                 },
               }}
               className="avatar-button"
-              ref={profileDropDownBtn}
+              // По спецификации HTML нельзя вкладывать <ul> внутрь <button>.
+              // Это вызывает предупреждения и потенциально баги, особенно при серверной рендеризации
+              // или гидрации (как в твоём случае, если ты это видел в консоли).
+              // ref={profileDropDownBtn}
               onClick={handleProfileDropDown}
+              ref={profileDropDownBtn}
             >
               {/* Аватар пользователя */}
               <img
@@ -133,17 +172,31 @@ export default function Navbar({ userPropsData }) {
                 alt=""
               />
               <i className="fa-solid fa-circle" />
-              {/* Выпадающее меню */}
+            </Button>
+            {/* Выпадающее меню */}
+            {profileDropActive && (
               <ul
-                className={`profile-dropdown-list ${
-                  profileDropActive ? "active-dropmenu" : ""
-                }`}
+                ref={profileDropDownMenu}
+                className={`profile-dropdown-list ${"active-dropmenu"}`}
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  right: "48px",
+                  zIndex: 1000,
+                }}
               >
                 {/* Ссылка на редактирование профиля */}
                 <li className="profile-dropdown-item">
-                  <Link component={NavLink} to="/profileeditor">
+                  {/* Заменяем Link на обычную кнопку */}
+                  {/* <Link component={NavLink} to="/profileeditor">
                     <EditIcon sx={{ color: "#4685df" }} />
-                  </Link>
+                  </Link> */}
+                  <Box
+                    sx={{ minWidth: "auto", padding: 0, cursor: "pointer" }}
+                    onClick={goToProfileEditor}
+                  >
+                    <EditIcon sx={{ color: "#4685df" }} />
+                  </Box>
                 </li>
                 {/* Ко-во ответов на комменатрии */}
                 <li className="profile-dropdown-item">
@@ -158,7 +211,7 @@ export default function Navbar({ userPropsData }) {
                   <MeetingRoomIcon sx={{ color: "#4685df" }} />
                 </li>
               </ul>
-            </Button>
+            )}
           </Box>
         </Box>
 

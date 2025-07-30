@@ -168,7 +168,7 @@ export default function ChatCards() {
           <Box className="post-list">
             {/* Рендер всех постов, связанных с комнатой */}
             {allPosts.map((post) => (
-              <Box className="post" sx={{ mb: 2 }}>
+              <Box className="post" key={post.id} sx={{ mb: 2 }}>
                 <Typography
                   sx={{
                     color: "#6a1b9a",

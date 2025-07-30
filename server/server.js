@@ -10,6 +10,7 @@ const PORT = process.env.PORT; // Устанавливаем порт из пе�
 const userAPIRouter = require("./API/userAPIRouter"); // Импортируем маршруты API для пользователей
 const roomAPIRouter = require("./API/roomsAPIRouters"); // Импортируем маршруты API для комнат
 const postAPIRouter = require("./API/postAPIRouter"); // Импортируем маршруты API для постов
+const roomRequestAPIRouter = require("./API/roomRequestAPIRouter");
 const FileStore = session_file_store(session); // Используем FileStore для хранения сессий в файлах
 const path = require("path");
 
@@ -50,5 +51,5 @@ app.use(session(sessionConfig));
 app.use("/api/users", userAPIRouter); // Маршрут для пользователя
 app.use("/api/rooms", roomAPIRouter); // Маршрут для комнат
 app.use("/api/posts", postAPIRouter); // Маршрут для постов
-
+app.use("/api/room-requests", roomRequestAPIRouter);
 app.listen(PORT, () => console.log(`---> Server started on ${PORT} port <---`));

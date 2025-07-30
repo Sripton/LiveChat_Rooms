@@ -1,0 +1,70 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.filter {
+  width: 1000px;
+  /* height: 58vh; */
+  background: radial-gradient(
+    circle,
+    rgba(238, 174, 202, 1) 0%,
+    rgb(247, 231, 249) 100%
+  );
+  border-radius: 5px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border-radius: 12px 12px 0px 0px;
+  overflow: hidden;
+  text-align: left;
+}
+
+th {
+  padding: 10px 15px;
+  background: #ebc5d5;
+  text-transform: uppercase;
+  cursor: pointer;
+  /* padding-right: 20px; чтобы текст не налезал на стрелку */
+}
+
+.arrow {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 10px solid #fff;
+  display: inline-block;
+  margin-left: 10px;
+}
+tbody tr:nth-child(odd) {
+  background: linear-gradient(90deg, #f3e2e8 10%, #ffe3e3 90%);
+}
+
+tbody tr:nth-child(even) {
+  background-color: #ebc5d5;
+}
+
+td {
+  padding: 8px 20px;
+  border: none;
+}
+.room-cell {
+  color: #d81b60;
+  font-weight: 900;
+  border-radius: 3px;
+  width: 50%;
+  font-size: 20px;
+  letter-spacing: 0.6px;
+  text-transform: none;
+  font-family: monospace;
+  transition: all 0.23s cubic-bezier(0.3, 1.4, 0.3, 1);
+  cursor: pointer;
+}
+td:hover {
+  background: #fff;
+}
