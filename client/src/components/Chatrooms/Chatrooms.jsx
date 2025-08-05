@@ -1,6 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import { Box, Paper, Grid, styled, Button } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Grid,
+  styled,
+  Button,
+  Typography,
+  Link,
+} from "@mui/material";
 import { NavLink } from "react-router-dom";
 
 // Иконки
@@ -16,77 +24,89 @@ import { fetchAllRooms } from "../../redux/actions/roomActions";
 import ModalRoomCreate from "../ModalRoomCreate";
 import TooltipFloating from "../TooltipFloating";
 import ChatMessage from "../ChatMessage";
+import ModalRoomRequest from "../ModalRoomRequest";
 
 import "./chatrooms.css";
 
 export default function Chatrooms() {
   // Состояния раскрытия блоков с комнатами
-  const [openRoomExpanded, setOpenRoomExpanded] = useState(false);
-  const [privateRoomExpanded, setPrivateRoomExpanded] = useState(false);
+  // const [openRoomExpanded, setOpenRoomExpanded] = useState(false);
+  // const [privateRoomExpanded, setPrivateRoomExpanded] = useState(false);
 
-  // Состояния сообщений и модального окна
+  // Состояние для хранения информации о текущей сортировке
+  // key — по какому полю сортируем, direction — asc или desc
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+  // Состояния сообщений  для анимации
   const [visibleMessages, setVisibleMessages] = useState([]);
-  const [openModal, setOpenModal] = useState(false);
 
+  // Состояния модального окна для создания комнат
+  const [openModalRoomCreate, setOpenModalRoomCreate] = useState(false);
+
+  // Состояния модального окна для создания запроса к приватным комнатам
+  const [openRequestModal, setOpenRequestModal] = useState(false);
+
+  // состояние для выбранной комнаты
+  const [selectedRoomID, setSelectedRoomID] = useState(null);
   // -------------------- Tooltip для описания комнат ---------------
-  const [tooltip, setToolTip] = useState({
-    visible: false,
-    text: "",
-    x: 0,
-    y: 0,
-  });
-  const [showTooltip, setShowTooltip] = useState(false);
-  const showTimeoutRef = useRef(null);
-  const hideTimeOutRef = useRef(null);
+  // const [tooltip, setToolTip] = useState({
+  //   visible: false,
+  //   text: "",
+  //   x: 0,
+  //   y: 0,
+  // });
+  // const [showTooltip, setShowTooltip] = useState(false);
+  // const showTimeoutRef = useRef(null);
+  // const hideTimeOutRef = useRef(null);
 
   // Обработка наведения мыши на комнату — позиционируем тултип и показываем его
-  const handleMouseEnter = (e, text) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    clearTimeout(hideTimeOutRef.current);
-    showTimeoutRef.current = setTimeout(() => {
-      const newX = rect.left + rect.width / 2;
-      const newY = rect.top - 10;
+  // const handleMouseEnter = (e, text) => {
+  //   const rect = e.currentTarget.getBoundingClientRect();
+  //   clearTimeout(hideTimeOutRef.current);
+  //   showTimeoutRef.current = setTimeout(() => {
+  //     const newX = rect.left + rect.width / 2;
+  //     const newY = rect.top - 10;
 
-      // Только если данные изменились — обновляем стейт
-      if (
-        !tooltip.visible ||
-        tooltip.text !== text ||
-        tooltip.x !== newX ||
-        tooltip.y !== newY
-      ) {
-        setToolTip({
-          visible: true,
-          text,
-          x: newX,
-          y: newY,
-        });
-      }
-      setShowTooltip(true);
-    }, 100); // Задержка перед появлением
-  };
+  //     // Только если данные изменились — обновляем стейт
+  //     if (
+  //       !tooltip.visible ||
+  //       tooltip.text !== text ||
+  //       tooltip.x !== newX ||
+  //       tooltip.y !== newY
+  //     ) {
+  //       setToolTip({
+  //         visible: true,
+  //         text,
+  //         x: newX,
+  //         y: newY,
+  //       });
+  //     }
+  //     setShowTooltip(true);
+  //   }, 100); // Задержка перед появлением
+  // };
 
   // Убираем тултип при уходе мыши
-  const handleMouseLeave = () => {
-    clearTimeout(showTimeoutRef.current);
-    hideTimeOutRef.current = setTimeout(() => {
-      setShowTooltip(false); // Плавно скрываем
-      setTimeout(() => {
-        setToolTip({
-          visible: false,
-          text: "",
-          x: 0,
-          y: 0,
-        });
-      }, 300);
-    }, 100); // После окончания анимации скрытия
-    setToolTip({ ...tooltip, visible: false }); // Принудительно скрываем
-  };
+  // const handleMouseLeave = () => {
+  //   clearTimeout(showTimeoutRef.current);
+  //   hideTimeOutRef.current = setTimeout(() => {
+  //     setShowTooltip(false); // Плавно скрываем
+  //     setTimeout(() => {
+  //       setToolTip({
+  //         visible: false,
+  //         text: "",
+  //         x: 0,
+  //         y: 0,
+  //       });
+  //     }, 300);
+  //   }, 100); // После окончания анимации скрытия
+  //   setToolTip({ ...tooltip, visible: false }); // Принудительно скрываем
+  // };
 
   // Очистка таймеров при размонтировании компонента
-  useEffect(() => {
-    clearTimeout(showTimeoutRef.current);
-    clearTimeout(hideTimeOutRef.current);
-  }, []);
+  // useEffect(() => {
+  //   clearTimeout(showTimeoutRef.current);
+  //   clearTimeout(hideTimeOutRef.current);
+  // }, []);
 
   // -------------------- Получение всех комнат из Redux -----------------------
   const allRooms = useSelector((store) => store.room.allRooms); // Извлечение всех комнат из хранилища Redux.
@@ -97,19 +117,58 @@ export default function Chatrooms() {
     dispatch(fetchAllRooms()); // Запрашиваем комнаты при монтировании
   }, [dispatch]);
 
-  // Разделение комнат по типу: открытые и приватные.
+  // -------------------- Разделение комнат по типу: открытые и приватные. -----------------------
   const openRooms = allRooms.filter((rooms) => rooms.isPrivate === false);
   const privateRooms = allRooms.filter((rooms) => rooms.isPrivate === true);
 
-  // Переключение блоков: открытые / закрытые комнаты
-  const handlerIsExpanded = (state) => {
-    if (state === "open") {
-      setOpenRoomExpanded((prev) => !prev);
-    }
-    if (state === "private") {
-      setPrivateRoomExpanded((prev) => !prev);
-    }
+  // -------------------- Сортировка комнат -----------------------
+
+  // Сортируем открытые комнаты
+  const openRoomsSorted = [...openRooms]
+    .map((room) => room)
+    .sort((a, b) => {
+      const { key, direction } = sortConfig;
+      const asc = direction === "asc";
+      if (!key) return 0;
+      if (key === "openrooms") {
+        return asc
+          ? a.nameroom.localeCompare(b.nameroom)
+          : b.nameroom.localeCompare(a.nameroom);
+      }
+      return 0;
+    });
+  // Сортируем приватные комнаты
+  const privateRoomsSorted = [...privateRooms]
+    .map((room) => room)
+    .sort((a, b) => {
+      const { key, direction } = sortConfig;
+      const asc = direction === "asc";
+      if (!key) return 0;
+      if (key === "privateroom") {
+        return asc
+          ? a.nameroom.localeCompare(b.nameroom)
+          : b.nameroom.localeCompare(a.nameroom);
+      }
+      return 0;
+    });
+
+  // Фукнция для оанимации сортировки
+  const handleSortRooms = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
   };
+
+  // // Переключение блоков: открытые / закрытые комнаты
+  // const handlerIsExpanded = (state) => {
+  //   if (state === "open") {
+  //     setOpenRoomExpanded((prev) => !prev);
+  //   }
+  //   if (state === "private") {
+  //     setPrivateRoomExpanded((prev) => !prev);
+  //   }
+  // };
   // ------------------------------------- Данные для чата --------------------------
   const messages = [
     {
@@ -135,34 +194,11 @@ export default function Chatrooms() {
   ];
 
   // -------------------------------- Анимация сообщений -----------------------------
-  // Старая логика для анимации
-  // const animationPlayed = useRef(false);
-  // useEffect(() => {
-  //   if (!animationPlayed.current) {
-  //     let i = 0;
-  //     const interval = setInterval(() => {
-  //       if (i < messages.length) {
-  //         setVisibleMessages((prev) => [...prev, messages[i]]);
-  //         i += 1;
-  //       } else {
-  //         clearInterval(interval);
-  //       }
-  //     }, 1100);
-  //     // После первого запуска эффекта  реф всегда остаётся true (пока компонент не размонтируется),
-  //     //  и анимация больше не проигрывается повторно, даже если произойдёт ререндер по другим причинам.
-  //     animationPlayed.current = true;
-
-  //     return () => clearInterval(interval);
-  //   }
-  //   return undefined;
-  // }, []);
-
-  // Новая логика для анимации
   const intervalRef = useRef();
 
   useEffect(() => {
-    // Останавливаем анимацию, если открыта модалка
-    if (openModal) {
+    // Останавливаем анимацию, если открыто модальное окно
+    if (openModalRoomCreate || openRequestModal) {
       // Если ранее был создан setInterval — очищаем его,
       // чтобы анимация сообщений остановилась на паузе.
       if (intervalRef.current) {
@@ -199,7 +235,7 @@ export default function Chatrooms() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [openModal, visibleMessages.length]);
+  }, [openModalRoomCreate, openRequestModal, visibleMessages.length]);
 
   // -------------------- Мемоизированный рендер  сообщений для анимации --------------------
   const renderedMessages = useMemo(
@@ -217,13 +253,13 @@ export default function Chatrooms() {
     padding: "40px 0",
   });
 
-  const RoomList = styled(Paper)({
-    background: "#fff0f6",
-    padding: "24px",
-    borderRadius: 20,
-    marginBottom: 24,
-    boxShadow: "0 4px 16px 0 rgba(230, 30, 99, 0.04)",
-  });
+  // const RoomList = styled(Paper)({
+  //   background: "#fff0f6",
+  //   padding: "24px",
+  //   borderRadius: 20,
+  //   marginBottom: 24,
+  //   boxShadow: "0 4px 16px 0 rgba(230, 30, 99, 0.04)",
+  // });
 
   return (
     <Root>
@@ -233,7 +269,6 @@ export default function Chatrooms() {
         spacing={4}
         sx={{
           position: "relative",
-          mt: 6,
           ml: 14,
           display: "flex",
         }}
@@ -245,16 +280,17 @@ export default function Chatrooms() {
                 color: "#d81b60",
                 fontWeight: 700,
                 fontFamily: "monospace",
+                fontSize: "1rem",
               }}
-              onClick={() => setOpenModal(true)}
+              onClick={() => setOpenModalRoomCreate(true)}
             >
               Создать комнату
             </Button>
             {/* Модальное окно */}
             <ModalRoomCreate
-              openModal={openModal}
-              setOpenModal={setOpenModal}
-              closeModal={() => setOpenModal(false)}
+              openModalRoomCreate={openModalRoomCreate}
+              setOpenModalRoomCreate={setOpenModalRoomCreate}
+              closeModalRoomCreate={() => setOpenModalRoomCreate(false)}
             />
           </Box>
         </Grid>
@@ -267,13 +303,35 @@ export default function Chatrooms() {
             <table>
               <thead>
                 <tr>
-                  <th>
+                  <th
+                    className={`${
+                      sortConfig.key === "openrooms" ? "active" : ""
+                    }`}
+                    onClick={() => handleSortRooms("openrooms")}
+                  >
                     Открытые комнаты
-                    <span className="arrow" />
+                    <span
+                      className={`arrow ${
+                        sortConfig.key === "openrooms"
+                          ? sortConfig.direction
+                          : ""
+                      }`}
+                    />
                   </th>
-                  <th>
-                    Закрытые комнаты
-                    <span className="arrow" />
+                  <th
+                    className={`${
+                      sortConfig.key === "privateroom" ? "active" : ""
+                    }`}
+                    onClick={() => handleSortRooms("privateroom")}
+                  >
+                    Приватные комнаты
+                    <span
+                      className={`arrow ${
+                        sortConfig.key === "privateroom"
+                          ? sortConfig.direction
+                          : ""
+                      }`}
+                    />
                   </th>
                 </tr>
               </thead>
@@ -281,37 +339,105 @@ export default function Chatrooms() {
                 {Math.max(openRooms.length, privateRooms.length) > 0 &&
                   Array.from({
                     length: Math.max(openRooms.length, privateRooms.length),
-                  }).map((_, index) => (
+                  }).map((room, index) => (
                     <tr key={index}>
                       <td>
-                        {openRooms[index] ? (
-                          <span className="room-cell">
+                        {openRoomsSorted[index] ? (
+                          <Box sx={{ display: "flex" }}>
                             <MeetingRoomIcon
                               sx={{
                                 mr: 2,
                                 color: "#76ce7e",
+                                cursor: "pointer",
                               }}
                             />
-                            {openRooms[index]?.nameroom || ""}
-                          </span>
+                            <Link
+                              component={NavLink}
+                              to={`/chatcards/${openRoomsSorted[index]?.id}`}
+                              sx={{ textDecoration: "none" }}
+                            >
+                              <Typography
+                                sx={{
+                                  background:
+                                    "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
+                                  color: "#d81b60",
+                                  fontWeight: 900,
+                                  borderRadius: 3,
+                                  width: "100%",
+                                  boxShadow: "0 2px 12px 0 #ffd6e6",
+                                  fontSize: 18,
+                                  letterSpacing: 0.6,
+                                  textTransform: "none",
+                                  px: 3,
+                                  py: 2,
+                                  fontFamily: "monospace",
+                                  cursor: "pointer",
+                                  "&:hover": {
+                                    background:
+                                      "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
+                                    color: "#fff",
+                                  },
+                                  transition:
+                                    "all .23s cubic-bezier(.3,1.4,.3,1)",
+                                }}
+                              >
+                                {" "}
+                                {openRoomsSorted[index]?.nameroom || ""}
+                              </Typography>
+                            </Link>
+                          </Box>
                         ) : (
                           <span className="room-cell" />
                         )}
                       </td>
 
                       <td>
-                        {privateRooms[index] ? (
-                          <span className="room-cell">
+                        {privateRoomsSorted[index] ? (
+                          <Box sx={{ display: "flex" }}>
                             <LockIcon
                               sx={{
                                 mr: 2,
                                 color: "#f26f6f",
+                                cursor: "pointer",
                               }}
                             />
-                            {privateRooms[index]?.nameroom || ""}
-                          </span>
+
+                            <Typography
+                              sx={{
+                                background:
+                                  "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
+                                color: "#d81b60",
+                                fontWeight: 900,
+                                borderRadius: 3,
+                                width: "100%",
+                                boxShadow: "0 2px 12px 0 #ffd6e6",
+                                fontSize: 18,
+                                letterSpacing: 0.6,
+                                textTransform: "none",
+                                px: 1,
+                                py: 2,
+                                fontFamily: "monospace",
+                                cursor: "pointer",
+                                "&:hover": {
+                                  background:
+                                    "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
+                                  color: "#fff",
+                                },
+                                transition:
+                                  "all .23s cubic-bezier(.3,1.4,.3,1)",
+                              }}
+                              onClick={() => {
+                                setSelectedRoomID(
+                                  privateRoomsSorted[index].id // // Сохраняем ID
+                                );
+                                setOpenRequestModal(true);
+                              }}
+                            >
+                              {privateRoomsSorted[index]?.nameroom || ""}
+                            </Typography>
+                          </Box>
                         ) : (
-                          <span className="room-cell" />
+                          <span className="room-cell" /> // Пуйстой
                         )}
                       </td>
                     </tr>
@@ -347,7 +473,7 @@ export default function Chatrooms() {
           </Paper>
         </Grid>
       </Grid>
-      {tooltip.visible && (
+      {/* {tooltip.visible && (
         <TooltipFloating
           tooltipVisible={tooltip.visible}
           showTooltip={showTooltip}
@@ -355,7 +481,12 @@ export default function Chatrooms() {
           tooltipY={tooltip.y}
           tooltipText={tooltip.text}
         />
-      )}
+      )} */}
+      <ModalRoomRequest
+        openRequestModal={openRequestModal}
+        closeModalRequest={() => setOpenRequestModal(false)}
+        roomID={selectedRoomID}
+      />
     </Root>
   );
 }

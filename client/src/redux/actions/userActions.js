@@ -27,6 +27,7 @@ export const registersUser = (inputs, navigate) => async (dispatch) => {
   try {
     // POST-запрос с данными формы (например: email, пароль, имя)
     const response = await axios.post(`/api/users/signup`, inputs);
+
     // Если регистрация прошла успешно
     if (response.status === 200) {
       const { data } = response;

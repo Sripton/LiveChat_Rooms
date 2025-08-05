@@ -26,18 +26,6 @@ export default function ProfileEditor() {
   const [editAvatar, setEditAvatar] = useState(userAvatar || "");
 
   const handleFileChange = (e) => {
-    // Поле e.target.files — это FileList, а не просто один файл. Даже если  разрешить выбрать один файл,
-    // браузер всегда возвращает массив файлов, потому что: <input type="file"> по умолчанию поддерживает выбор нескольких файлов
-    // <input type="file" multiple /> multiple - выбор нескольких файлов.
-    //     FileList {
-    //   0: File { name: "file1.png", ... },
-    //   1: File { name: "file2.jpg", ... },
-    //   length: 2
-    // }
-    // можно обрабатывать их в цикле:
-    // Array.from(e.target.files).forEach((file) => {
-    //   console.log(file.name);
-    // });
     const file = e.target.files[0];
     setAddFile(file);
     if (file) {

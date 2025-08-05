@@ -14,9 +14,9 @@ import LockIcon from "@mui/icons-material/Lock";
 import { useDispatch } from "react-redux";
 import { createRoomsSubmit } from "../../redux/actions/roomActions";
 export default function ModalRoomCreate({
-  openModal, // флаг — открыто ли модальное окно
-  closeModal, // функция для закрытия окна
-  setOpenModal, // сеттер состояния для модального окна
+  openModalRoomCreate, // флаг — открыто ли модальное окно
+  closeModalRoomCreate, // функция для закрытия окна
+  setOpenModalRoomCreate, // сеттер состояния для модального окна
 }) {
   const dispatch = useDispatch();
   const [roomCreate, setRoomCreate] = useState({
@@ -37,12 +37,12 @@ export default function ModalRoomCreate({
   const roomSubmitHandler = async (e) => {
     e.preventDefault(); // предотвращаем перезагрузку страницы
     await dispatch(createRoomsSubmit(roomCreate)); // отправляем данные через Redux action
-    setOpenModal(false); // закрываем модалку
+    setOpenModalRoomCreate(false); // закрываем модалку
   };
 
   return ReactDOM.createPortal(
     // Обёртка модального окна с полупрозрачным фоном
-    <Fade in={openModal}>
+    <Fade in={openModalRoomCreate}>
       <Box
         sx={{
           zIndex: 10001,
@@ -56,7 +56,7 @@ export default function ModalRoomCreate({
           px: 2,
           py: 2,
         }}
-        onClick={closeModal} // закрытие при клике вне модалки
+        onClick={closeModalRoomCreate} // закрытие при клике вне модалки
       >
         {/* Контейнер самой модалки */}
         <Box
@@ -92,7 +92,7 @@ export default function ModalRoomCreate({
               zIndex: 1,
             }}
             aria-label="Закрыть"
-            onClick={closeModal}
+            onClick={closeModalRoomCreate}
           >
             <CloseIcon sx={{ fontSize: "24px" }} />
           </Button>

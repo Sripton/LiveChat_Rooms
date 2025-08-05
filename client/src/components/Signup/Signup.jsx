@@ -26,6 +26,11 @@ export default function Signup({ userPropsData }) {
   // Получение ошибки из состояния Redux
   const errorMessage = useSelector((store) => store.user.error);
 
+  const isAuthenticated = useSelector((store) => store.user.isAuthenticated);
+
+  console.log("errorMessage", errorMessage);
+  console.log("isAuthenticated", isAuthenticated);
+
   useEffect(() => {
     // предотвращение выполнение кода внутри эффекта, если ошибки нет.
     // 1. Если errorMessage пустой — выходим из эффекта, ничего не делаем.
@@ -74,7 +79,7 @@ export default function Signup({ userPropsData }) {
         >
           <Box>
             {/* Сообщение об ошибке, если оно есть */}
-            <Collapse in={Boolean(errorMessage)}>
+            <Collapse in={Boolean(errorMessage) && !isAuthenticated}>
               <Alert severity="error" sx={{ mb: 2 }}>
                 {errorMessage}
               </Alert>

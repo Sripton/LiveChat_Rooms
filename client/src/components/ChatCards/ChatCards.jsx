@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Typography, Paper, Container } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import EditIcon from "@mui/icons-material/Edit";
@@ -18,6 +18,7 @@ export default function ChatCards() {
 
   const dispatch = useDispatch(); // useDispatch — отправка действий
   const navigate = useNavigate(); // переход по маршрутам
+  const location = useLocation();
   const { id } = useParams(); //  извлекает id комнаты из URL
 
   //  Извлечение данных комнаты, постов и ID пользователя из Redux
@@ -29,7 +30,9 @@ export default function ChatCards() {
   //  Иначе переключение отображения модального окна
   const handleAddPostClick = () => {
     if (!userID) {
-      navigate("/signin");
+      navigate("/signin", {
+        state: { from: location },
+      });
     }
     setOpenModalPost((prev) => !prev);
   };
@@ -119,54 +122,20 @@ export default function ChatCards() {
           </Button>
         </Box>
         {/* Отображение постов */}
-        {openModalPost ? (
-          <>
-            <Box>
-              <ModalPostCreate
-                openModalPost={openModalPost}
-                setOpenModalPost={setOpenModalPost}
-                id={id}
-              />
-            </Box>
-            <Box className="post-list">
-              {/* Рендер всех постов, связанных с комнатой */}
-              {allPosts.map((post) => (
-                <Box className="post" key={post.id} sx={{ mb: 2 }}>
-                  <Typography
-                    sx={{
-                      color: "#6a1b9a",
-                      fontSize: "1.2rem",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {post.postTitle}
-                  </Typography>
-                  <Box className="post-action">
-                    <Button sx={{ color: "#ec407a" }}>
-                      <ThumbUpIcon sx={{ mr: 1, fontSize: "1.1rem" }} />
-                      {0}
-                    </Button>
-                    <Button sx={{ color: "#ec407a" }}>
-                      <ThumbDownIcon sx={{ mr: 1, fontSize: "1.1rem" }} />
-                      {0}
-                    </Button>
-                    <Button sx={{ color: "#ec407a" }}>
-                      <EditIcon sx={{ fontSize: "1.1rem" }} />
-                    </Button>
-                    <Button sx={{ color: "#ec407a" }}>
-                      <DeleteIcon sx={{ fontSize: "1.1rem" }} />
-                    </Button>
-                    <Button sx={{ color: "#ec407a" }}>
-                      <SendIcon sx={{ fontSize: "1.1rem" }} />
-                    </Button>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          </>
-        ) : (
+        {openModalPost && (
+          <Box>
+            <ModalPostCreate
+              openModalPost={openModalPost}
+              setOpenModalPost={setOpenModalPost}
+              id={id}
+            />
+          </Box>
+        )}
+
+        {/* Посты — всегда отображаются */}
+        {Array.isArray(allPosts) && allPosts.length > 0 ? (
           <Box className="post-list">
-            {/* Рендер всех постов, связанных с комнатой */}
+            Рендер всех постов, связанных с комнатой
             {allPosts.map((post) => (
               <Box className="post" key={post.id} sx={{ mb: 2 }}>
                 <Typography
@@ -200,6 +169,10 @@ export default function ChatCards() {
               </Box>
             ))}
           </Box>
+        ) : (
+          <Typography sx={{ mt: 2, color: "#999" }}>
+            Комментарии отсутствуют
+          </Typography>
         )}
       </Paper>
     </Box>

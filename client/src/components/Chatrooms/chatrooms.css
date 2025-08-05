@@ -31,15 +31,30 @@ th {
   background: #ebc5d5;
   text-transform: uppercase;
   cursor: pointer;
+  color: #eb0808;
+  font-weight: bold;
+  font-family: "monospace";
+  text-shadow: rgb(200, 33, 172) 1px 0 10px;
+  font-size: 22px;
   /* padding-right: 20px; чтобы текст не налезал на стрелку */
+}
+th.active {
+  background-color: #b6d4e5;
 }
 
 .arrow {
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 10px solid #fff;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid #fff;
   display: inline-block;
   margin-left: 10px;
+  transition: transform 0.3s ease 0s;
+}
+.arrow.asc {
+  transform: rotate(180deg);
+}
+.arrow.desc {
+  transform: rotate(0deg);
 }
 tbody tr:nth-child(odd) {
   background: linear-gradient(90deg, #f3e2e8 10%, #ffe3e3 90%);
@@ -52,13 +67,14 @@ tbody tr:nth-child(even) {
 td {
   padding: 8px 20px;
   border: none;
+  text-shadow: rgb(181, 179, 177) 1px 0 10px;
 }
 .room-cell {
   color: #d81b60;
   font-weight: 900;
   border-radius: 3px;
   width: 50%;
-  font-size: 20px;
+  font-size: 18px;
   letter-spacing: 0.6px;
   text-transform: none;
   font-family: monospace;
@@ -66,5 +82,16 @@ td {
   cursor: pointer;
 }
 td:hover {
-  background: #fff;
+  background: #f4e6f7;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

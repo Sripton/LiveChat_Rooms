@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Toolbar } from "@mui/material";
 import Navbar from "./components/Navbar";
@@ -24,6 +24,7 @@ function App() {
   const { userID, userName, userAvatar } = useSelector((store) => store.user); // Достаём пользователя из стора
   const dispatch = useDispatch(); // Хук для вызова экшенов
   const navigate = useNavigate(); // Навигация между страницамиы
+  const location = useLocation();
 
   // --------------------------------------------------------------------------------------
   // Обработчик изменения инпутов
@@ -65,7 +66,9 @@ function App() {
   const signinSubmitHandler = useCallback(
     async (e) => {
       e.preventDefault();
-      await dispatch(loginUser(inputs, navigate)); // аналогично регистрации
+      await dispatch(
+        loginUser(inputs, navigate(location.state?.from?.pathname || "/"))
+      ); // аналогично регистрации
     },
     // useCallback(fn, [a, b, c])
     // Создай и сохрани версию функции fn, которая будет пересоздана только если a, b или c изменятся.

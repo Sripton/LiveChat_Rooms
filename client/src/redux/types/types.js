@@ -26,6 +26,16 @@ export const GET_USER_ROOM = "GET_USER_ROOM";
 // Тип экшена для получения одной  комнаты
 export const GET_ONE_ROOM = "GET_ONE_ROOM";
 
+// ------- RoomRequest -------
+// Тип экшена если  статус запроса - положительный
+export const ROOM_REQUEST_SUCCESS = "ROOM_REQUEST_SUCCESS";
+
+// Тип экшена если  статус запроса - отрицательный
+export const ROOM_REQUEST_ERROR = "ROOM_REQUEST_ERROR";
+
+// Тип экшена. Очистить статус после закрытия модалки
+export const CLEAR_ROOM_REQUEST_STATE = "CLEAR_ROOM_REQUEST_STATE";
+
 // ------- Post -------
 // Тип экшена для создания поста пользователем
 export const SET_CREATE_POST = "SET_CREATE_POST";
