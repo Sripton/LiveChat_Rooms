@@ -84,7 +84,7 @@ td {
 td:hover {
   background: #f4e6f7;
 }
-
+/* 
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -94,4 +94,4 @@ td:hover {
     opacity: 1;
     transform: translateY(0);
   }
-}
+} */
