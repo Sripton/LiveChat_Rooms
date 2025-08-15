@@ -51,6 +51,29 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/userRequest/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Исходяшщие запросы пользователя
+    const outgoing = await RoomRequest.findAll({
+      where: { user_id: id },
+      order: [["createdAt", "DESC"]],
+    });
+    // Входящие запросы пользователя
+    const incoming = await RoomRequest.findAll({
+      where: { owner_id: id },
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({ outgoing, incoming });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ messageError: "Ошибка при получении запросов пользователя:" });
+  }
+});
+
 // // Одобрение запроса (например, админом)
 // router.post("/approve", async (req, res) => {
 //   const { requestId } = req.body;

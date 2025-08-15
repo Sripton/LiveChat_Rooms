@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       description: DataTypes.STRING,
       isPrivate: DataTypes.BOOLEAN,
       ownerID: DataTypes.INTEGER,
-    },
+    }, 
     {
       sequelize,
       modelName: "Room",

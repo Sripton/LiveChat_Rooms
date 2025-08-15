@@ -8,6 +8,7 @@ import Signin from "./components/Signin";
 import ProfileEditor from "./components/ProfileEditor";
 import ChatRooms from "./components/ChatRooms";
 import ChatCards from "./components/ChatCards";
+import UserDashboard from "./components/UserDashboard";
 import {
   checkUserSession,
   registersUser,
@@ -120,6 +121,10 @@ function App() {
         />
         <Route path="/profileeditor" element={<ProfileEditor />} />
         <Route path="/chatcards/:id" element={<ChatCards />} />
+        <Route
+          path="/userdashboard"
+          element={<UserDashboard userPropsData={userPropsData} />}
+        />
       </Routes>
     </>
   );

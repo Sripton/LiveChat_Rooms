@@ -21,6 +21,9 @@ export const LOGOUT_USER = "LOGOUT_USER";
 export const SET_CREATE_ROOM = "SET_CREATE_ROOM";
 
 // Тип экшена для получения всех комнат
+export const GET_ALL_ROOMS = "GET_ALL_ROOMS";
+
+// Тип экшена для получения всех комнат пользователя
 export const GET_USER_ROOM = "GET_USER_ROOM";
 
 // Тип экшена для получения одной  комнаты
@@ -35,6 +38,28 @@ export const ROOM_REQUEST_ERROR = "ROOM_REQUEST_ERROR";
 
 // Тип экшена. Очистить статус после закрытия модалки
 export const CLEAR_ROOM_REQUEST_STATE = "CLEAR_ROOM_REQUEST_STATE";
+
+// ------- RoomRequestStatus -------
+// Тип экшена. Для загрузки входящих и исходящих запросов пользователя. Типа спиннера
+export const ROOM_REQUESTS_FETCH_START = "ROOM_REQUESTS_FETCH_START";
+
+// Тип экшена. Для получения запросов  с сервера”.
+export const ROOM_REQUESTS_FETCH_SUCCESS = "ROOM_REQUESTS_FETCH_SUCCESS";
+
+// Тип экшена. Для Ошибки при получении запросов
+export const ROOM_REQUESTS_FETCH_ERROR = "ROOM_REQUESTS_FETCH_ERROR";
+
+// Тип экшена. Полностью очистить состояние списка запросов. Например при выходе пользователя
+export const ROOM_REQUESTS_CLEAR = "ROOM_REQUESTS_CLEAR";
+
+// Тип экшена. loading - обновлять статус запроса
+export const ROOM_REQUEST_UPDATE_START = "ROOM_REQUEST_UPDATE_START";
+
+// Тип экшена. Запрос успешно обновлён на сервере
+export const ROOM_REQUEST_UPDATE_SUCCESS = "ROOM_REQUEST_UPDATE_SUCCESS";
+
+// Тип экшена. Ошибка при попытке обновить запрос
+export const ROOM_REQUEST_UPDATE_ERROR = "ROOM_REQUEST_UPDATE_ERROR";
 
 // ------- Post -------
 // Тип экшена для создания поста пользователем

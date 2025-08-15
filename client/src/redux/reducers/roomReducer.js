@@ -1,5 +1,10 @@
 // Импортируются строковые константы (типы экшенов), чтобы избежать опечаток и упростить сопровождение.
-import { SET_CREATE_ROOM, GET_USER_ROOM, GET_ONE_ROOM } from "../types/types";
+import {
+  SET_CREATE_ROOM,
+  GET_ALL_ROOMS,
+  GET_USER_ROOM,
+  GET_ONE_ROOM,
+} from "../types/types";
 
 // структура состояния room, которую будет использовать редьюсер.
 const initialState = {
@@ -7,6 +12,7 @@ const initialState = {
   description: null, // описание
   isPrivate: false, // приватность комнаты
   allRooms: [], // массив всех комнат
+  userRooms: [], // массив всех комнат пользователя
   currentRoom: null, // данные текущей выбранной комнаты
 };
 
@@ -27,10 +33,16 @@ export default function roomReducer(state = initialState, action) {
         allRooms: [...state.allRooms, action.payload], // добавляем новую
       };
     // Обновление списка комнат (например, при получении всех комнат пользователя с сервера).
-    case GET_USER_ROOM:
+    case GET_ALL_ROOMS:
       return {
         ...state,
         allRooms: payload, //  массив комнат. allRooms теперь содержит эти данные.
+      };
+    // Получение списка комнат для определенного пользоветля
+    case GET_USER_ROOM:
+      return {
+        ...state,
+        userRooms: payload,
       };
     // Установка данных о одной выбранной комнате.
     case GET_ONE_ROOM:

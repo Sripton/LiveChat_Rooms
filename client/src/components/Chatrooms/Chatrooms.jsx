@@ -8,6 +8,7 @@ import {
   Button,
   Typography,
   Link,
+  Avatar,
 } from "@mui/material";
 import { NavLink } from "react-router-dom";
 
@@ -249,7 +250,7 @@ export default function Chatrooms() {
   // -------------------- Стили через styled --------------------
   const Root = styled(Box)({
     minHeight: "100vh",
-    background: "#fde4ec",
+    background: "#fff0f5",
     padding: "40px 0",
   });
 
@@ -344,13 +345,22 @@ export default function Chatrooms() {
                       <td>
                         {openRoomsSorted[index] ? (
                           <Box sx={{ display: "flex" }}>
-                            <MeetingRoomIcon
+                            {/* <MeetingRoomIcon
                               sx={{
                                 mr: 2,
                                 color: "#76ce7e",
                                 cursor: "pointer",
                               }}
-                            />
+                            /> */}
+                            <Avatar
+                              sx={{
+                                bgcolor: "transparent",
+                                fontSize: "1.5rem",
+                              }}
+                            >
+                              🌐
+                            </Avatar>
+
                             <Link
                               component={NavLink}
                               to={`/chatcards/${openRoomsSorted[index]?.id}`}
@@ -394,13 +404,22 @@ export default function Chatrooms() {
                       <td>
                         {privateRoomsSorted[index] ? (
                           <Box sx={{ display: "flex" }}>
-                            <LockIcon
+                            {/* <LockIcon
                               sx={{
                                 mr: 2,
                                 color: "#f26f6f",
                                 cursor: "pointer",
                               }}
-                            />
+                            /> */}
+                            <Avatar
+                              sx={{
+                                bgcolor: "transparent",
+                                fontSize: "1.5rem",
+                              }}
+                            >
+                              {" "}
+                              🔒
+                            </Avatar>
 
                             <Typography
                               sx={{

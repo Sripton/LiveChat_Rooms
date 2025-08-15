@@ -1,5 +1,10 @@
 import axios from "axios";
-import { SET_CREATE_ROOM, GET_USER_ROOM, GET_ONE_ROOM } from "../types/types";
+import {
+  SET_CREATE_ROOM,
+  GET_ALL_ROOMS,
+  GET_USER_ROOM,
+  GET_ONE_ROOM,
+} from "../types/types";
 
 // Асинхронная функция для отправки формы создания комнаты на сервер
 export const createRoomsSubmit = (roomCreate) => async (dispatch) => {
@@ -26,10 +31,23 @@ export const fetchAllRooms = () => async (dispatch) => {
     if (response.status === 200) {
       const { data } = response;
       //  Сохраняем полученные данные в Redux (в roomReducer.allRooms)
-      dispatch({ type: GET_USER_ROOM, payload: data });
+      dispatch({ type: GET_ALL_ROOMS, payload: data });
     }
   } catch (error) {
     console.error("Ошибка при получении всех комнат:", error);
+  }
+};
+
+//  Асинхронная функция для получения всех комнат пользователя
+export const fetchUserRooms = (userID) => async (dispatch) => {
+  try {
+    const response = await axios.get(`/api/rooms/userRooms/${userID}`);
+    if (response.status === 200) {
+      const { data } = response;
+      dispatch({ type: GET_USER_ROOM, payload: data });
+    }
+  } catch (error) {
+    console.error("Ошибка при получении  комнат для пользователя:", error);
   }
 };
 

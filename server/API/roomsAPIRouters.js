@@ -42,23 +42,33 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/available", async (req, res) => {
+router.get("/userRooms/:id", async (req, res) => {
+  const { id } = req.params;
   try {
-    const userID = req.session.userID;
-    console.log("userID", userID);
-    // Все комнаты, в которые пользователь имеет доступ
-    const rooms = await Room.findAll({
-      include: [
-        { model: RoomAdmission, as: "admissions", where: { user_id: userID } },
-      ],
-    });
-
-    res.json(rooms);
+    const allRooomsUser = await Room.findAll({ where: { ownerID: id } });
+    res.status(200).json(allRooomsUser);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Ошибка при получении доступных комнат" });
   }
 });
+
+// router.get("/available", async (req, res) => {
+//   try {
+//     const userID = req.session.userID;
+//     // Все комнаты, в которые пользователь имеет доступ
+//     const rooms = await Room.findAll({
+//       include: [
+//         { model: RoomAdmission, as: "admissions", where: { user_id: userID } },
+//       ],
+//     });
+
+//     res.json(rooms);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Ошибка при получении доступных комнат" });
+//   }
+// });
 
 // Маршрут для получения конкретной комнаты по её ID
 router.get("/:id", async (req, res) => {

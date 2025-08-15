@@ -8,7 +8,7 @@ import {
   ListItem,
   Typography,
   Button,
-  Link,
+  Avatar,
 } from "@mui/material";
 import AddHomeIcon from "@mui/icons-material/AddHome";
 import EditIcon from "@mui/icons-material/Edit";
@@ -40,6 +40,8 @@ export default function Navbar({ userPropsData }) {
       navigate("/signin");
     } else if (text === "Выход") {
       dispatch(logoutUser(navigate)); // Выход с вызовом action logoutUser
+    } else if (text === "Мои комнаты") {
+      navigate("/userdashboard");
     }
     setOpenMenu(false); // Закрываем меню
   };
@@ -61,6 +63,18 @@ export default function Navbar({ userPropsData }) {
   // Функция для переключения состояния выпадающего меню профиля
   const handleProfileDropDown = () => {
     setProfileDropActive(!profileDropActive);
+  };
+
+  // Вынесение логики определения иконки для меню
+  const getStartIcon = (text) => {
+    switch (text) {
+      case "Войти":
+        return <AddHomeIcon />;
+      case "Мои комнаты":
+        return <MeetingRoomIcon />;
+      default:
+        return <LogoutIcon />;
+    }
   };
 
   useEffect(() => {
@@ -140,8 +154,7 @@ export default function Navbar({ userPropsData }) {
               // variant="h6"
               sx={{
                 color: "#000",
-                fontWeight: "bold",
-                fontFamily: "Tinos, serif",
+                fontFamily: "monospace",
                 letterSpacing: 1,
                 fontSize: "1rem",
               }}
@@ -166,12 +179,18 @@ export default function Navbar({ userPropsData }) {
               ref={profileDropDownBtn}
             >
               {/* Аватар пользователя */}
-              <img
-                className="avatar"
-                src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
-                alt=""
-              />
-              <i className="fa-solid fa-circle" />
+              {userAvatar ? (
+                <>
+                  <img
+                    className="avatar"
+                    src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
+                    alt=""
+                  />
+                  <i className="fa-solid fa-circle-img" />
+                </>
+              ) : (
+                <Avatar />
+              )}
             </Button>
             {/* Выпадающее меню */}
             {profileDropActive && (
@@ -238,19 +257,17 @@ export default function Navbar({ userPropsData }) {
           onClose={() => toggleDrawerMenu(false)}
         >
           <List>
-            {["Войти", "Выход"].map((text) => (
+            {["Войти", "Мои комнаты", "Выход"].map((text) => (
               <ListItem
                 key={text}
                 className="menu-list"
                 onClick={() => toggleDrawerMenu(false)}
               >
-                {/* Кнопки "Войти" и "Выход" */}
+                {/* Кнопки "Войти", "Мои комнаты" и "Выход" */}
                 <Button
                   onClick={() => handleMenuClick(text)}
                   // startIcon - проп компонента Button из MUI, который добавляет иконку слева от текста кнопки.
-                  startIcon={
-                    text === "Войти" ? <AddHomeIcon /> : <LogoutIcon />
-                  }
+                  startIcon={getStartIcon(text)}
                   sx={{
                     fontSize: "1rem",
                     fontFamily: "Tinos, serif",
