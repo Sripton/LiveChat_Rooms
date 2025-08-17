@@ -1,5 +1,5 @@
 const express = require("express");
-const { Room, RoomRequest, RoomAdmission } = require("../db/models");
+const { Room, RoomRequest, RoomAdmission, User } = require("../db/models");
 
 const router = express.Router();
 
@@ -58,13 +58,17 @@ router.get("/userRequest/:id", async (req, res) => {
     const outgoing = await RoomRequest.findAll({
       where: { user_id: id },
       order: [["createdAt", "DESC"]],
+      include: [{ model: Room, attributes: ["nameroom"] }],
     });
     // Входящие запросы пользователя
     const incoming = await RoomRequest.findAll({
       where: { owner_id: id },
       order: [["createdAt", "DESC"]],
+      include: [
+        { model: User, as: "requester", attributes: ["name"] },
+        { model: Room, attributes: ["nameroom"] },
+      ],
     });
-
     res.status(200).json({ outgoing, incoming });
   } catch (error) {
     console.error(error);

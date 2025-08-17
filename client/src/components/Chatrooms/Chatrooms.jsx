@@ -49,65 +49,6 @@ export default function Chatrooms() {
 
   // состояние для выбранной комнаты
   const [selectedRoomID, setSelectedRoomID] = useState(null);
-  // -------------------- Tooltip для описания комнат ---------------
-  // const [tooltip, setToolTip] = useState({
-  //   visible: false,
-  //   text: "",
-  //   x: 0,
-  //   y: 0,
-  // });
-  // const [showTooltip, setShowTooltip] = useState(false);
-  // const showTimeoutRef = useRef(null);
-  // const hideTimeOutRef = useRef(null);
-
-  // Обработка наведения мыши на комнату — позиционируем тултип и показываем его
-  // const handleMouseEnter = (e, text) => {
-  //   const rect = e.currentTarget.getBoundingClientRect();
-  //   clearTimeout(hideTimeOutRef.current);
-  //   showTimeoutRef.current = setTimeout(() => {
-  //     const newX = rect.left + rect.width / 2;
-  //     const newY = rect.top - 10;
-
-  //     // Только если данные изменились — обновляем стейт
-  //     if (
-  //       !tooltip.visible ||
-  //       tooltip.text !== text ||
-  //       tooltip.x !== newX ||
-  //       tooltip.y !== newY
-  //     ) {
-  //       setToolTip({
-  //         visible: true,
-  //         text,
-  //         x: newX,
-  //         y: newY,
-  //       });
-  //     }
-  //     setShowTooltip(true);
-  //   }, 100); // Задержка перед появлением
-  // };
-
-  // Убираем тултип при уходе мыши
-  // const handleMouseLeave = () => {
-  //   clearTimeout(showTimeoutRef.current);
-  //   hideTimeOutRef.current = setTimeout(() => {
-  //     setShowTooltip(false); // Плавно скрываем
-  //     setTimeout(() => {
-  //       setToolTip({
-  //         visible: false,
-  //         text: "",
-  //         x: 0,
-  //         y: 0,
-  //       });
-  //     }, 300);
-  //   }, 100); // После окончания анимации скрытия
-  //   setToolTip({ ...tooltip, visible: false }); // Принудительно скрываем
-  // };
-
-  // Очистка таймеров при размонтировании компонента
-  // useEffect(() => {
-  //   clearTimeout(showTimeoutRef.current);
-  //   clearTimeout(hideTimeOutRef.current);
-  // }, []);
 
   // -------------------- Получение всех комнат из Redux -----------------------
   const allRooms = useSelector((store) => store.room.allRooms); // Извлечение всех комнат из хранилища Redux.
@@ -492,15 +433,6 @@ export default function Chatrooms() {
           </Paper>
         </Grid>
       </Grid>
-      {/* {tooltip.visible && (
-        <TooltipFloating
-          tooltipVisible={tooltip.visible}
-          showTooltip={showTooltip}
-          tooltipX={tooltip.x}
-          tooltipY={tooltip.y}
-          tooltipText={tooltip.text}
-        />
-      )} */}
       <ModalRoomRequest
         openRequestModal={openRequestModal}
         closeModalRequest={() => setOpenRequestModal(false)}
