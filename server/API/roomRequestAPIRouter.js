@@ -65,7 +65,7 @@ router.get("/userRequest/:id", async (req, res) => {
       where: { owner_id: id },
       order: [["createdAt", "DESC"]],
       include: [
-        { model: User, as: "requester", attributes: ["name"] },
+        { model: User, as: "requester", attributes: ["name", "avatar"] },
         { model: Room, attributes: ["nameroom"] },
       ],
     });

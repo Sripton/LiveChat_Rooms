@@ -16,6 +16,7 @@ import ContactMailIcon from "@mui/icons-material/ContactMail";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
+import AccountBoxIcon from "@mui/icons-material/AccountBox";
 import "./navbar.css";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -40,7 +41,7 @@ export default function Navbar({ userPropsData }) {
       navigate("/signin");
     } else if (text === "Выход") {
       dispatch(logoutUser(navigate)); // Выход с вызовом action logoutUser
-    } else if (text === "Мои комнаты") {
+    } else if (text === "Мой профиль") {
       navigate("/userdashboard");
     }
     setOpenMenu(false); // Закрываем меню
@@ -70,8 +71,8 @@ export default function Navbar({ userPropsData }) {
     switch (text) {
       case "Войти":
         return <AddHomeIcon />;
-      case "Мои комнаты":
-        return <MeetingRoomIcon />;
+      case "Мой профиль":
+        return <AccountBoxIcon />;
       default:
         return <LogoutIcon />;
     }
@@ -193,7 +194,7 @@ export default function Navbar({ userPropsData }) {
               )}
             </Button>
             {/* Выпадающее меню */}
-            {profileDropActive && (
+            {/* {profileDropActive && (
               <ul
                 ref={profileDropDownMenu}
                 className={`profile-dropdown-list ${"active-dropmenu"}`}
@@ -204,12 +205,7 @@ export default function Navbar({ userPropsData }) {
                   zIndex: 1000,
                 }}
               >
-                {/* Ссылка на редактирование профиля */}
                 <li className="profile-dropdown-item">
-                  {/* Заменяем Link на обычную кнопку */}
-                  {/* <Link component={NavLink} to="/profileeditor">
-                    <EditIcon sx={{ color: "#4685df" }} />
-                  </Link> */}
                   <Box
                     sx={{ minWidth: "auto", padding: 0, cursor: "pointer" }}
                     onClick={goToProfileEditor}
@@ -217,20 +213,20 @@ export default function Navbar({ userPropsData }) {
                     <EditIcon sx={{ color: "#4685df" }} />
                   </Box>
                 </li>
-                {/* Ко-во ответов на комменатрии */}
+
                 <li className="profile-dropdown-item">
                   <ContactMailIcon sx={{ color: "#4685df" }} />
                 </li>
-                {/* Ко-во лайков на действия пользователя */}
+
                 <li className="profile-dropdown-item">
                   <FavoriteIcon sx={{ color: "#4685df" }} />
                 </li>
-                {/* Ко-во комнат */}
+
                 <li className="profile-dropdown-item">
                   <MeetingRoomIcon sx={{ color: "#4685df" }} />
                 </li>
               </ul>
-            )}
+            )} */}
           </Box>
         </Box>
 
@@ -257,7 +253,7 @@ export default function Navbar({ userPropsData }) {
           onClose={() => toggleDrawerMenu(false)}
         >
           <List>
-            {["Войти", "Мои комнаты", "Выход"].map((text) => (
+            {["Войти", "Мой профиль", "Выход"].map((text) => (
               <ListItem
                 key={text}
                 className="menu-list"
