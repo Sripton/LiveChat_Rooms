@@ -84,27 +84,35 @@ router.get("/userRequest/:id", async (req, res) => {
   }
 });
 
+function httpError(status, message) {
+  const e = new Error(message);
+  e.status = status;
+  return e;
+}
+
 router.patch("/changeRequestStatus/:id", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
   try {
     // текущий пользователь
-    const userID = req.session.userID;
-    if (!userID) {
-      return res.status(401).json({ message: "Пользователь не авторизован" });
-    }
+    const userID = 1;
+    if (!userID) throw httpError(401, "Пользователь не авторизован");
 
     // Все запросы внутри этого блока выполняются либо все вместе, либо ни один.
     // Если где-то выбросится ошибка → транзакция откатывается.
     await sequelize.transaction(async (t) => {
+      // 2) читаем и блокируем строку запроса
       const request = await RoomRequest.findByPk(id, {
         transaction: t, //  запрос выполняется внутри этой транзакции.
         lock: t.LOCK.UPDATE, // накладываем блокировку на строку в базе (чтобы другой админ/процесс не смог параллельно её менять).
         // Это важно, если двое одновременно обрабатывают один и тот же запрос.
       });
-      if (!request) throw new Error("Запрос не найден");
-      if (request.owner_id !== userID) throw new Error("Не владелец комнаты");
+      if (!request) throw httpError(404, "Запрос не найден");
 
+      // 3) проверка прав — менять может только владелец комнаты
+      if (request.owner_id !== userID) {
+        throw httpError(403, "Вы не являетесь владельцем комнаты");
+      }
       // Меняем статус (именно внутри транзакции!)
       // Если статус отличается от текущего → обновляем.
       // Это нужно, чтобы не получилась ситуация статус = accepted, но участник не добавлен
@@ -124,7 +132,16 @@ router.patch("/changeRequestStatus/:id", async (req, res) => {
       }
     });
 
-    res.status(200).json({ message: "Запрос обновлён" });
+    // 4) отдаем обновлённый запрос с включениями
+    const updated = await RoomRequest.findByPk(id, {
+      include: [
+        { model: User, as: "requester", attributes: ["id", "name", "avatar"] },
+        { model: User, as: "owner", attributes: ["id", "name"] },
+        { model: Room, attributes: ["id", "nameroom", "ownerID"] },
+      ],
+    });
+
+    res.status(200).json({ message: "Запрос обновлён", request: updated });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Ошибка при одобрении запроса" });

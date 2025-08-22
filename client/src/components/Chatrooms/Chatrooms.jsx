@@ -188,8 +188,6 @@ export default function Chatrooms() {
     padding: "40px 0",
   });
 
-  console.log("privateRooms", privateRooms);
-
   return (
     <Root>
       {/* Кнопка для создания новой комнаты */}
@@ -237,6 +235,7 @@ export default function Chatrooms() {
                       sortConfig.key === "openrooms" ? "active" : ""
                     }`}
                     onClick={() => handleSortRooms("openrooms")}
+                    style={{ fontFamily: "monospace", color: "gray" }}
                   >
                     Открытые комнаты
                     <span
@@ -252,6 +251,7 @@ export default function Chatrooms() {
                       sortConfig.key === "privateroom" ? "active" : ""
                     }`}
                     onClick={() => handleSortRooms("privateroom")}
+                    style={{ fontFamily: "monospace", color: "gray" }}
                   >
                     Приватные комнаты
                     <span
@@ -272,14 +272,24 @@ export default function Chatrooms() {
                     <tr key={index}>
                       <td>
                         {openRoomsSorted[index] ? (
-                          <Box sx={{ display: "flex" }}>
-                            {/* <MeetingRoomIcon
-                              sx={{
-                                mr: 2,
-                                color: "#76ce7e",
-                                cursor: "pointer",
-                              }}
-                            /> */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              cursor: "pointer",
+                              backgroundColor: "#fff0f5",
+                              p: 2,
+                              borderRadius: 3,
+                              boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
+                              transition:
+                                "transform 0.3s ease, box-shadow 0.3s ease",
+                              "&:hover": {
+                                transition: "translateY(-4px) scale(1.02)",
+                                boxShadow:
+                                  "0 6px 14px rgba(255, 105, 180, 0.35)",
+                                backgroundColor: "#ffe4ec",
+                              },
+                            }}
+                          >
                             <Avatar
                               sx={{
                                 bgcolor: "transparent",
@@ -296,25 +306,15 @@ export default function Chatrooms() {
                             >
                               <Typography
                                 sx={{
-                                  background:
-                                    "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-                                  color: "#d81b60",
-                                  fontWeight: 900,
                                   borderRadius: 3,
                                   width: "100%",
-                                  boxShadow: "0 2px 12px 0 #ffd6e6",
                                   fontSize: 18,
                                   letterSpacing: 0.6,
                                   textTransform: "none",
-                                  px: 3,
-                                  py: 2,
+                                  px: 2,
+                                  py: 1,
                                   fontFamily: "monospace",
                                   cursor: "pointer",
-                                  "&:hover": {
-                                    background:
-                                      "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
-                                    color: "#fff",
-                                  },
                                   transition:
                                     "all .23s cubic-bezier(.3,1.4,.3,1)",
                                 }}
@@ -331,14 +331,24 @@ export default function Chatrooms() {
 
                       <td>
                         {privateRoomsSorted[index] ? (
-                          <Box sx={{ display: "flex" }}>
-                            {/* <LockIcon
-                              sx={{
-                                mr: 2,
-                                color: "#f26f6f",
-                                cursor: "pointer",
-                              }}
-                            /> */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              cursor: "pointer",
+                              backgroundColor: "#fff0f5",
+                              p: 2,
+                              borderRadius: 3,
+                              boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
+                              transition:
+                                "transform 0.3s ease, box-shadow 0.3s ease",
+                              "&:hover": {
+                                transition: "translateY(-4px) scale(1.02)",
+                                boxShadow:
+                                  "0 6px 14px rgba(255, 105, 180, 0.35)",
+                                backgroundColor: "#ffe4ec",
+                              },
+                            }}
+                          >
                             <Avatar
                               sx={{
                                 bgcolor: "transparent",
@@ -351,31 +361,26 @@ export default function Chatrooms() {
 
                             <Typography
                               sx={{
-                                background:
-                                  "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-                                color: "#d81b60",
-                                fontWeight: 900,
+                                color: " #1976d2",
                                 borderRadius: 3,
                                 width: "100%",
-                                boxShadow: "0 2px 12px 0 #ffd6e6",
                                 fontSize: 18,
                                 letterSpacing: 0.6,
                                 textTransform: "none",
-                                px: 1,
-                                py: 2,
+                                px: 2,
+                                py: 1,
                                 fontFamily: "monospace",
                                 cursor: "pointer",
-                                "&:hover": {
-                                  background:
-                                    "linear-gradient(90deg,#f06292 20%,#fff0f6 100%)",
-                                  color: "#fff",
-                                },
                                 transition:
                                   "all .23s cubic-bezier(.3,1.4,.3,1)",
                               }}
                               onClick={() => {
                                 const currentRoom = privateRoomsSorted[index];
-                                if (currentRoom.ownerID === userID) {
+                                if (
+                                  currentRoom.isOwner ||
+                                  currentRoom.isMember ||
+                                  currentRoom.myRequestStatus === "accepted"
+                                ) {
                                   navigate(`/chatcards/${currentRoom.id}`);
                                 } else {
                                   // Если не владелец → открываем модалку для отправки запроса

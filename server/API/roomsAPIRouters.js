@@ -37,7 +37,7 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     // const userID = req.session.userID || null;
-    const userID = 2;
+    const userID = req.session.userID;
     const findAllRoom = await Room.findAll({
       attributes: ["id", "nameroom", "description", "isPrivate", "ownerID"],
       // Мой запрос к этой комнате (0..1)
@@ -60,8 +60,28 @@ router.get("/", async (req, res) => {
       order: [["nameroom", "ASC"]],
     });
 
-    // const payload = findAllRoom.map((room) => {});
-    res.json(findAllRoom); // Отправляем их клиенту
+    const payload = findAllRoom.map((room) => {
+      const json = room.get({ plain: true }); // roomtoJSON();
+      const isOwner = userID ? json.ownerID === Number(userID) : false;
+      const isMember = Array.isArray(json.members) && json.members.length > 0;
+      const myRequestStatus =
+        Array.isArray(json.RoomRequests) && json.RoomRequests.length > 0
+          ? json.RoomRequests[0].status
+          : null;
+
+      let hasAccess;
+      if (json.isPrivate === true) {
+        hasAccess = isOwner || isMember || myRequestStatus === "accepted";
+      } else {
+        hasAccess = true; // открытая комната
+      }
+
+      delete json.members;
+      delete json.RoomRequests;
+
+      return { ...json, isOwner, isMember, myRequestStatus, hasAccess };
+    });
+    res.json(payload); // Отправляем их клиенту
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Ошибка сервера" }); // Отправляем сообщение об ошибке клиенту
