@@ -1,6 +1,6 @@
 // Редьюсер корректно обрабатывает типы экшенов и возвращает новое состояние.
 
-// ------- User -------
+// -------------------- User -------------------
 // Тип экшена для установки данных пользователя после регистрации
 export const SET_REGISTER_USER = "SET_REGISTER_USER";
 
@@ -16,7 +16,7 @@ export const SET_REGISTER_ERROR = "SET_REGISTER_ERROR";
 // Тип экшена для выхода пользователя (очистка пользовательских данных из хранилища)
 export const LOGOUT_USER = "LOGOUT_USER";
 
-// ------- Room -------
+// -------------------- Room ----------------------
 // Тип экшена для создания комнаты пользователем
 export const SET_CREATE_ROOM = "SET_CREATE_ROOM";
 
@@ -29,7 +29,7 @@ export const GET_USER_ROOM = "GET_USER_ROOM";
 // Тип экшена для получения одной  комнаты
 export const GET_ONE_ROOM = "GET_ONE_ROOM";
 
-// ------- RoomRequest -------
+// ----------------- RoomRequest -------------------
 // Тип экшена если  статус запроса - положительный
 export const ROOM_REQUEST_SUCCESS = "ROOM_REQUEST_SUCCESS";
 
@@ -39,7 +39,7 @@ export const ROOM_REQUEST_ERROR = "ROOM_REQUEST_ERROR";
 // Тип экшена. Очистить статус после закрытия модалки
 export const CLEAR_ROOM_REQUEST_STATE = "CLEAR_ROOM_REQUEST_STATE";
 
-// ------- RoomRequestStatus -------
+// ------------------ RoomRequestStatus -----------------
 // Тип экшена. Для загрузки входящих и исходящих запросов пользователя. Типа спиннера
 export const ROOM_REQUESTS_FETCH_START = "ROOM_REQUESTS_FETCH_START";
 
@@ -61,7 +61,7 @@ export const ROOM_REQUEST_UPDATE_SUCCESS = "ROOM_REQUEST_UPDATE_SUCCESS";
 // Тип экшена. Ошибка при попытке обновить запрос
 export const ROOM_REQUEST_UPDATE_ERROR = "ROOM_REQUEST_UPDATE_ERROR";
 
-// ------- Post -------
+// ----------------------- Post ------------------------
 // Тип экшена для создания поста пользователем
 export const SET_CREATE_POST = "SET_CREATE_POST";
 

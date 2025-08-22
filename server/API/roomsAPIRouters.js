@@ -1,5 +1,5 @@
 const express = require("express");
-const { Room, RoomAdmission } = require("../db/models"); // Импорт моделей из базы данных
+const { Room, RoomAdmission, RoomRequest } = require("../db/models"); // Импорт моделей из базы данных
 const router = express.Router();
 
 // Маршрут для создания новой комнаты
@@ -31,10 +31,36 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Маршрут для получения списка всех комнат
+// Идея: вместе с каждой комнатой вернуть isOwner, isMember,
+// myRequestStatus (статус моего запроса, если он есть).
+// Тогда фронт поймёт, открывать модалку или сразу пускать в комнату.
 router.get("/", async (req, res) => {
   try {
-    const findAllRoom = await Room.findAll(); // Получаем все комнаты из базы данных
+    // const userID = req.session.userID || null;
+    const userID = 2;
+    const findAllRoom = await Room.findAll({
+      attributes: ["id", "nameroom", "description", "isPrivate", "ownerID"],
+      // Мой запрос к этой комнате (0..1)
+      include: [
+        {
+          model: RoomRequest,
+          required: false,
+          where: userID ? { user_id: userID } : undefined,
+          attributes: ["id", "status"],
+        },
+        // Я как участник этой комнаты (0..1) — через связку many-to-many
+        {
+          association: "members", // alias, который  дал в модели Room.belongsToMany(User, { through: RoomAdmission, as: "members" }).
+          attributes: ["id"], // подтягиваем у пользователя только id.
+          through: { attributes: [] }, // скрываем промежуточную таблицу RoomAdmissions (чтобы в JSON не тащился мусор).
+          required: false, // LEFT JOIN.
+          where: userID ? { id: userID } : undefined,
+        },
+      ],
+      order: [["nameroom", "ASC"]],
+    });
+
+    // const payload = findAllRoom.map((room) => {});
     res.json(findAllRoom); // Отправляем их клиенту
   } catch (error) {
     console.log(error);

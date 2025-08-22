@@ -18,8 +18,14 @@ import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import MailIcon from "@mui/icons-material/Mail";
 import { display } from "@mui/system";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import {
+  fetchUserRequestsStatus,
+  updateRoomRequestStatus,
+} from "../../redux/actions/roomRequestStatusActions";
 import { fetchUserRooms } from "../../redux/actions/roomActions";
-import { fetchUserRequestsStatus } from "../../redux/actions/roomRequestStatus";
 
 function TabPanel(props) {
   const { index, value, children } = props;
@@ -29,9 +35,10 @@ export default function UserDashboard({ userPropsData }) {
   const [tabIndex, setTabIndex] = useState(0);
   const { userAvatar, userName, userID } = userPropsData;
   const userRooms = useSelector((store) => store.room.userRooms);
-  const { incoming, outgoing } = useSelector(
+  const { incoming, outgoing, updatingIds } = useSelector(
     (store) => store.roomRequestStatus
   );
+  console.log("updatingIds", updatingIds);
 
   const dispatch = useDispatch();
   const handleChangeTab = (event, newValue) => {
@@ -57,6 +64,9 @@ export default function UserDashboard({ userPropsData }) {
       dispatch(fetchUserRequestsStatus(userID));
     }
   }, [userID, dispatch]);
+
+  console.log("allRequests", allRequests);
+  console.log('userRooms', userRooms);
 
   return (
     <div
@@ -136,79 +146,94 @@ export default function UserDashboard({ userPropsData }) {
         {/* Panel: Мои комнаты */}
         <TabPanel value={tabIndex} index={0}>
           <Grid container spacing={2} mb={4}>
-            {userRooms.map((room) => (
-              <Grid key={room.id}>
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  gap={1}
-                  mb={1}
-                  sx={{
-                    cursor: "pointer",
-                    backgroundColor: "#fff0f5",
-                    p: 2,
-                    borderRadius: 3,
-                    boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
-                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                    "&:hover": {
-                      transition: "translateY(-4px) scale(1.02)",
-                      boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
-                      backgroundColor: "#ffe4ec",
-                    },
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Typography fontWeight="bold">{room.name}</Typography>
-                    {room.isPrivate === true ? (
-                      <Typography variant="h6" color="text.secondary">
-                        🔒
-                        <Link
-                          component={NavLink}
-                          to={`/chatcards/${room.id}`}
-                          sx={{ textDecoration: "none" }}
-                        >
-                          {` ${room.nameroom}`}
-                        </Link>
-                      </Typography>
-                    ) : (
-                      <Typography variant="h6" color="primary">
-                        🌐
-                        <Link
-                          component={NavLink}
-                          to={`/chatcards/${room.id}`}
-                          sx={{ textDecoration: "none" }}
-                        >
-                          {` ${room.nameroom}`}
-                        </Link>
-                      </Typography>
-                    )}
+            {userRooms.length <= 0 ? (
+              <Typography sx={{ mt: 2, color: "#999" }}>
+                У Вас нет комнат
+              </Typography>
+            ) : (
+              userRooms.map((room) => (
+                <Grid key={room.id}>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    gap={1}
+                    mb={1}
+                    sx={{
+                      cursor: "pointer",
+                      backgroundColor: "#fff0f5",
+                      p: 2,
+                      borderRadius: 3,
+                      boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      "&:hover": {
+                        transition: "translateY(-4px) scale(1.02)",
+                        boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
+                        backgroundColor: "#ffe4ec",
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography fontWeight="bold">{room.name}</Typography>
+                      {room.isPrivate === true ? (
+                        <Typography variant="h6" color="text.secondary">
+                          🔒
+                          <Link
+                            component={NavLink}
+                            to={`/chatcards/${room.id}`}
+                            sx={{ textDecoration: "none" }}
+                          >
+                            {` ${room.nameroom}`}
+                          </Link>
+                        </Typography>
+                      ) : (
+                        <Typography variant="h6" color="primary">
+                          🌐
+                          <Link
+                            component={NavLink}
+                            to={`/chatcards/${room.id}`}
+                            sx={{ textDecoration: "none" }}
+                          >
+                            {` ${room.nameroom}`}
+                          </Link>
+                        </Typography>
+                      )}
+                    </Box>
                   </Box>
-                </Box>
-              </Grid>
-            ))}
+                </Grid>
+              ))
+            )}
           </Grid>
         </TabPanel>
 
         {/* Panel: Запросы */}
         <TabPanel value={tabIndex} index={1}>
-          <Button onClick={handleArraowRequest}>
-            <span
-              className="arrow-request"
-              style={{
-                borderLeft: "8px solid transparent",
-                borderRight: "8px solid transparent",
-                borderTop: "12px solid #880e4f",
-                cursor: "pointer",
-                display: "inline-block",
-                transform: arrowReauest ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "0.3s",
-              }}
-            />
-          </Button>
+          {/* Если запросов нет не показывать кнопку */}
+          {allRequests.length > 0 ? (
+            <Button onClick={handleArraowRequest}>
+              <span
+                className="arrow-request"
+                style={{
+                  borderLeft: "8px solid transparent",
+                  borderRight: "8px solid transparent",
+                  borderTop: "12px solid #880e4f",
+                  cursor: "pointer",
+                  display: "inline-block",
+                  transform: arrowReauest ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "0.3s",
+                }}
+              />
+            </Button>
+          ) : (
+            <Typography sx={{ mt: 2, color: "#999" }}>Запросов нет</Typography>
+          )}
           <List sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {(allRequests || []).map((request) => {
               // Если запрос отправил сам пользователь
               const isOutgoing = request.user_id === userID;
+              // Для спинера в момент когда статус обновляется
+              const isUpdating = updatingIds.includes(request.id);
+              // Когда запрос в статусе оюидания
+              const isPending = request.status === "pending";
               let avatarSrc;
               if (isOutgoing) {
                 avatarSrc = userAvatar
@@ -226,7 +251,7 @@ export default function UserDashboard({ userPropsData }) {
 
               const primaryText = isOutgoing
                 ? `${request?.Room?.nameroom}`
-                : `${request?.requester?.name} отправил Вам запрос к ${request?.Room?.nameroom}`;
+                : `${request?.requester?.name} отправил Вам запрос, ${request?.Room?.nameroom}`;
 
               return (
                 <ListItem
@@ -243,36 +268,62 @@ export default function UserDashboard({ userPropsData }) {
                     },
                   }}
                   secondaryAction={
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Button
-                        variant="contained"
-                        sx={{
-                          background:
-                            "linear-gradient(90deg, #f8bbd0, #f48fb1)",
-                          color: "#fff",
-                          "&:hover": {
+                    isOutgoing ? (
+                      request?.status === "accepted" ? (
+                        <CheckCircleIcon sx={{ color: "green" }} />
+                      ) : request?.status === "rejected" ? (
+                        <CancelIcon sx={{ color: "red" }} />
+                      ) : (
+                        <HourglassEmptyIcon sx={{ color: "orange" }} />
+                      )
+                    ) : isPending ? (
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <Button
+                          variant="contained"
+                          sx={{
                             background:
-                              "linear-gradient(90deg,rgb(209, 243, 173),rgb(200, 239, 166))",
-                            color: "gray",
-                          },
-                        }}
-                      >
-                        Принять
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        sx={{
-                          color: "#d81b60",
-                          borderColor: "#f48fb1",
-                          "&:hover": {
-                            borderColor: "#d81b60",
-                            backgroundColor: "#fff0f6",
-                          },
-                        }}
-                      >
-                        Отклонить
-                      </Button>
-                    </Box>
+                              "linear-gradient(90deg, #f8bbd0, #f48fb1)",
+                            color: "#fff",
+                            "&:hover": {
+                              background:
+                                "linear-gradient(90deg,rgb(209, 243, 173),rgb(200, 239, 166))",
+                              color: "gray",
+                            },
+                          }}
+                          onClick={() =>
+                            dispatch(
+                              updateRoomRequestStatus(request.id, "accepted")
+                            )
+                          }
+                        >
+                          Принять
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          sx={{
+                            color: "#d81b60",
+                            borderColor: "#f48fb1",
+                            "&:hover": {
+                              borderColor: "#d81b60",
+                              backgroundColor: "#fff0f6",
+                            },
+                          }}
+                          onClick={() =>
+                            dispatch(
+                              updateRoomRequestStatus(request.id, "rejected")
+                            )
+                          }
+                        >
+                          Отклонить
+                        </Button>
+                      </Box>
+                    ) : request.status === "accepted" ? (
+                      <CheckCircleIcon sx={{ color: "green" }} />
+                    ) : request.status === "rejected" ? (
+                      <CancelIcon sx={{ color: "red" }} />
+                    ) : (
+                      <HourglassEmptyIcon sx={{ color: "orange" }} />
+                    )
                   }
                 >
                   <ListItemAvatar>

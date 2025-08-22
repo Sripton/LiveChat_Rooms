@@ -10,7 +10,7 @@ import {
   Link,
   Avatar,
 } from "@mui/material";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 // Иконки
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -30,10 +30,6 @@ import ModalRoomRequest from "../ModalRoomRequest";
 import "./chatrooms.css";
 
 export default function Chatrooms() {
-  // Состояния раскрытия блоков с комнатами
-  // const [openRoomExpanded, setOpenRoomExpanded] = useState(false);
-  // const [privateRoomExpanded, setPrivateRoomExpanded] = useState(false);
-
   // Состояние для хранения информации о текущей сортировке
   // key — по какому полю сортируем, direction — asc или desc
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
@@ -50,9 +46,15 @@ export default function Chatrooms() {
   // состояние для выбранной комнаты
   const [selectedRoomID, setSelectedRoomID] = useState(null);
 
+  // -------------------- Получение ID пользователя  из Redux -----------------------
+  const { userID } = useSelector((store) => store.user);
+
   // -------------------- Получение всех комнат из Redux -----------------------
   const allRooms = useSelector((store) => store.room.allRooms); // Извлечение всех комнат из хранилища Redux.
   const dispatch = useDispatch();
+
+  // -------------------- Навигация для перехода по ссылкам -----------------------
+  const navigate = useNavigate();
 
   // Redux: Загрузка всех комнат
   useEffect(() => {
@@ -102,15 +104,6 @@ export default function Chatrooms() {
     }));
   };
 
-  // // Переключение блоков: открытые / закрытые комнаты
-  // const handlerIsExpanded = (state) => {
-  //   if (state === "open") {
-  //     setOpenRoomExpanded((prev) => !prev);
-  //   }
-  //   if (state === "private") {
-  //     setPrivateRoomExpanded((prev) => !prev);
-  //   }
-  // };
   // ------------------------------------- Данные для чата --------------------------
   const messages = [
     {
@@ -169,9 +162,9 @@ export default function Chatrooms() {
         });
       }, 1200);
     }
-    //  Когда  эффект создаёт “асинхронные” вещи (setInterval, setTimeout, подписки, слушатели событий),
+    //  Когда  эффект создаёт “асинхронные” вещи (setInterval, setTimeout), подписки, слушатели событий,
     // Надо обязательно их удалить или “отписаться”, чтобы не было утечек памяти и багов.
-    // Если не почистить setInterval, он будет продолжать тикать даже когда компонент уже не нужен!
+    // Если не почистить setInterval, он будет продолжать тикать даже когда компонент уже не нужен
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -195,13 +188,7 @@ export default function Chatrooms() {
     padding: "40px 0",
   });
 
-  // const RoomList = styled(Paper)({
-  //   background: "#fff0f6",
-  //   padding: "24px",
-  //   borderRadius: 20,
-  //   marginBottom: 24,
-  //   boxShadow: "0 4px 16px 0 rgba(230, 30, 99, 0.04)",
-  // });
+  console.log("privateRooms", privateRooms);
 
   return (
     <Root>
@@ -387,10 +374,16 @@ export default function Chatrooms() {
                                   "all .23s cubic-bezier(.3,1.4,.3,1)",
                               }}
                               onClick={() => {
-                                setSelectedRoomID(
-                                  privateRoomsSorted[index].id // // Сохраняем ID
-                                );
-                                setOpenRequestModal(true);
+                                const currentRoom = privateRoomsSorted[index];
+                                if (currentRoom.ownerID === userID) {
+                                  navigate(`/chatcards/${currentRoom.id}`);
+                                } else {
+                                  // Если не владелец → открываем модалку для отправки запроса
+                                  setSelectedRoomID(
+                                    privateRoomsSorted[index].id // или currentRoom.id
+                                  );
+                                  setOpenRequestModal(true);
+                                }
                               }}
                             >
                               {privateRoomsSorted[index]?.nameroom || ""}

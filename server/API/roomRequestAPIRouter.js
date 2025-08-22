@@ -1,5 +1,11 @@
 const express = require("express");
-const { Room, RoomRequest, RoomAdmission, User } = require("../db/models");
+const {
+  Room,
+  RoomRequest,
+  RoomAdmission,
+  User,
+  sequelize,
+} = require("../db/models");
 
 const router = express.Router();
 
@@ -75,6 +81,53 @@ router.get("/userRequest/:id", async (req, res) => {
     res
       .status(500)
       .json({ messageError: "Ошибка при получении запросов пользователя:" });
+  }
+});
+
+router.patch("/changeRequestStatus/:id", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    // текущий пользователь
+    const userID = req.session.userID;
+    if (!userID) {
+      return res.status(401).json({ message: "Пользователь не авторизован" });
+    }
+
+    // Все запросы внутри этого блока выполняются либо все вместе, либо ни один.
+    // Если где-то выбросится ошибка → транзакция откатывается.
+    await sequelize.transaction(async (t) => {
+      const request = await RoomRequest.findByPk(id, {
+        transaction: t, //  запрос выполняется внутри этой транзакции.
+        lock: t.LOCK.UPDATE, // накладываем блокировку на строку в базе (чтобы другой админ/процесс не смог параллельно её менять).
+        // Это важно, если двое одновременно обрабатывают один и тот же запрос.
+      });
+      if (!request) throw new Error("Запрос не найден");
+      if (request.owner_id !== userID) throw new Error("Не владелец комнаты");
+
+      // Меняем статус (именно внутри транзакции!)
+      // Если статус отличается от текущего → обновляем.
+      // Это нужно, чтобы не получилась ситуация статус = accepted, но участник не добавлен
+      if (request.status !== status) {
+        await request.update({ status }, { transaction: t });
+      }
+
+      // При accepted — гарантированно и один раз выдаём доступ
+      // Если запрос принят → добавляем запись в RoomAdmission.
+      if (status === "accepted") {
+        await RoomAdmission.findOrCreate({
+          // findOrCreate гарантирует, что запись не будет продублирована (создаст новую только если нет такой пары user_id + room_id).
+          where: { user_id: request.user_id, room_id: request.room_id },
+          defaults: { user_id: request.user_id, room_id: request.room_id },
+          transaction: t,
+        });
+      }
+    });
+
+    res.status(200).json({ message: "Запрос обновлён" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Ошибка при одобрении запроса" });
   }
 });
 

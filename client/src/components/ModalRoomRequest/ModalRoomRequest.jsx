@@ -1,65 +1,66 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import KeyIcon from "@mui/icons-material/Key";
-import {
-  Box,
-  Button,
-  fabClasses,
-  Fade,
-  Typography,
-  Snackbar,
-  Alert,
-} from "@mui/material";
+import { Box, Button, Typography, Snackbar, Alert } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import sendRoomRequest from "../../redux/actions/roomRequestActions";
 import { CLEAR_ROOM_REQUEST_STATE } from "../../redux/types/types";
 export default function ModalRoomRequest({
-  openRequestModal,
-  closeModalRequest,
-  roomID,
+  openRequestModal, // флаг открытия модалки
+  closeModalRequest, // функция закрытия модалки
+  roomID, // id комнаты для запроса
 }) {
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false); //  показ уведомлений (Snackbar)
   const dispatch = useDispatch();
+
+  // получаем данные из Redux стора
   const { status, error, request } = useSelector((store) => store.roomRequest);
 
+  // обработчик отправки запроса
   const handleSubmitRequest = () => {
-    if (!roomID) return;
-    dispatch(sendRoomRequest(roomID));
-    closeModalRequest();
+    if (!roomID) return; // если нет id комнаты, ничего не делаем
+    dispatch(sendRoomRequest(roomID)); // диспатчим action отправки запроса
+    closeModalRequest(); // закрываем модалку
   };
 
-  // Очищаем состояние при каждом открытии модалки
+  // при каждом открытии модалки — сбрасываем состояние запроса в Redux
   useEffect(() => {
     if (openRequestModal) {
       dispatch({ type: CLEAR_ROOM_REQUEST_STATE });
     }
   }, [openRequestModal, dispatch]);
 
+  // если запрос успешно отправлен — показываем Snackbar
   useEffect(() => {
     if (request) {
       setOpenSnackbar(true);
     }
   }, [request]);
 
+  // если при запросе возникла ошибка — показываем Snackbar
   useEffect(() => {
     if (error) {
       setOpenSnackbar(true);
     }
   }, [error]);
+
+  // при закрытии модалки — сразу скрываем Snackbar
   useEffect(() => {
     if (!openRequestModal) {
       setOpenSnackbar(false);
     }
   }, [openRequestModal]);
 
+  // обработчик закрытия модалки
   const handleCloseModalRequest = () => {
     closeModalRequest();
   };
-  console.log("status", status);
+
   return ReactDOM.createPortal(
     <>
       <Box>
         {openRequestModal && (
+          // фон и контейнер модалки
           <Box
             sx={{
               width: "100vw",
@@ -74,6 +75,7 @@ export default function ModalRoomRequest({
               alignItems: "center ",
             }}
           >
+            {/* сама модалка */}
             <Box
               sx={{
                 background: "rgb(252, 240, 245)",
@@ -85,6 +87,7 @@ export default function ModalRoomRequest({
                 boxShadow: 6,
               }}
             >
+              {/* заголовок модалки */}
               <Box
                 sx={{
                   display: "flex",
@@ -100,6 +103,7 @@ export default function ModalRoomRequest({
                   Запрос на доступ
                 </Typography>
               </Box>
+              {/* форма с кнопками */}
               <form onSubmit={handleSubmitRequest}>
                 <Button
                   variant="contained"
@@ -120,7 +124,7 @@ export default function ModalRoomRequest({
           </Box>
         )}
       </Box>
-      {/* Snackbar на запрос  */}
+      {/* Snackbar при успешном запросе */}
       {request && (
         <Snackbar
           open={openSnackbar}
@@ -138,7 +142,7 @@ export default function ModalRoomRequest({
           </Alert>
         </Snackbar>
       )}
-      {/* Вывод сообщения если   запрос был отправлен  */}
+      {/* Snackbar при ошибке */}
       {error && (
         <Snackbar
           open={openSnackbar}

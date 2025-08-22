@@ -37,5 +37,8 @@ module.exports = {
     "implicit-arrow-linebreak": 0,
     "react/jsx-curly-newline": 0,
     camelcase: 0,
+    "no-nested-ternary": 0,
+    "no-confusing-arrow": 0,
+    "function-paren-newlin": 0,
   },
 };
