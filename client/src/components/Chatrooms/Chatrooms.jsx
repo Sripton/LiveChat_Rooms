@@ -51,67 +51,39 @@ export default function Chatrooms() {
     dispatch(fetchAllRooms()); // Запрашиваем комнаты при монтировании
   }, [dispatch]);
 
-  // -------------------- Сортировка комнат -----------------------
-
-  // -------------------- Навигация для перехода по ссылкам -----------------------
-  const navigate = useNavigate();
-
   // -------------------- Разделение комнат по типу: открытые и приватные. -----------------------
   const openRooms = allRooms.filter((rooms) => rooms.isPrivate === false);
   const privateRooms = allRooms.filter((rooms) => rooms.isPrivate === true);
 
+  // -------------------- Сортировка комнат -----------------------
+  const sortByName = (a, b, asc) =>
+    asc
+      ? (a?.nameroom || "").localeCompare(b?.nameroom || "")
+      : (b?.nameroom || "").localeCompare(a?.nameroom || "");
+
   // Сортируем открытые комнаты
-  const openRoomsSorted = [...openRooms]
-    .map((room) => room)
-    .sort((a, b) => {
-      const { key, direction } = sortConfig;
-      const asc = direction === "asc";
-      if (key === "openrooms") {
-        return asc
-          ? a.nameroom.localeCompare(b.nameroom)
-          : b.nameroom.localeCompare(a.nameroom);
-      }
-      return 0;
-    });
+  const openRoomsSorted = useMemo(() => {
+    if (sortConfig.key !== "open") return openRooms;
+    const asc = sortConfig.direction === "asc";
+    return [...openRooms].sort((a, b) => sortByName(a, b, asc));
+  }, [openRooms, sortConfig]);
 
   // Сортируем приватные комнаты
-  const privateRoomsSorted = [...privateRooms]
-    .map((room) => room)
-    .sort((a, b) => {
-      const { key, direction } = sortConfig;
-      const asc = direction === "asc";
-      if (key === "privateroom") {
-        return asc
-          ? a.nameroom.localeCompare(b.nameroom)
-          : b.nameroom.localeCompare(a.nameroom);
-      }
-      return 0;
-    });
+  const privateRoomsSorted = useMemo(() => {
+    if (sortConfig.key !== "private") return privateRooms;
+    const asc = sortConfig.direction === "asc";
+    return [...privateRooms].sort((a, b) => sortByName(a, b, asc));
+  }, [privateRooms, sortConfig]);
 
-  // Фукнция для оанимации сортировки
-  // Старая фукнция
-  // const handleSortRooms = (key) => {
-  //   setSortConfig((prev) => ({
-  //     key,
-  //     // direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
-  //     direction: prev.direction === "asc" ? "desc" : "asc",
-  //   }));
-  // };
-
-  // Новая функция
   const handleSortRooms = (key) => {
-    setSortConfig((prev) => {
-      const sameKey = prev.key === key;
-      return {
-        key,
-        direction: sameKey
-          ? prev.direction === "asc"
-            ? "desc"
-            : "asc"
-          : "asc",
-      };
-    });
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
   };
+
+  // -------------------- Навигация для перехода по ссылкам -----------------------
+  const navigate = useNavigate();
 
   // -------------------- Стили через styled --------------------
   const Root = styled(Box)({
@@ -173,10 +145,8 @@ export default function Chatrooms() {
               <thead>
                 <tr>
                   <th
-                    className={`${
-                      sortConfig.key === "openrooms" ? "active" : ""
-                    }`}
-                    onClick={() => handleSortRooms("openrooms")}
+                    className={`${sortConfig.key === "open" ? "active" : ""}`}
+                    onClick={() => handleSortRooms("open")}
                     style={{ fontFamily: "monospace", color: "gray" }}
                   >
                     <Typography
@@ -190,18 +160,16 @@ export default function Chatrooms() {
                       Открытые комнаты
                       <span
                         className={`arrow ${
-                          sortConfig.key === "openrooms"
-                            ? sortConfig.direction
-                            : ""
+                          sortConfig.key === "open" ? sortConfig.direction : ""
                         }`}
                       />
                     </Typography>
                   </th>
                   <th
                     className={`${
-                      sortConfig.key === "privateroom" ? "active" : ""
+                      sortConfig.key === "private" ? "active" : ""
                     }`}
-                    onClick={() => handleSortRooms("privateroom")}
+                    onClick={() => handleSortRooms("private")}
                     style={{ fontFamily: "monospace", color: "gray" }}
                   >
                     <Typography
@@ -215,7 +183,7 @@ export default function Chatrooms() {
                       Приватные комнаты
                       <span
                         className={`arrow ${
-                          sortConfig.key === "privateroom"
+                          sortConfig.key === "private"
                             ? sortConfig.direction
                             : ""
                         }`}
