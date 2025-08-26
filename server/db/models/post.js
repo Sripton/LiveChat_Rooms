@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate({ User, Room, Postreaction }) {
       // define association here
       this.belongsTo(User, { foreignKey: "user_id" });
-      this.belongsTo(Room, { foreignKey: "id" });
+      this.belongsTo(Room, { foreignKey: "room_id" });
       this.hasMany(Postreaction, { foreignKey: "post_id" });
     }
   }

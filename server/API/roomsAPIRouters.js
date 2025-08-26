@@ -38,6 +38,11 @@ router.get("/", async (req, res) => {
   try {
     // const userID = req.session.userID || null;
     const userID = req.session.userID;
+    // if (!userID) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Пользователь не зарегистрироан" });
+    // }
     const findAllRoom = await Room.findAll({
       attributes: ["id", "nameroom", "description", "isPrivate", "ownerID"],
       // Мой запрос к этой комнате (0..1)
@@ -45,7 +50,8 @@ router.get("/", async (req, res) => {
         {
           model: RoomRequest,
           required: false,
-          where: userID ? { user_id: userID } : undefined,
+          // если юзера нет — вернём пустой набор запросов
+          where: userID ? { user_id: userID } : { user_id: null },
           attributes: ["id", "status"],
         },
         // Я как участник этой комнаты (0..1) — через связку many-to-many
@@ -54,7 +60,8 @@ router.get("/", async (req, res) => {
           attributes: ["id"], // подтягиваем у пользователя только id.
           through: { attributes: [] }, // скрываем промежуточную таблицу RoomAdmissions (чтобы в JSON не тащился мусор).
           required: false, // LEFT JOIN.
-          where: userID ? { id: userID } : undefined,
+          // если юзера нет — вернём пустой набор участников «меня»
+          where: userID ? { id: userID } : { id: null },
         },
       ],
       order: [["nameroom", "ASC"]],

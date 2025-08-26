@@ -30,42 +30,35 @@ import ModalRoomRequest from "../ModalRoomRequest";
 import "./chatrooms.css";
 
 export default function Chatrooms() {
+  // -------------------- Сортировка -----------------------
   // Состояние для хранения информации о текущей сортировке
   // key — по какому полю сортируем, direction — asc или desc
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
-  // Состояния сообщений  для анимации
-  const [visibleMessages, setVisibleMessages] = useState([]);
+  // -------------------- Модальные окна -------------------
+  const [openModalRoomCreate, setOpenModalRoomCreate] = useState(false); // Состояния модального окна для создания комнат
+  const [openRequestModal, setOpenRequestModal] = useState(false); // Состояния модального окна для создания запроса к приватным комнатам
 
-  // Состояния модального окна для создания комнат
-  const [openModalRoomCreate, setOpenModalRoomCreate] = useState(false);
+  // -------------------- Комнаты -------------------
+  const [selectedRoomID, setSelectedRoomID] = useState(null); // состояние для выбранной комнаты
 
-  // Состояния модального окна для создания запроса к приватным комнатам
-  const [openRequestModal, setOpenRequestModal] = useState(false);
-
-  // состояние для выбранной комнаты
-  const [selectedRoomID, setSelectedRoomID] = useState(null);
-
-  // -------------------- Получение ID пользователя  из Redux -----------------------
-  const { userID } = useSelector((store) => store.user);
-
-  // -------------------- Получение всех комнат из Redux -----------------------
+  // -------------------- Redux ----------------------------
+  const { userID } = useSelector((store) => store.user); // Получение ID пользователя  из Redux
   const allRooms = useSelector((store) => store.room.allRooms); // Извлечение всех комнат из хранилища Redux.
   const dispatch = useDispatch();
 
-  // -------------------- Навигация для перехода по ссылкам -----------------------
-  const navigate = useNavigate();
-
-  // Redux: Загрузка всех комнат
   useEffect(() => {
     dispatch(fetchAllRooms()); // Запрашиваем комнаты при монтировании
   }, [dispatch]);
 
+  // -------------------- Сортировка комнат -----------------------
+
+  // -------------------- Навигация для перехода по ссылкам -----------------------
+  const navigate = useNavigate();
+
   // -------------------- Разделение комнат по типу: открытые и приватные. -----------------------
   const openRooms = allRooms.filter((rooms) => rooms.isPrivate === false);
   const privateRooms = allRooms.filter((rooms) => rooms.isPrivate === true);
-
-  // -------------------- Сортировка комнат -----------------------
 
   // Сортируем открытые комнаты
   const openRoomsSorted = [...openRooms]
@@ -73,7 +66,6 @@ export default function Chatrooms() {
     .sort((a, b) => {
       const { key, direction } = sortConfig;
       const asc = direction === "asc";
-      if (!key) return 0;
       if (key === "openrooms") {
         return asc
           ? a.nameroom.localeCompare(b.nameroom)
@@ -81,13 +73,13 @@ export default function Chatrooms() {
       }
       return 0;
     });
+
   // Сортируем приватные комнаты
   const privateRoomsSorted = [...privateRooms]
     .map((room) => room)
     .sort((a, b) => {
       const { key, direction } = sortConfig;
       const asc = direction === "asc";
-      if (!key) return 0;
       if (key === "privateroom") {
         return asc
           ? a.nameroom.localeCompare(b.nameroom)
@@ -97,95 +89,36 @@ export default function Chatrooms() {
     });
 
   // Фукнция для оанимации сортировки
+  // Старая фукнция
+  // const handleSortRooms = (key) => {
+  //   setSortConfig((prev) => ({
+  //     key,
+  //     // direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+  //     direction: prev.direction === "asc" ? "desc" : "asc",
+  //   }));
+  // };
+
+  // Новая функция
   const handleSortRooms = (key) => {
-    setSortConfig((prev) => ({
-      key,
-      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
-    }));
+    setSortConfig((prev) => {
+      const sameKey = prev.key === key;
+      return {
+        key,
+        direction: sameKey
+          ? prev.direction === "asc"
+            ? "desc"
+            : "asc"
+          : "asc",
+      };
+    });
   };
-
-  // ------------------------------------- Данные для чата --------------------------
-  const messages = [
-    {
-      id: 1,
-      sender: "user",
-      text: "Привет. Я Мария. Ты когда-нибудь задумывался, что наш выбор еды влияет на климат сильнее, чем кажется?",
-    },
-    {
-      id: 2,
-      sender: "bot",
-      text: "Привет Мария. Я Джон. Да, особенно когда читаешь, сколько воды уходит на килограмм говядины — пугает.",
-    },
-    {
-      id: 3,
-      sender: "user",
-      text: "Вот почему я отказалась от мяса — не из моды, а ради планеты и будущего детей",
-    },
-    {
-      id: 4,
-      sender: "bot",
-      text: "Звучит честно… Я давно хотел начать с малого — может, ты мне подскажешь?",
-    },
-  ];
-
-  // -------------------------------- Анимация сообщений -----------------------------
-  const intervalRef = useRef();
-
-  useEffect(() => {
-    // Останавливаем анимацию, если открыто модальное окно
-    if (openModalRoomCreate || openRequestModal) {
-      // Если ранее был создан setInterval — очищаем его,
-      // чтобы анимация сообщений остановилась на паузе.
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      return; // Выходим из эффекта — не запускаем новый интервал.
-    }
-    // Если не все сообщения показаны — продолжаем анимацию
-    // Добавляем сообщения по одному
-    if (visibleMessages.length < messages.length) {
-      // i — индекс следующего сообщения, начинаем с уже показанного количества
-      let i = visibleMessages.length;
-      // Запускаем setInterval — каждую 1.2 сек добавляем следующее сообщение
-      intervalRef.current = setInterval(() => {
-        setVisibleMessages((prev) => {
-          if (i < messages.length) {
-            const next = [...prev, messages[i]]; // добавляем следующее сообщение
-            i += 1;
-            return next;
-          }
-
-          // Если все сообщения показаны — очищаем интервал
-          clearInterval(intervalRef.current);
-          return prev;
-        });
-      }, 1200);
-    }
-    //  Когда  эффект создаёт “асинхронные” вещи (setInterval, setTimeout), подписки, слушатели событий,
-    // Надо обязательно их удалить или “отписаться”, чтобы не было утечек памяти и багов.
-    // Если не почистить setInterval, он будет продолжать тикать даже когда компонент уже не нужен
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [openModalRoomCreate, openRequestModal, visibleMessages.length]);
-
-  // -------------------- Мемоизированный рендер  сообщений для анимации --------------------
-  const renderedMessages = useMemo(
-    () =>
-      visibleMessages.map((msg) => (
-        <ChatMessage key={msg.id} sender={msg.sender} text={msg.text} />
-      )),
-    [visibleMessages]
-  );
 
   // -------------------- Стили через styled --------------------
   const Root = styled(Box)({
-    minHeight: "100vh",
+    height: "100vh",
     background: "#fff0f5",
     padding: "40px 0",
+    overflow: "hidden",
   });
 
   return (
@@ -196,7 +129,8 @@ export default function Chatrooms() {
         spacing={4}
         sx={{
           position: "relative",
-          ml: 14,
+          ml: { xs: 0, sm: 2, md: 6, lg: 14 },
+          px: { xs: 2, sm: 0 },
           display: "flex",
         }}
       >
@@ -204,10 +138,10 @@ export default function Chatrooms() {
           <Box>
             <Button
               sx={{
-                color: "#d81b60",
-                fontWeight: 700,
+                mt: { xs: 1, md: 2 },
+                color: "#999",
                 fontFamily: "monospace",
-                fontSize: "1rem",
+                fontSize: { xs: 14, sm: 16 },
               }}
               onClick={() => setOpenModalRoomCreate(true)}
             >
@@ -224,10 +158,18 @@ export default function Chatrooms() {
       </Grid>
 
       {/* Основной контент: комнаты и чат */}
-      <Grid container justifyContent="center" spacing={2} sx={{ mt: 10 }}>
-        <Grid item>
-          <div className="filter">
-            <table>
+      <Grid
+        container
+        justifyContent="center"
+        spacing={2}
+        sx={{ mt: { xs: 4, md: 10 }, px: { xs: 2, sm: 3, md: 0 } }}
+      >
+        <Grid item xs={12} md="auto" sx={{ maxWidth: { xs: "100%" } }}>
+          <Box
+            className="filter"
+            sx={{ overflowX: { xs: "auto", md: "visible" } }}
+          >
+            <table className="rooms-table">
               <thead>
                 <tr>
                   <th
@@ -237,14 +179,23 @@ export default function Chatrooms() {
                     onClick={() => handleSortRooms("openrooms")}
                     style={{ fontFamily: "monospace", color: "gray" }}
                   >
-                    Открытые комнаты
-                    <span
-                      className={`arrow ${
-                        sortConfig.key === "openrooms"
-                          ? sortConfig.direction
-                          : ""
-                      }`}
-                    />
+                    <Typography
+                      sx={{
+                        mt: { xs: 1, md: 2 },
+                        color: "#999",
+                        fontFamily: "monospace",
+                        fontSize: { xs: 18, sm: 20 },
+                      }}
+                    >
+                      Открытые комнаты
+                      <span
+                        className={`arrow ${
+                          sortConfig.key === "openrooms"
+                            ? sortConfig.direction
+                            : ""
+                        }`}
+                      />
+                    </Typography>
                   </th>
                   <th
                     className={`${
@@ -253,14 +204,23 @@ export default function Chatrooms() {
                     onClick={() => handleSortRooms("privateroom")}
                     style={{ fontFamily: "monospace", color: "gray" }}
                   >
-                    Приватные комнаты
-                    <span
-                      className={`arrow ${
-                        sortConfig.key === "privateroom"
-                          ? sortConfig.direction
-                          : ""
-                      }`}
-                    />
+                    <Typography
+                      sx={{
+                        mt: { xs: 1, md: 2 },
+                        color: "#999",
+                        fontFamily: "monospace",
+                        fontSize: { xs: 18, sm: 20 },
+                      }}
+                    >
+                      Приватные комнаты
+                      <span
+                        className={`arrow ${
+                          sortConfig.key === "privateroom"
+                            ? sortConfig.direction
+                            : ""
+                        }`}
+                      />
+                    </Typography>
                   </th>
                 </tr>
               </thead>
@@ -272,58 +232,63 @@ export default function Chatrooms() {
                     <tr key={index}>
                       <td>
                         {openRoomsSorted[index] ? (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              cursor: "pointer",
-                              backgroundColor: "#fff0f5",
-                              p: 2,
-                              borderRadius: 3,
-                              boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
-                              transition:
-                                "transform 0.3s ease, box-shadow 0.3s ease",
-                              "&:hover": {
-                                transition: "translateY(-4px) scale(1.02)",
-                                boxShadow:
-                                  "0 6px 14px rgba(255, 105, 180, 0.35)",
-                                backgroundColor: "#ffe4ec",
-                              },
-                            }}
+                          <Link
+                            component={NavLink}
+                            to={`/chatcards/${openRoomsSorted[index]?.id}`}
+                            sx={{ textDecoration: "none" }}
                           >
-                            <Avatar
+                            <Box
                               sx={{
-                                bgcolor: "transparent",
-                                fontSize: "1.5rem",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                cursor: "pointer",
+                                backgroundColor: "#fff0f5",
+                                p: { xs: 1.25, md: 2 },
+                                borderRadius: 3,
+                                boxShadow:
+                                  "0 4px 10px rgba(255, 182, 193, 0.2)",
+                                transition:
+                                  "transform 0.3s ease, box-shadow 0.3s ease",
+                                "&:hover": {
+                                  transform: "translateY(-2px) scale(1.01)",
+                                  boxShadow:
+                                    "0 6px 14px rgba(255, 105, 180, 0.35)",
+                                  backgroundColor: "#ffe4ec",
+                                },
                               }}
                             >
-                              🌐
-                            </Avatar>
+                              <Avatar
+                                sx={{
+                                  bgcolor: "transparent",
+                                  fontSize: { xs: "1.25rem", md: "1.5rem" },
+                                }}
+                              >
+                                🌐
+                              </Avatar>
 
-                            <Link
-                              component={NavLink}
-                              to={`/chatcards/${openRoomsSorted[index]?.id}`}
-                              sx={{ textDecoration: "none" }}
-                            >
                               <Typography
                                 sx={{
-                                  borderRadius: 3,
-                                  width: "100%",
-                                  fontSize: 18,
-                                  letterSpacing: 0.6,
-                                  textTransform: "none",
-                                  px: 2,
-                                  py: 1,
-                                  fontFamily: "monospace",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
                                   cursor: "pointer",
+                                  backgroundColor: "#fff0f5",
+                                  p: { xs: 1, md: 1 },
+                                  borderRadius: 3,
                                   transition:
-                                    "all .23s cubic-bezier(.3,1.4,.3,1)",
+                                    "transform 0.3s ease, box-shadow 0.3s ease",
+                                  "&:hover": {
+                                    transform: "translateY(-2px) scale(1.01)",
+                                    backgroundColor: "#ffe4ec",
+                                  },
                                 }}
                               >
                                 {" "}
                                 {openRoomsSorted[index]?.nameroom || ""}
                               </Typography>
-                            </Link>
-                          </Box>
+                            </Box>
+                          </Link>
                         ) : (
                           <span className="room-cell" />
                         )}
@@ -348,6 +313,24 @@ export default function Chatrooms() {
                                 backgroundColor: "#ffe4ec",
                               },
                             }}
+                            onClick={() => {
+                              const currentRoom = privateRoomsSorted[index];
+                              // если гость — отправляем на логин и выходим
+                              if (!userID) {
+                                navigate("/signin"); // роут на авторизацию
+                                return;
+                              }
+
+                              // авторизован: используем флаг с бэка
+                              if (currentRoom.hasAccess) {
+                                navigate(`/chatcards/${currentRoom.id}`);
+                              } else {
+                                setSelectedRoomID(
+                                  privateRoomsSorted[index].id // или currentRoom.id
+                                );
+                                setOpenRequestModal(true);
+                              }
+                            }}
                           >
                             <Avatar
                               sx={{
@@ -361,34 +344,21 @@ export default function Chatrooms() {
 
                             <Typography
                               sx={{
+                                display: "flex",
+                                alignItems: "center",
                                 color: " #1976d2",
-                                borderRadius: 3,
-                                width: "100%",
-                                fontSize: 18,
-                                letterSpacing: 0.6,
-                                textTransform: "none",
-                                px: 2,
-                                py: 1,
-                                fontFamily: "monospace",
+                                gap: 1,
                                 cursor: "pointer",
+                                backgroundColor: "#fff0f5",
+                                p: { xs: 1, md: 1 },
+                                borderRadius: 3,
                                 transition:
-                                  "all .23s cubic-bezier(.3,1.4,.3,1)",
-                              }}
-                              onClick={() => {
-                                const currentRoom = privateRoomsSorted[index];
-                                if (
-                                  currentRoom.isOwner ||
-                                  currentRoom.isMember ||
-                                  currentRoom.myRequestStatus === "accepted"
-                                ) {
-                                  navigate(`/chatcards/${currentRoom.id}`);
-                                } else {
-                                  // Если не владелец → открываем модалку для отправки запроса
-                                  setSelectedRoomID(
-                                    privateRoomsSorted[index].id // или currentRoom.id
-                                  );
-                                  setOpenRequestModal(true);
-                                }
+                                  "transform 0.3s ease, box-shadow 0.3s ease",
+                                "&:hover": {
+                                  transform: "translateY(-2px) scale(1.01)",
+
+                                  backgroundColor: "#ffe4ec",
+                                },
                               }}
                             >
                               {privateRoomsSorted[index]?.nameroom || ""}
@@ -402,35 +372,10 @@ export default function Chatrooms() {
                   ))}
               </tbody>
             </table>
-          </div>
-        </Grid>
-
-        {/* Блок анимации/чата */}
-        <Grid item>
-          <Paper
-            sx={{
-              padding: "10px 15px",
-              boxShadow: "0 8px 32px 0 rgba(230, 30, 99, 0.10)",
-              borderRadius: 6,
-              display: "flex",
-              justifyContent: "center",
-              flexDirection: "column",
-              gap: 1,
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 1,
-                width: "400px",
-              }}
-            >
-              {renderedMessages}
-            </Box>
-          </Paper>
+          </Box>
         </Grid>
       </Grid>
+
       <ModalRoomRequest
         openRequestModal={openRequestModal}
         closeModalRequest={() => setOpenRequestModal(false)}
