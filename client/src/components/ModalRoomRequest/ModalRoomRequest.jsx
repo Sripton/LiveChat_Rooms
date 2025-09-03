@@ -8,7 +8,7 @@ import { CLEAR_ROOM_REQUEST_STATE } from "../../redux/types/types";
 export default function ModalRoomRequest({
   openRequestModal, // флаг открытия модалки
   closeModalRequest, // функция закрытия модалки
-  roomID, // id комнаты для запроса
+  selectedRoomID, // id комнаты для запроса
 }) {
   const [openSnackbar, setOpenSnackbar] = useState(false); //  показ уведомлений (Snackbar)
   const dispatch = useDispatch();
@@ -18,8 +18,8 @@ export default function ModalRoomRequest({
 
   // обработчик отправки запроса
   const handleSubmitRequest = () => {
-    if (!roomID) return; // если нет id комнаты, ничего не делаем
-    dispatch(sendRoomRequest(roomID)); // диспатчим action отправки запроса
+    if (!selectedRoomID) return; // если нет id комнаты, ничего не делаем
+    dispatch(sendRoomRequest(selectedRoomID)); // диспатчим action отправки запроса
     closeModalRequest(); // закрываем модалку
   };
 

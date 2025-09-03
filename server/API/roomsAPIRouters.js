@@ -56,7 +56,7 @@ router.get("/", async (req, res) => {
         },
         // Я как участник этой комнаты (0..1) — через связку many-to-many
         {
-          association: "members", // alias, который  дал в модели Room.belongsToMany(User, { through: RoomAdmission, as: "members" }).
+          association: "members", // alias, который  в модели Room.belongsToMany(User, { through: RoomAdmission, as: "members" }).
           attributes: ["id"], // подтягиваем у пользователя только id.
           through: { attributes: [] }, // скрываем промежуточную таблицу RoomAdmissions (чтобы в JSON не тащился мусор).
           required: false, // LEFT JOIN.
@@ -68,7 +68,7 @@ router.get("/", async (req, res) => {
     });
 
     const payload = findAllRoom.map((room) => {
-      const json = room.get({ plain: true }); // roomtoJSON();
+      const json = room.get({ plain: true }); // room.toJSON();
       const isOwner = userID ? json.ownerID === Number(userID) : false;
       const isMember = Array.isArray(json.members) && json.members.length > 0;
       const myRequestStatus =

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -46,8 +46,7 @@ export default function ModalRoomCreate({
       <Box
         sx={{
           zIndex: 10001,
-          position: "fixed",
-          // используется в сочетании с position: absolute или position: fixed
+          position: "fixed", // используется в сочетании с position: absolute или position: fixed
           inset: 0, // устанавливает нулевое расстояние от всех сторон родительского контейнера
           bgcolor: "rgba(41, 36, 37, 0.28)",
           display: "flex",

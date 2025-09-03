@@ -38,7 +38,6 @@ export default function UserDashboard({ userPropsData }) {
   const { incoming, outgoing, updatingIds } = useSelector(
     (store) => store.roomRequestStatus
   );
-  console.log("updatingIds", updatingIds);
 
   const dispatch = useDispatch();
   const handleChangeTab = (event, newValue) => {
