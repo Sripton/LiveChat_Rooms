@@ -39,6 +39,7 @@ module.exports = {
     camelcase: 0,
     "no-nested-ternary": 0,
     "no-confusing-arrow": 0,
-    "function-paren-newlin": 0,
+    "function-paren-newline": 0,
+    indent: 0,
   },
 };

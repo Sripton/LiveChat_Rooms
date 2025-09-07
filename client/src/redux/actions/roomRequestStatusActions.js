@@ -6,6 +6,7 @@ import {
   ROOM_REQUESTS_CLEAR,
   ROOM_REQUEST_UPDATE_START,
   ROOM_REQUEST_UPDATE_SUCCESS,
+  ROOM_REQUEST_UPDATE_ERROR,
 } from "../types/types";
 // Асинхронный экшен для загрузки входящих/исходящих запросов пользователя
 export const fetchUserRequestsStatus = (userID) => async (dispatch) => {
@@ -33,26 +34,39 @@ export const fetchUserRequestsStatus = (userID) => async (dispatch) => {
 export const clearUserRequests = () => async (dispatch) => {};
 
 // Экшен для  обновления статуса конкретного запроса
-export const updateRoomRequestStatus = (id, status) => async (dispatch) => {
-  try {
-    dispatch({ type: ROOM_REQUEST_UPDATE_START, payload: { id } });
-    const response = await axios.patch(
-      `/api/room-requests/changeRequestStatus/${id}`,
-      { status }
-    );
+export const updateRoomRequestStatus = (id, nextStatus) => async (dispatch) => {
+  const idStr = String(id);
+  const MIN_SHOW = 350;
+  const start = new Date();
+  dispatch({
+    type: ROOM_REQUEST_UPDATE_START,
+    payload: { id: idStr, nextStatus },
+  });
 
+  try {
+    const response = await axios.patch(
+      `/api/room-requests/changeRequestStatus/${idStr}`,
+      { status: nextStatus }
+    );
     if (response.status === 200) {
       const { data } = response;
-      dispatch({
-        type: ROOM_REQUEST_UPDATE_SUCCESS,
-        payload: {
-          id: data.request.id,
-          status: data.request.status,
-          message: data.request.message,
-        },
-      });
+      const timeHassPassed = new Date() - start;
+      const wait = Math.max(0, MIN_SHOW - timeHassPassed);
+      setTimeout(() => {
+        dispatch({
+          type: ROOM_REQUEST_UPDATE_SUCCESS,
+          payload: {
+            id: String(data.request.id),
+            status: data.request.status,
+            message: data.request.message,
+          },
+        });
+      }, wait);
     }
   } catch (error) {
-    console.log(error);
+    dispatch({
+      type: ROOM_REQUEST_UPDATE_ERROR,
+      payload: { id: idStr, error: error?.response?.data?.message },
+    });
   }
 };

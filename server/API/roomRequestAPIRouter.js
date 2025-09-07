@@ -95,8 +95,14 @@ router.patch("/changeRequestStatus/:id", async (req, res) => {
   const { status } = req.body;
   try {
     // текущий пользователь
-    const userID = 1;
+    const userID = req.session.userID;
     if (!userID) throw httpError(401, "Пользователь не авторизован");
+
+    // валидация входа
+    const allowed = ["accepted", "rejected"];
+    if (!allowed.includes(status)) {
+      throw httpError(400, "Неверный статус");
+    }
 
     // Все запросы внутри этого блока выполняются либо все вместе, либо ни один.
     // Если где-то выбросится ошибка → транзакция откатывается.

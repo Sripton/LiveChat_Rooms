@@ -12,15 +12,16 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
+  CircularProgress,
 } from "@mui/material";
 
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import MailIcon from "@mui/icons-material/Mail";
-import { display } from "@mui/system";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import { columnGap } from "@mui/system";
 import {
   fetchUserRequestsStatus,
   updateRoomRequestStatus,
@@ -31,11 +32,54 @@ function TabPanel(props) {
   const { index, value, children } = props;
   return <div role="tabpanel">{value === index && <Box>{children}</Box>}</div>;
 }
+
+// Функция для спинера
+function ActionSpinner({ intent }) {
+  const isAccept = intent === "accepted";
+  const Icon = isAccept ? CheckCircleIcon : CancelIcon;
+
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 32,
+        height: 32,
+      }}
+    >
+      <CircularProgress
+        size={32}
+        thickness={4}
+        sx={{
+          color: isAccept ? "success.main" : "error.main",
+        }}
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Icon
+          sx={{
+            fontSize: 20,
+            color: isAccept ? "success.main" : "error.main",
+            opacity: 0.9,
+          }}
+        />
+      </Box>
+    </Box>
+  );
+}
 export default function UserDashboard({ userPropsData }) {
   const [tabIndex, setTabIndex] = useState(0);
   const { userAvatar, userName, userID } = userPropsData;
   const userRooms = useSelector((store) => store.room.userRooms);
-  const { incoming, outgoing, updatingIds } = useSelector(
+  const { incoming, outgoing, updatingIds, updatingById } = useSelector(
     (store) => store.roomRequestStatus
   );
 
@@ -227,7 +271,17 @@ export default function UserDashboard({ userPropsData }) {
               // Если запрос отправил сам пользователь
               const isOutgoing = request.user_id === userID;
               // Для спинера в момент когда статус обновляется
-              const isUpdating = updatingIds.includes(request.id);
+              /* const isUpdating = updatingIds.includes(request.id); */
+              const rid = String(request.id);
+              const isUpdating = Boolean(updatingById?.[rid]);
+              console.log(
+                "updatingById",
+                updatingById,
+                "rid",
+                rid,
+                "isUpdating",
+                isUpdating
+              );
               // Когда запрос в статусе оюидания
               const isPending = request.status === "pending";
               let avatarSrc;
@@ -264,7 +318,9 @@ export default function UserDashboard({ userPropsData }) {
                     },
                   }}
                   secondaryAction={
-                    isOutgoing ? (
+                    isUpdating ? (
+                      <ActionSpinner intent={updatingById[rid]} />
+                    ) : isOutgoing ? (
                       request?.status === "accepted" ? (
                         <CheckCircleIcon sx={{ color: "green" }} />
                       ) : request?.status === "rejected" ? (
@@ -286,11 +342,12 @@ export default function UserDashboard({ userPropsData }) {
                               color: "gray",
                             },
                           }}
-                          onClick={() =>
+                          onClick={() => {
+                            console.log("CLICK", request.id);
                             dispatch(
                               updateRoomRequestStatus(request.id, "accepted")
-                            )
-                          }
+                            );
+                          }}
                         >
                           Принять
                         </Button>
@@ -304,11 +361,11 @@ export default function UserDashboard({ userPropsData }) {
                               backgroundColor: "#fff0f6",
                             },
                           }}
-                          onClick={() =>
+                          onClick={() => {
                             dispatch(
                               updateRoomRequestStatus(request.id, "rejected")
-                            )
-                          }
+                            );
+                          }}
                         >
                           Отклонить
                         </Button>

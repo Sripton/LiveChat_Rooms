@@ -10,15 +10,12 @@ import {
   Button,
   Avatar,
 } from "@mui/material";
-import AddHomeIcon from "@mui/icons-material/AddHome";
-import EditIcon from "@mui/icons-material/Edit";
-import ContactMailIcon from "@mui/icons-material/ContactMail";
-import FavoriteIcon from "@mui/icons-material/Favorite";
 import LogoutIcon from "@mui/icons-material/Logout";
-import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import AccountBoxIcon from "@mui/icons-material/AccountBox";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import AppRegistrationRoundedIcon from "@mui/icons-material/AppRegistrationRounded";
 import "./navbar.css";
-import { useNavigate, NavLink, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/actions/userActions";
 export default function Navbar({ userPropsData }) {
@@ -43,6 +40,8 @@ export default function Navbar({ userPropsData }) {
       dispatch(logoutUser(navigate)); // Выход с вызовом action logoutUser
     } else if (text === "Мой профиль") {
       navigate("/userdashboard");
+    } else {
+      navigate("/");
     }
     setOpenMenu(false); // Закрываем меню
   };
@@ -70,7 +69,9 @@ export default function Navbar({ userPropsData }) {
   const getStartIcon = (text) => {
     switch (text) {
       case "Войти":
-        return <AddHomeIcon />;
+        return <AppRegistrationRoundedIcon />;
+      case "Главная":
+        return <HomeRoundedIcon />;
       case "Мой профиль":
         return <AccountBoxIcon />;
       default:
@@ -253,7 +254,7 @@ export default function Navbar({ userPropsData }) {
           onClose={() => toggleDrawerMenu(false)}
         >
           <List>
-            {["Войти", "Мой профиль", "Выход"].map((text) => (
+            {["Войти", "Главная", "Мой профиль", "Выход"].map((text) => (
               <ListItem
                 key={text}
                 className="menu-list"

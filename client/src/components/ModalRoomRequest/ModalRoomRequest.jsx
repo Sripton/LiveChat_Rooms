@@ -51,7 +51,7 @@ export default function ModalRoomRequest({
     }
   }, [openRequestModal]);
 
-  // обработчик закрытия модалки
+  // обработчик закрытия модалки ?
   const handleCloseModalRequest = () => {
     closeModalRequest();
   };
@@ -66,7 +66,7 @@ export default function ModalRoomRequest({
               width: "100vw",
               height: "100vh",
               bgcolor: "rgba(207, 128, 163, 0.5)",
-              zIndex: 1300,
+              zIndex: 10030,
               position: "fixed",
               top: 0,
               left: 0,

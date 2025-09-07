@@ -18,13 +18,18 @@ import CloseIcon from "@mui/icons-material/Close";
 import PublicIcon from "@mui/icons-material/Public";
 import LockIcon from "@mui/icons-material/Lock";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 export default function ModalRoomLists({
+  userID,
   openModalRoomsShow,
   closeModalRoomsShow, // передай: () => setOpenModalRomsShow(false)
   isSmall,
   roomsView,
+  setOpenRequestModal,
+  setSelectedRoomID,
 }) {
+  const navigate = useNavigate();
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const allRooms = useSelector((store) => store.room.allRooms);
@@ -41,8 +46,8 @@ export default function ModalRoomLists({
     roomsView === "open"
       ? `Открытые комнаты (${visibleRooms.length})`
       : roomsView === "private"
-        ? `Приватные комнаты (${visibleRooms.length})`
-        : "";
+      ? `Приватные комнаты (${visibleRooms.length})`
+      : "";
 
   return (
     <Dialog
@@ -106,19 +111,43 @@ export default function ModalRoomLists({
                   <PublicIcon sx={{ color: "#ad1457" }} />
                 )}
               </ListItemIcon>
-              <ListItemText
-                primary={
+              <ListItemText>
+                {room.isPrivate ? (
                   <Typography
                     color="primary"
                     sx={{
                       fontFamily: "monospace",
                       cursor: "pointer",
                     }}
+                    onClick={() => {
+                      const currentRoom = room;
+                      // если гость — отправляем на логин и выходим
+                      if (!userID) {
+                        navigate("/signin");
+                      } else if (currentRoom.hasAccess) {
+                        // авторизован: используем флаг с бэка
+                        navigate(`/chatcards/${currentRoom.id}`);
+                      } else {
+                        setSelectedRoomID(room.id);
+                        setOpenRequestModal(true);
+                      }
+                    }}
                   >
                     {room.nameroom}
                   </Typography>
-                }
-              />
+                ) : (
+                  <Typography
+                    color="primary"
+                    sx={{
+                      fontFamily: "monospace",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => navigate(`/chatcards/${room.id}`)}
+                  >
+                    {room.nameroom}
+                  </Typography>
+                )}
+              </ListItemText>
             </ListItem>
           ))}
         </List>

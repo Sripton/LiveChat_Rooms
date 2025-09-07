@@ -1,5 +1,5 @@
-// Тестирование на сервере 
-// Список комнат (публичный) 
+// Тестирование на сервере
+// Список комнат (публичный)
 // fetch("http://localhost:3001/api/rooms", {
 //   method: "GET",
 //   credentials: "include", // отправит session cookie
@@ -22,5 +22,3 @@
 //   body: JSON.stringify({ text: "hello" }),
 //   credentials: "include",
 // }).then(r => r.json()).then(console.log);
-
-

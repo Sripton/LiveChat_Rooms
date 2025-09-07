@@ -666,10 +666,13 @@ export default function Chatrooms() {
         setOpenModalRoomCreate={setOpenModalRoomCreate}
       />
       <ModalRoomLists
+        userID={userID}
         openModalRoomsShow={openModalRoomsShow}
         closeModalRoomsShow={() => setOpenModalRomsShow(false)}
         isSmall={isSmall}
         roomsView={roomsView}
+        setOpenRequestModal={setOpenRequestModal}
+        setSelectedRoomID={setSelectedRoomID}
       />
     </Box>
   );
