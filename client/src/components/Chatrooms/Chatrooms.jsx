@@ -12,6 +12,7 @@ import {
   Divider,
   InputBase,
 } from "@mui/material";
+import { columnGap, Stack } from "@mui/system";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -23,7 +24,6 @@ import CreateIcon from "@mui/icons-material/Create";
 
 // Redux
 import { useDispatch, useSelector } from "react-redux";
-import { Stack } from "@mui/system";
 import { fetchAllRooms } from "../../redux/actions/roomActions";
 
 // Компоненты
@@ -115,6 +115,8 @@ export default function Chatrooms() {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("lg")); // lg = 1200px по умолчанию
 
+  console.log("privateRoomsSorted", privateRoomsSorted);
+  console.log("userID", userID);
   return (
     <Box
       sx={{
@@ -422,10 +424,9 @@ export default function Chatrooms() {
                             // если гость — отправляем на логин и выходим
                             if (!userID) {
                               navigate("/signin");
-                              return;
-                            }
-                            // авторизован: используем флаг с бэка
-                            if (currentRoom?.hasAccess) {
+                            } else if (Number(currentRoom.ownerID) === userID) {
+                              navigate(`/chatcards/${currentRoom.id}`);
+                            } else if (currentRoom?.hasAccess) {
                               navigate(`/chatcards/${currentRoom.id}`);
                             } else {
                               setSelectedRoomID(currentRoom.id);

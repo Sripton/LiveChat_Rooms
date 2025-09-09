@@ -124,6 +124,8 @@ export default function ModalRoomLists({
                       // если гость — отправляем на логин и выходим
                       if (!userID) {
                         navigate("/signin");
+                      } else if (Number(currentRoom.ownerID) === userID) {
+                        navigate(`/chatcards/${currentRoom.id}`);
                       } else if (currentRoom.hasAccess) {
                         // авторизован: используем флаг с бэка
                         navigate(`/chatcards/${currentRoom.id}`);

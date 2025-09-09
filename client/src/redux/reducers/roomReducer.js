@@ -30,7 +30,7 @@ export default function roomReducer(state = initialState, action) {
         nameroom: payload.nameroom,
         description: payload.description,
         isPrivate: payload.isPrivate,
-        allRooms: [...state.allRooms, action.payload], // добавляем новую
+        allRooms: [...state.allRooms, payload], // добавляем новую
       };
     // Обновление списка комнат (например, при получении всех комнат пользователя с сервера).
     case GET_ALL_ROOMS:

@@ -8,11 +8,8 @@ import {
   Link,
   Fade,
 } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  createPostSubmit,
-  fetchAllPosts,
-} from "../../redux/actions/postActions";
+import { useDispatch } from "react-redux";
+import { createPostSubmit } from "../../redux/actions/postActions";
 export default function ModalPostCreate({
   openModalPost,
   setOpenModalPost,

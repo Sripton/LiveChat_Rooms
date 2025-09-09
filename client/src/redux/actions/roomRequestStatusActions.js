@@ -36,8 +36,8 @@ export const clearUserRequests = () => async (dispatch) => {};
 // Экшен для  обновления статуса конкретного запроса
 export const updateRoomRequestStatus = (id, nextStatus) => async (dispatch) => {
   const idStr = String(id);
-  const MIN_SHOW = 350;
-  const start = new Date();
+  const MIN_SHOW = 350; // мс
+  const start = Date.now(); // фиксируем старт
   dispatch({
     type: ROOM_REQUEST_UPDATE_START,
     payload: { id: idStr, nextStatus },
@@ -50,7 +50,7 @@ export const updateRoomRequestStatus = (id, nextStatus) => async (dispatch) => {
     );
     if (response.status === 200) {
       const { data } = response;
-      const timeHassPassed = new Date() - start;
+      const timeHassPassed = Date.now() - start;
       const wait = Math.max(0, MIN_SHOW - timeHassPassed);
       setTimeout(() => {
         dispatch({

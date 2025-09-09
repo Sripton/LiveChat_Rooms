@@ -274,14 +274,6 @@ export default function UserDashboard({ userPropsData }) {
               /* const isUpdating = updatingIds.includes(request.id); */
               const rid = String(request.id);
               const isUpdating = Boolean(updatingById?.[rid]);
-              console.log(
-                "updatingById",
-                updatingById,
-                "rid",
-                rid,
-                "isUpdating",
-                isUpdating
-              );
               // Когда запрос в статусе оюидания
               const isPending = request.status === "pending";
               let avatarSrc;
@@ -342,12 +334,11 @@ export default function UserDashboard({ userPropsData }) {
                               color: "gray",
                             },
                           }}
-                          onClick={() => {
-                            console.log("CLICK", request.id);
+                          onClick={() =>
                             dispatch(
                               updateRoomRequestStatus(request.id, "accepted")
-                            );
-                          }}
+                            )
+                          }
                         >
                           Принять
                         </Button>

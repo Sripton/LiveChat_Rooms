@@ -37,30 +37,23 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     // const userID = req.session.userID || null;
-    const userID = req.session.userID;
-    // if (!userID) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Пользователь не зарегистрироан" });
-    // }
+    const userID = req.session.userID || null;
     const findAllRoom = await Room.findAll({
       attributes: ["id", "nameroom", "description", "isPrivate", "ownerID"],
-      // Мой запрос к этой комнате (0..1)
+      // Мой запрос к комнатам (0..1)
       include: [
         {
           model: RoomRequest,
           required: false,
-          // если юзера нет — вернём пустой набор запросов
           where: userID ? { user_id: userID } : { user_id: null },
-          attributes: ["id", "status"],
+          attributes: ["id", "user_id", "room_id", "status"],
         },
         // Я как участник этой комнаты (0..1) — через связку many-to-many
         {
-          association: "members", // alias, который  в модели Room.belongsToMany(User, { through: RoomAdmission, as: "members" }).
-          attributes: ["id"], // подтягиваем у пользователя только id.
-          through: { attributes: [] }, // скрываем промежуточную таблицу RoomAdmissions (чтобы в JSON не тащился мусор).
+          association: "members",
+          attributes: ["id"],
+          through: { attributes: [] },
           required: false, // LEFT JOIN.
-          // если юзера нет — вернём пустой набор участников «меня»
           where: userID ? { id: userID } : { id: null },
         },
       ],
@@ -88,7 +81,8 @@ router.get("/", async (req, res) => {
 
       return { ...json, isOwner, isMember, myRequestStatus, hasAccess };
     });
-    res.json(payload); // Отправляем их клиенту
+
+    res.json(payload); // Отправляем  клиенту
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Ошибка сервера" }); // Отправляем сообщение об ошибке клиенту
@@ -128,7 +122,14 @@ router.get("/:id", async (req, res) => {
   const { id } = req.params; // Получаем ID из параметров URL
   try {
     const findRoomID = await Room.findOne({ where: { id } }); // Ищем комнату по ID
-    res.status(200).json(findRoomID); // Отправляем найденную комнату клиенту
+    const acceptedCount = await RoomRequest.count({
+      where: { room_id: id, status: "accepted" },
+    });
+    res.status(200).json({
+      // ...findRoomID.toJSON(),
+      ...findRoomID.get({ plain: true }),
+      acceptedCount,
+    }); // Отправляем найденную комнату клиенту
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Не удалось найти комнату" }); // Отправляем сообщение об ошибке
@@ -136,3 +137,44 @@ router.get("/:id", async (req, res) => {
 });
 
 module.exports = router; // Экспортируем маршруты для использования в основном приложении
+
+// const payload = findAllRoom.map((room) => {
+//   const json = room.get({ plain: true }); // room.toJSON();
+//   const isOwner = userID ? json.ownerID === Number(userID) : false;
+//   const isMember = Array.isArray(json.members) && json.members.length > 0;
+//   const myRequestStatus =
+//     Array.isArray(json.RoomRequests) && json.RoomRequests.length > 0
+//       ? json.RoomRequests[0].status
+//       : null;
+
+//   let hasAccess;
+//   if (json.isPrivate === true) {
+//     hasAccess = isOwner || isMember || myRequestStatus === "accepted";
+//   } else {
+//     hasAccess = true; // открытая комната
+//   }
+
+//   delete json.members;
+//   delete json.RoomRequests;
+
+//   return { ...json, isOwner, isMember, myRequestStatus, hasAccess };
+// });
+
+// include: [
+//   // {
+//   //   model: RoomRequest,
+//   //   required: false,
+//   //   // если юзера нет — вернём пустой набор запросов
+//   //   where: userID ? { user_id: userID } : { user_id: null },
+//   //   attributes: ["id", "status"],
+//   // },
+//   // Я как участник этой комнаты (0..1) — через связку many-to-many
+//   // {
+//   //   association: "members", // alias, который  в модели Room.belongsToMany(User, { through: RoomAdmission, as: "members" }).
+//   //   attributes: ["id"], // подтягиваем у пользователя только id.
+//   //   through: { attributes: [] }, // скрываем промежуточную таблицу RoomAdmissions (чтобы в JSON не тащился мусор).
+//   //   required: false, // LEFT JOIN.
+//   //   // если юзера нет — вернём пустой набор участников «меня»
+//   //   where: userID ? { id: userID } : { id: null },
+//   // },
+// ],
