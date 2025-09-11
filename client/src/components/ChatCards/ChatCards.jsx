@@ -4,14 +4,14 @@ import {
   Button,
   Typography,
   Paper,
-  Container,
-  Chip,
   Divider,
   Tooltip,
   IconButton,
+  Avatar,
+  Stack,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, NavLink } from "react-router-dom";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import EditIcon from "@mui/icons-material/Edit";
@@ -29,7 +29,7 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
   },
 };
 
@@ -47,6 +47,21 @@ export default function ChatCards() {
   //  Управление отображением модального окна создания поста
   const [openModalPost, setOpenModalPost] = useState(false);
 
+  // Состояние для отображения полного текста поста
+  const [expanded, setExpanded] = useState(() => new Set());
+
+  const toggleExpand = (postID) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(postID)) {
+        next.delete(postID);
+      } else {
+        next.add(postID);
+      }
+      return next;
+    });
+  };
+
   const dispatch = useDispatch(); // useDispatch — отправка действий
   const navigate = useNavigate(); // переход по маршрутам
   const location = useLocation();
@@ -55,7 +70,7 @@ export default function ChatCards() {
   //  Извлечение данных комнаты, постов и ID пользователя из Redux
   const currentRoom = useSelector((store) => store.room.currentRoom); // useSelector - доступ к состоянию Redux-хранилища
   const allPosts = useSelector((store) => store.post.allPosts);
-  const userID = useSelector((store) => store.user.userID);
+  const { userID, userAvatar, userName } = useSelector((store) => store.user);
 
   //  Если пользователь не авторизован, редирект на /signin
   //  Иначе переключение отображения модального окна
@@ -78,7 +93,6 @@ export default function ChatCards() {
   useEffect(() => {
     dispatch(fetchAllPosts(id));
   }, [dispatch, id]);
-  console.log("allPosts", allPosts);
 
   return (
     // Основной макет
@@ -120,22 +134,26 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
             flexWrap: "wrap",
           }}
         >
-          <Box>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 800,
-                letterSpacing: 0.2,
-                lineHeight: 1.1,
-                color: "#a1134a",
-                mb: 1,
-                fontFamily:
-                  "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
-                textShadow: "0 1px 0 rgba(255,255,255,0.6)",
-              }}
-            >
-              {currentRoom?.nameroom}
-            </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {/* Для аватара */}
+            {userAvatar ? (
+              <img
+                src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
+                alt="user"
+                style={{
+                  width: "70px",
+                  height: "70px",
+                }}
+              />
+            ) : (
+              <Avatar
+                alt="user"
+                style={{
+                  width: "70px",
+                  height: "70px",
+                }}
+              />
+            )}
             <Typography
               variant="body1"
               sx={{
@@ -146,8 +164,9 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
                 opacity: 0.9,
               }}
             >
-              {currentRoom?.description}
+              {currentRoom?.nameroom}
             </Typography>
+            <Box />
           </Box>
 
           {!openModalPost && (
@@ -192,105 +211,271 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            sx={{ display: "flex", flexDirection: "column" }}
           >
             <AnimatePresence>
-              {allPosts.map((post) => (
-                <Box
-                  className="post-list"
-                  key={post.id}
-                  component={motion.div}
-                  variants={itemVariants}
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: {
-                      xs: "1fr auto",
-                      sm: "minmax(0,1fr) auto",
-                    },
-                    alignItems: "center",
-                    columnGap: 1.5,
-                    py: 1.25,
-                    borderBottom: "1px solid rgba(161, 19, 74, 0.12)",
-                    "&:hover .post-title": { color: "#a1134a" },
-                    "&:hover .post-actions": { opacity: 1 },
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      className="post"
-                      sx={{
-                        color: "#7a1a50",
-                        fontSize: "1.05rem",
-                        fontWeight: 700,
-                        fontFamily:
-                          "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
-                        mb: 0.25,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {post.postTitle}
-                    </Typography>
-                    <Box />
+              <Stack spacing={1.5}>
+                {allPosts.map((post) => (
+                  <Paper
+                    key={post.id}
+                    component={motion.div}
+                    variants={itemVariants}
+                    elevation={0}
+                    sx={{
+                      display: "grid",
+                      cursor: "pointer",
+                      gridTemplateColumns: {
+                        xs: "128px 1fr",
+                        sm: "168px 1fr",
+                      },
+                      gap: 1.5,
+                      p: 1.5,
+                      borderRadius: 3,
+                      bgcolor: "rgba(255, 238, 244, 0.80)", // нежно-розовые карточки на твоём фоне
+                      border: "1px solid rgba(161,19,74,0.08)",
+                      transition:
+                        "transform .18s ease, box-shadow .18s ease, background .18s ease",
+                      "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 10px 22px rgba(161,19,74,0.12)",
+                        bgcolor: "rgba(255, 238, 244, 0.92)",
+                      },
+                    }}
+                  >
+                    {/* превью 16:9 слева (как у YouTube) */}
                     <Box
                       sx={{
+                        position: "relative",
+                        borderRadius: 2,
+                        overflow: "hidden",
+
+                        background:
+                          "linear-gradient(135deg, #fde4ec 0%, #fff0f5 100%)",
+                        // трюк для соотношения сторон 16:9
+                        "&::before": {
+                          content: '""',
+                          display: "block",
+                          paddingTop: "56.25%", // 16:9
+                        },
                         display: "flex",
                         alignItems: "center",
-                        gap: 0.5,
-                        justifySelf: "end",
-                        opacity: 0.65,
-                        transition: "opacity .2s ease",
-                        flexWrap: "nowrap",
+                        justifyContent: "center",
                       }}
                     >
-                      <Tooltip title="Нравится">
-                        <Button
-                          size="small"
+                      {userAvatar ? (
+                        <Box
+                          component="img"
+                          src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
+                          alt="user"
                           sx={{
-                            color: "#d81b60",
-                            fontWeight: 700,
-                            minWidth: 0,
-                            px: 1,
+                            width: 60,
+                            height: 60,
+                            borderRadius: "50%",
+                            flex: "0 0 auto",
                           }}
-                          startIcon={<ThumbUpIcon />}
-                        >
-                          0
-                        </Button>
-                      </Tooltip>
-                      <Tooltip title="Не нравится">
-                        <Button
-                          size="small"
-                          sx={{
-                            color: "#d81b60",
-                            fontWeight: 700,
-                            minWidth: 0,
-                            px: 1,
-                          }}
-                          startIcon={<ThumbDownIcon />}
-                        >
-                          0
-                        </Button>
-                      </Tooltip>
-                      <Tooltip title="Редактировать">
-                        <IconButton size="small" sx={{ color: "#7a1a50" }}>
-                          <EditIcon sx={{ fontSize: "1.15rem" }} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Удалить">
-                        <IconButton size="small" sx={{ color: "#7a1a50" }}>
-                          <DeleteIcon sx={{ fontSize: "1.15rem" }} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Отправить">
-                        <IconButton size="small" sx={{ color: "#7a1a50" }}>
-                          <SendIcon sx={{ fontSize: "1.15rem" }} />
-                        </IconButton>
-                      </Tooltip>
+                        />
+                      ) : (
+                        <Avatar sx={{ width: 60, height: 60 }} />
+                      )}
                     </Box>
-                  </Box>
-                </Box>
-              ))}
+
+                    {/* контент справа */}
+                    <Box sx={{ minWidth: 0, display: "grid", gap: 0.5 }}>
+                      {/* шапка: аватар + автор + дата */}
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: "rgba(122,26,80,0.9)",
+                            fontWeight: 600,
+                            letterSpacing: 0.2,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            maxWidth: "100%",
+                          }}
+                          title={post?.User?.name}
+                        >
+                          {post?.User?.name}
+                        </Typography>
+
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "rgba(122,26,80,0.65)", ml: "auto" }}
+                        >
+                          {new Date(
+                            Date.parse(post.createdAt)
+                          ).toLocaleDateString()}
+                        </Typography>
+                      </Box>
+
+                      {/* заголовок  */}
+                      <Typography
+                        className="yt-title"
+                        sx={{
+                          mt: 0.25,
+                          color: "#7a1a50",
+                          fontSize: { xs: "0.98rem", sm: "1.05rem" },
+                          fontWeight: 700,
+                          fontFamily:
+                            "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+                          lineHeight: 1.25,
+                          cursor: "pointer",
+                          transition: "color .2s ease",
+                          "&:hover": { color: "#a1134a" },
+                        }}
+                      >
+                        {/* {post.postTitle.length > 150 ? (
+                            <span className="line-clamp-2">
+                              {`${post.postTitle.slice(0, 80)}`}
+                              <Button
+                                size="small"
+                                variant="text"
+                                sx={{
+                                  minWidth: "unset", // убирает минимальную ширину MUI-кнопки
+                                  p: 0, // убирает внутренние отступы
+                                  ml: 0.5, // чуть-чуть отступ слева от текста
+                                  lineHeight: 1,
+                                  fontWeight: "bold",
+                                  fontSize: "1rem", // можно увеличить/уменьшить размер точек
+                                  color: "#a1134a", // цвет точек
+                                  "&:hover": {
+                                    backgroundColor: "transparent", // чтобы при ховере не было серого фона
+                                    color: "#7a1a50", // можно добавить эффект смены цвета
+                                  },
+                                }}
+                                onClick={() => toggleExpand(post.id)}
+                              >
+                                ...
+                              </Button>
+                            </span>
+                          ) : (
+                            <span className="line-clamp-2">
+                              {post.postTitle}
+                            </span>
+                          )} */}
+                        {(() => {
+                          const full = post.postTitle || "";
+                          const isLong = full.length > 150;
+                          const isOpen = expanded.has(post.id);
+
+                          if (!isLong) {
+                            return <span className="line-clamp-2">{full}</span>;
+                          }
+
+                          return (
+                            <>
+                              <span className="line-clamp-2">
+                                {isOpen ? full : `${full.slice(0, 80)}`}
+                              </span>
+                              <Button
+                                size="small"
+                                variant="text"
+                                onClick={() => toggleExpand(post.id)}
+                                sx={{
+                                  minWidth: "unset", // убирает минимальную ширину MUI-кнопки
+                                  p: 0, // убирает внутренние отступы
+                                  ml: 0.6,
+                                  lineHeight: 1,
+                                  fontWeight: "bold",
+                                  fontSize: "1rem", // можно увеличить/уменьшить размер точек
+                                  color: "#a1134a", // цвет точек
+                                  "&:hover": {
+                                    backgroundColor: "transparent", // чтобы при ховере не было серого фона
+                                    color: "#7a1a50", // можно добавить эффект смены цвета
+                                  },
+                                }}
+                              >
+                                {isOpen ? (
+                                  <Typography sx={{ color: "#999" }}>
+                                    {" "}
+                                    Свернуть
+                                  </Typography>
+                                ) : (
+                                  " ..."
+                                )}
+                              </Button>
+                            </>
+                          );
+                        })()}
+                      </Typography>
+
+                      <Box
+                        className="post-actions"
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                          mt: 0.5,
+                          opacity: 0.75,
+                          transition: "opacity .2s ease",
+                          "& .MuiButton-startIcon": { mr: 0.5 },
+                          "&:hover": { opacity: 1 },
+                        }}
+                      >
+                        <Tooltip title="Нравится">
+                          <Button
+                            size="small"
+                            sx={{
+                              color: "#d81b60",
+                              fontWeight: 700,
+                              minWidth: 0,
+                              px: 1,
+                            }}
+                            startIcon={<ThumbUpIcon />}
+                          >
+                            {post.likes ?? 0}
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="Не нравится">
+                          <Button
+                            size="small"
+                            sx={{
+                              color: "#d81b60",
+                              fontWeight: 700,
+                              minWidth: 0,
+                              px: 1,
+                            }}
+                            startIcon={<ThumbDownIcon />}
+                          >
+                            {post.dislikes ?? 0}
+                          </Button>
+                        </Tooltip>
+
+                        <Box
+                          sx={{
+                            ml: "auto",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          <Tooltip title="Редактировать">
+                            <IconButton size="small" sx={{ color: "#7a1a50" }}>
+                              <EditIcon sx={{ fontSize: "1.1rem" }} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Удалить">
+                            <IconButton size="small" sx={{ color: "#7a1a50" }}>
+                              <DeleteIcon sx={{ fontSize: "1.1rem" }} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Открыть">
+                            <IconButton
+                              size="small"
+                              sx={{ color: "#7a1a50" }}
+                              onClick={() => navigate(`/post/${post.id}`)}
+                            >
+                              <SendIcon sx={{ fontSize: "1.1rem" }} />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Paper>
+                ))}
+              </Stack>
             </AnimatePresence>
           </Box>
         ) : (

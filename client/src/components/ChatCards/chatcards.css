@@ -15,10 +15,11 @@
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
   cursor: pointer;
 }
-.post {
-  background-color: #d8e5f8;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #ecd8ed;
-  box-shadow: 0 4px 10px rgba(158, 178, 234, 0.9);
-}
+
+/* .line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+} */

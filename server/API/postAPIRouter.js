@@ -1,5 +1,5 @@
 const express = require("express");
-const { Room, Post } = require("../db/models");
+const { Room, Post, User } = require("../db/models");
 const router = express.Router();
 
 router.post("/:id", async (req, res) => {
@@ -33,7 +33,11 @@ router.post("/:id", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params; // Получаем ID из параметров URL
   try {
-    const findAllPostsID = await Post.findAll({ where: { room_id: id } }); // Ищем все посты относящиеся к определенной комнате по ID
+    const userID = req.session.userID;
+    const findAllPostsID = await Post.findAll({
+      where: { room_id: id, user_id: userID },
+      include: [{ model: User, attributes: ["id", "name"] }],
+    }); // Ищем все посты относящиеся к определенной комнате по ID
     res.json(findAllPostsID); // Отправляем все посты на клиент
   } catch (error) {
     console.log(error);
