@@ -67,3 +67,6 @@ export const SET_CREATE_POST = "SET_CREATE_POST";
 
 // Тип экшена для получения всех постов
 export const GET_ROOM_POSTS = "GET_ROOM_POSTS";
+
+// Тип экшена для изменения  поста
+export const SET_EDIT_POST = "SET_EDIT_POST";

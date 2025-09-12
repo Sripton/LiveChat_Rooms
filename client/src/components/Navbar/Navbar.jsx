@@ -46,25 +46,6 @@ export default function Navbar({ userPropsData }) {
     setOpenMenu(false); // Закрываем меню
   };
 
-  // Состояние, определяющее, активно ли выпадающее меню профиля
-  const [profileDropActive, setProfileDropActive] = useState(false);
-  const goToProfileEditor = () => {
-    navigate("/profileeditor", {
-      state: { from: location }, //  сохраняем текущий путь
-    });
-    setProfileDropActive(false); // Закрываем выпалающее меню
-  };
-
-  // Реф для кнопки, открывающей выпадающее меню профиля
-  const profileDropDownBtn = useRef(null);
-  // Реф для списка, открывающей выпадающее меню профиля
-  const profileDropDownMenu = useRef(null);
-
-  // Функция для переключения состояния выпадающего меню профиля
-  const handleProfileDropDown = () => {
-    setProfileDropActive(!profileDropActive);
-  };
-
   // Вынесение логики определения иконки для меню
   const getStartIcon = (text) => {
     switch (text) {
@@ -78,32 +59,6 @@ export default function Navbar({ userPropsData }) {
         return <LogoutIcon />;
     }
   };
-
-  useEffect(() => {
-    // Функция, которая обрабатывает клик вне элементов профиля
-    const handleClickOutside = (event) => {
-      // Проверяем:
-      // 1. Меню открыто (profileDropActive)
-      // 2. Есть ссылки на DOM-элементы кнопки и меню (ref.current)
-      // 3. Клик был не по кнопке профиля и не по самому меню
-      if (
-        profileDropActive &&
-        profileDropDownBtn.current &&
-        !profileDropDownBtn.current.contains(event.target) &&
-        !profileDropDownMenu.current.contains(event.target)
-      ) {
-        // Если всё условие выполняется — закрываем выпадающее меню
-        setProfileDropActive(false);
-      }
-    };
-    // Назначаем обработчик события на весь документ
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      // Очищаем обработчик при размонтировании компонента или изменении зависимости
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [profileDropActive]);
 
   return (
     <>
@@ -164,7 +119,7 @@ export default function Navbar({ userPropsData }) {
               {userName}
             </Typography>
 
-            {/* Кнопка-аватар с выпадающим меню */}
+            {/* Кнопка-аватар  */}
             <Button
               sx={{
                 "&:hover": {
@@ -172,13 +127,6 @@ export default function Navbar({ userPropsData }) {
                   cursor: "pointer",
                 },
               }}
-              className="avatar-button"
-              // По спецификации HTML нельзя вкладывать <ul> внутрь <button>.
-              // Это вызывает предупреждения и потенциально баги, особенно при серверной рендеризации
-              // или гидрации (как в твоём случае, если ты это видел в консоли).
-              // ref={profileDropDownBtn}
-              onClick={handleProfileDropDown}
-              ref={profileDropDownBtn}
             >
               {/* Аватар пользователя */}
               {userAvatar ? (
@@ -194,40 +142,6 @@ export default function Navbar({ userPropsData }) {
                 <Avatar />
               )}
             </Button>
-            {/* Выпадающее меню */}
-            {/* {profileDropActive && (
-              <ul
-                ref={profileDropDownMenu}
-                className={`profile-dropdown-list ${"active-dropmenu"}`}
-                style={{
-                  position: "absolute",
-                  top: "100%",
-                  right: "48px",
-                  zIndex: 1000,
-                }}
-              >
-                <li className="profile-dropdown-item">
-                  <Box
-                    sx={{ minWidth: "auto", padding: 0, cursor: "pointer" }}
-                    onClick={goToProfileEditor}
-                  >
-                    <EditIcon sx={{ color: "#4685df" }} />
-                  </Box>
-                </li>
-
-                <li className="profile-dropdown-item">
-                  <ContactMailIcon sx={{ color: "#4685df" }} />
-                </li>
-
-                <li className="profile-dropdown-item">
-                  <FavoriteIcon sx={{ color: "#4685df" }} />
-                </li>
-
-                <li className="profile-dropdown-item">
-                  <MeetingRoomIcon sx={{ color: "#4685df" }} />
-                </li>
-              </ul>
-            )} */}
           </Box>
         </Box>
 

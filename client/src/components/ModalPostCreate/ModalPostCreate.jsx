@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -7,25 +7,47 @@ import {
   Paper,
   Link,
   Fade,
+  IconButton,
 } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { createPostSubmit } from "../../redux/actions/postActions";
+import CloseIcon from "@mui/icons-material/Close";
+import {
+  createPostSubmit,
+  editPostSubmit,
+} from "../../redux/actions/postActions";
 export default function ModalPostCreate({
   openModalPost,
   setOpenModalPost,
-  id,
+  closeModalPost,
+  roomID, // roomId
+  mode, // "create" | "edit"
+  editPost, // объект поста при редактировании
 }) {
   const dispatch = useDispatch();
+  // Состояние для запси поста
   const [inputs, setInputs] = useState({
     postTitle: "",
   });
+
+  // При открытии модалки — заполняем поля если режим edit
+  useEffect(() => {
+    if (mode === "edit" && editPost) {
+      setInputs({ postTitle: editPost.postTitle ?? "" });
+    } else {
+      setInputs({ postTitle: "" });
+    }
+  }, [mode, editPost, openModalPost]);
   const postInputsHandler = (e) => {
     setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const postSubmitHandler = async (e) => {
     e.preventDefault();
-    await dispatch(createPostSubmit(id, inputs));
+    if (mode === "create") {
+      await dispatch(createPostSubmit(roomID, inputs));
+    } else {
+      await dispatch(editPostSubmit(editPost.id, inputs));
+    }
     setOpenModalPost(false);
   };
 
@@ -42,6 +64,7 @@ export default function ModalPostCreate({
         <Paper
           elevation={3}
           sx={{
+            position: "relative",
             maxWidth: 700,
             width: "100%",
             backgroundColor: "#ffe4e9",
@@ -49,6 +72,23 @@ export default function ModalPostCreate({
             p: 4,
           }}
         >
+          <IconButton
+            onClick={closeModalPost} // чтобы реально закрывала
+            sx={{
+              position: "absolute",
+              top: 5,
+              right: 5,
+              minWidth: 0,
+              p: 0.8,
+              color: "#d81b60",
+              borderRadius: "50%",
+              background: "#f8bbd0",
+              "&:hover": { background: "#fde4ec" },
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon sx={{ fontSize: "24px" }} />
+          </IconButton>
           <Typography
             variant="h4"
             sx={{
@@ -59,6 +99,7 @@ export default function ModalPostCreate({
           >
             Добавить пост
           </Typography>
+
           <Box sx={{ mb: 3 }}>
             <form onSubmit={postSubmitHandler}>
               <TextField
@@ -87,6 +128,7 @@ export default function ModalPostCreate({
                   },
                 }}
               />
+
               <Button
                 variant="contained"
                 type="submit"

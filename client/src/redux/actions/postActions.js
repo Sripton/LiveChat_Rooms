@@ -1,5 +1,5 @@
 import axios from "axios";
-import { SET_CREATE_POST, GET_ROOM_POSTS } from "../types/types"; //  константы типов Redux-действий
+import { SET_CREATE_POST, GET_ROOM_POSTS, SET_EDIT_POST } from "../types/types"; //  константы типов Redux-действий
 
 // создание нового поста
 export const createPostSubmit = (roomID, inputs) => async (dispatch) => {
@@ -25,6 +25,19 @@ export const fetchAllPosts = (roomID) => async (dispatch) => {
       const { data } = response;
       // Загруженные посты сохраняются в Redux в state.post.allPosts
       dispatch({ type: GET_ROOM_POSTS, payload: data });
+    }
+  } catch (error) {
+    console.error("Ошибка при получении всех постов:", error);
+  }
+};
+
+export const editPostSubmit = (PostID, inputs) => async (dispatch) => {
+  try {
+    // patch - запрос на изменение конкретного  поста
+    const response = await axios.patch(`/api/posts/${PostID}`, inputs);
+    if (response.status === 200) {
+      const { data } = response;
+      dispatch({ type: SET_EDIT_POST, payload: data });
     }
   } catch (error) {
     console.error("Ошибка при получении всех постов:", error);

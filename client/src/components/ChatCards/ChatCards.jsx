@@ -11,7 +11,7 @@ import {
   Stack,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate, useParams, NavLink } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import EditIcon from "@mui/icons-material/Edit";
@@ -72,6 +72,14 @@ export default function ChatCards() {
   const allPosts = useSelector((store) => store.post.allPosts);
   const { userID, userAvatar, userName } = useSelector((store) => store.user);
 
+  // Состояние для изменения поста
+  const [editPost, setEditPost] = useState(null);
+  const handleEditClick = (post) => {
+    if (!userID || userID !== post.user_id) return;
+    setEditPost(post);
+    setOpenModalPost((prev) => !prev);
+  };
+
   //  Если пользователь не авторизован, редирект на /signin
   //  Иначе переключение отображения модального окна
   const handleAddPostClick = () => {
@@ -80,6 +88,7 @@ export default function ChatCards() {
         state: { from: location },
       });
     }
+    setEditPost(null);
     setOpenModalPost((prev) => !prev);
   };
 
@@ -143,6 +152,8 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
                 style={{
                   width: "70px",
                   height: "70px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
                 }}
               />
             ) : (
@@ -199,7 +210,10 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
             <ModalPostCreate
               openModalPost={openModalPost}
               setOpenModalPost={setOpenModalPost}
-              id={id}
+              closeModalPost={() => setOpenModalPost(false)}
+              roomID={id}
+              mode={editPost ? "edit" : "create"}
+              editPost={editPost}
             />
           </Box>
         )}
@@ -267,14 +281,15 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
                           src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
                           alt="user"
                           sx={{
-                            width: 60,
-                            height: 60,
+                            width: 50,
+                            height: 50,
                             borderRadius: "50%",
                             flex: "0 0 auto",
+                            objectFit: "cover",
                           }}
                         />
                       ) : (
-                        <Avatar sx={{ width: 60, height: 60 }} />
+                        <Avatar sx={{ width: 50, height: 50 }} />
                       )}
                     </Box>
 
@@ -452,7 +467,14 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
                           }}
                         >
                           <Tooltip title="Редактировать">
-                            <IconButton size="small" sx={{ color: "#7a1a50" }}>
+                            <IconButton
+                              size="small"
+                              sx={{ color: "#7a1a50" }}
+                              onClick={() => {
+                                handleEditClick(post);
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                              }}
+                            >
                               <EditIcon sx={{ fontSize: "1.1rem" }} />
                             </IconButton>
                           </Tooltip>
@@ -461,12 +483,8 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
                               <DeleteIcon sx={{ fontSize: "1.1rem" }} />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Открыть">
-                            <IconButton
-                              size="small"
-                              sx={{ color: "#7a1a50" }}
-                              onClick={() => navigate(`/post/${post.id}`)}
-                            >
+                          <Tooltip title="Ответить">
+                            <IconButton size="small" sx={{ color: "#7a1a50" }}>
                               <SendIcon sx={{ fontSize: "1.1rem" }} />
                             </IconButton>
                           </Tooltip>

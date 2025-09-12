@@ -15,13 +15,12 @@ import {
   CircularProgress,
 } from "@mui/material";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import MailIcon from "@mui/icons-material/Mail";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { columnGap } from "@mui/system";
+
 import {
   fetchUserRequestsStatus,
   updateRoomRequestStatus,
@@ -84,6 +83,8 @@ export default function UserDashboard({ userPropsData }) {
   );
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const handleChangeTab = (event, newValue) => {
     // MUI Tabs  вызывает onChange с двумя аргументами
     setTabIndex(newValue);
@@ -95,6 +96,12 @@ export default function UserDashboard({ userPropsData }) {
     setArrowRequest(!arrowReauest);
   };
 
+  // Функция для направления в компонент по редатированию профиля
+  const goToProfileEditor = () => {
+    navigate("/profileeditor", {
+      state: { from: location }, //  сохраняем текущий путь
+    });
+  };
   // Слияние вех запросов в один массив
   const allRequests = [...outgoing, ...incoming];
   useEffect(() => {
@@ -171,6 +178,7 @@ export default function UserDashboard({ userPropsData }) {
               color: "#d81b60",
             }}
             variant="contained"
+            onClick={goToProfileEditor}
           >
             Редактировать
           </Button>

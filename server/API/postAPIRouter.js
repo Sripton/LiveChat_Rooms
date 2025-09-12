@@ -45,4 +45,17 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.patch("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { postTitle } = req.body;
+  try {
+    const post = await Post.findByPk(id);
+    if (!post) return;
+    await post.update({ postTitle });
+    res.status(200).json(post); // ← вернуть сам объект поста
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Ошибка при изменении поста" });
+  }
+});
 module.exports = router;
