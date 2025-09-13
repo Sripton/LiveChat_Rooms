@@ -1,5 +1,10 @@
 // Импорт типов действий (action types), которые редьюсер будет обрабатывать
-import { SET_CREATE_POST, GET_ROOM_POSTS, SET_EDIT_POST } from "../types/types";
+import {
+  SET_CREATE_POST,
+  GET_ROOM_POSTS,
+  SET_EDIT_POST,
+  DELETE_POST,
+} from "../types/types";
 
 // Начальное состояние пользовательского редьюсера
 const initialState = {
@@ -36,6 +41,12 @@ export default function postReducer(state = initialState, action) {
         allPosts: state.allPosts.map((post) =>
           post.id === payload.id ? { ...post, ...payload } : post
         ),
+      };
+
+    case DELETE_POST:
+      return {
+        ...state,
+        allPosts: state.allPosts.filter((post) => post.id !== payload.id), // редьюсер ожидает, что в payload будет объект с полем id.
       };
     default:
       return state;

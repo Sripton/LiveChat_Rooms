@@ -20,7 +20,10 @@ import SendIcon from "@mui/icons-material/Send";
 import { motion, AnimatePresence } from "framer-motion";
 import { getRoomById } from "../../redux/actions/roomActions";
 import ModalPostCreate from "../ModalPostCreate";
-import { fetchAllPosts } from "../../redux/actions/postActions";
+import {
+  fetchAllPosts,
+  deletePostHandler,
+} from "../../redux/actions/postActions";
 import "./chatcards.css";
 
 const easing = [0.2, 0.8, 0.2, 1];
@@ -479,7 +482,13 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Удалить">
-                            <IconButton size="small" sx={{ color: "#7a1a50" }}>
+                            <IconButton
+                              size="small"
+                              sx={{ color: "#7a1a50" }}
+                              onClick={() =>
+                                dispatch(deletePostHandler(post.id))
+                              }
+                            >
                               <DeleteIcon sx={{ fontSize: "1.1rem" }} />
                             </IconButton>
                           </Tooltip>

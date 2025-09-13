@@ -58,4 +58,20 @@ router.patch("/:id", async (req, res) => {
     res.status(500).json({ message: "Ошибка при изменении поста" });
   }
 });
+
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const post = await Post.destroy({ where: { id } });
+    if (post === 0) {
+      // ничего не удалилось → поста не было
+      return res.status(404).json({ message: "Пост не найден" });
+    }
+    // для подстверждения  удаления:
+    return res.status(200).json({ id });
+  } catch (error) {
+    console.error("Ошибка при удалении поста:", error);
+    return res.status(500).json({ message: "Ошибка сервера" });
+  }
+});
 module.exports = router;

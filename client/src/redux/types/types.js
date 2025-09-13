@@ -70,3 +70,6 @@ export const GET_ROOM_POSTS = "GET_ROOM_POSTS";
 
 // Тип экшена для изменения  поста
 export const SET_EDIT_POST = "SET_EDIT_POST";
+
+// Тип экшена для удаления  поста
+export const DELETE_POST = "DELETE_POST";
