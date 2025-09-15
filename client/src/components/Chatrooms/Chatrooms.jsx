@@ -115,8 +115,6 @@ export default function Chatrooms() {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("lg")); // lg = 1200px по умолчанию
 
-  console.log("privateRoomsSorted", privateRoomsSorted);
-  console.log("userID", userID);
   return (
     <Box
       sx={{

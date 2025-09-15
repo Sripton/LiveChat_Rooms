@@ -24,6 +24,10 @@ import {
   fetchAllPosts,
   deletePostHandler,
 } from "../../redux/actions/postActions";
+import {
+  createReactionPostSubmit,
+  fetchAllReactionPosts,
+} from "../../redux/actions/reactionPostActions";
 import "./chatcards.css";
 
 const easing = [0.2, 0.8, 0.2, 1];
@@ -105,6 +109,19 @@ export default function ChatCards() {
   useEffect(() => {
     dispatch(fetchAllPosts(id));
   }, [dispatch, id]);
+
+  // Забираем все реакции на посты из store
+  const allReactionPosts = useSelector(
+    (store) => store.reactionsPosts.allReactionPosts
+  );
+
+  useEffect(() => {
+    if (Array.isArray(allPosts) && allPosts.length) {
+      allPosts.forEach((post) => dispatch(fetchAllReactionPosts(post.id)));
+    }
+  }, [dispatch, allPosts]);
+
+  console.log("allReactionPosts", allReactionPosts);
 
   return (
     // Основной макет
@@ -442,8 +459,13 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
                               px: 1,
                             }}
                             startIcon={<ThumbUpIcon />}
+                            onClick={() =>
+                              dispatch(
+                                createReactionPostSubmit(post.id, "like")
+                              )
+                            }
                           >
-                            {post.likes ?? 0}
+                            {0}
                           </Button>
                         </Tooltip>
                         <Tooltip title="Не нравится">
@@ -456,8 +478,13 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
                               px: 1,
                             }}
                             startIcon={<ThumbDownIcon />}
+                            onClick={() =>
+                              dispatch(
+                                createReactionPostSubmit(post.id, "dislike")
+                              )
+                            }
                           >
-                            {post.dislikes ?? 0}
+                            {0}
                           </Button>
                         </Tooltip>
 

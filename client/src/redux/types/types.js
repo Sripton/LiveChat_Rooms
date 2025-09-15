@@ -1,5 +1,3 @@
-// Редьюсер корректно обрабатывает типы экшенов и возвращает новое состояние.
-
 // -------------------- User -------------------
 // Тип экшена для установки данных пользователя после регистрации
 export const SET_REGISTER_USER = "SET_REGISTER_USER";
@@ -73,3 +71,10 @@ export const SET_EDIT_POST = "SET_EDIT_POST";
 
 // Тип экшена для удаления  поста
 export const DELETE_POST = "DELETE_POST";
+
+// ----------------------- Reaction Posts ------------------------
+// Тип экшена для создания реакций на  посты  пользователем
+export const SET_REACTION_POST_CREATE = "SET_REACTION_POST_CREATE";
+
+// Тип экшена для получения реакций на  посты  пользователем
+export const GET_REACTION_POST_LIST = "GET_REACTION_POST_LIST";

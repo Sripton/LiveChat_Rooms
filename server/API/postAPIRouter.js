@@ -74,4 +74,5 @@ router.delete("/:id", async (req, res) => {
     return res.status(500).json({ message: "Ошибка сервера" });
   }
 });
+
 module.exports = router;
