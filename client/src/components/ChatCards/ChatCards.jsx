@@ -76,7 +76,8 @@ export default function ChatCards() {
 
   //  Извлечение данных комнаты, постов и ID пользователя из Redux
   const currentRoom = useSelector((store) => store.room.currentRoom); // useSelector - доступ к состоянию Redux-хранилища
-  console.log("currentRoom", currentRoom);
+
+  //  Извлечение данных реакций на посты и ID пользователя из Redux
   const allPosts = useSelector((store) => store.post.allPosts);
   const { userID, userAvatar, userName } = useSelector((store) => store.user);
 
@@ -122,10 +123,6 @@ export default function ChatCards() {
     }
   }, [dispatch, allPosts]);
 
-  console.log("userAvatar", userAvatar);
-  console.log("currentRoom", currentRoom);
-  console.log("allPosts", allPosts);
-
   return (
     // Основной макет
     <Box
@@ -137,8 +134,8 @@ export default function ChatCards() {
         px: { xs: 1.5, sm: 2, md: 3 },
         py: { xs: 1.5, sm: 2 },
         background: `radial-gradient(1200px 800px at 10% -10%, #fff0f4 10%, rgba(255,240,244,0) 60%),
-radial-gradient(1200px 800px at 110% 10%, #fde4ec 10%, rgba(253,228,236,0) 60%),
-linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
+                     radial-gradient(1200px 800px at 110% 10%, #fde4ec 10%, rgba(253,228,236,0) 60%),
+                     linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
       }}
     >
       <Paper
@@ -251,121 +248,133 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
           >
             <AnimatePresence>
               <Stack spacing={1.5}>
-                {allPosts.map((post) => (
-                  <Paper
-                    key={post.id}
-                    component={motion.div}
-                    variants={itemVariants}
-                    elevation={0}
-                    sx={{
-                      display: "grid",
-                      cursor: "pointer",
-                      gridTemplateColumns: {
-                        xs: "128px 1fr",
-                        sm: "168px 1fr",
-                      },
-                      gap: 1.5,
-                      p: 1.5,
-                      borderRadius: 3,
-                      bgcolor: "rgba(255, 238, 244, 0.80)", // нежно-розовые карточки на твоём фоне
-                      border: "1px solid rgba(161,19,74,0.08)",
-                      transition:
-                        "transform .18s ease, box-shadow .18s ease, background .18s ease",
-                      "&:hover": {
-                        transform: "translateY(-2px)",
-                        boxShadow: "0 10px 22px rgba(161,19,74,0.12)",
-                        bgcolor: "rgba(255, 238, 244, 0.92)",
-                      },
-                    }}
-                  >
-                    {/* превью 16:9 слева (как у YouTube) */}
-                    <Box
+                {allPosts.map((post) => {
+                  // Фильтрируем ко-во лайков для данного поста
+                  const likePost = allReactionPosts.filter(
+                    (like) =>
+                      like.post_id === post.id && like.reaction_type === "like"
+                  ).length;
+                   // Фильтрируем ко-во дизлайков для данного поста
+                  const dislikePost = allReactionPosts.filter(
+                    (dislike) =>
+                      dislike.post_id === post.id &&
+                      dislike.reaction_type === "dislike"
+                  ).length;
+                  return (
+                    <Paper
+                      key={post.id}
+                      component={motion.div}
+                      variants={itemVariants}
+                      elevation={0}
                       sx={{
-                        position: "relative",
-                        borderRadius: 2,
-                        overflow: "hidden",
-
-                        background:
-                          "linear-gradient(135deg, #fde4ec 0%, #fff0f5 100%)",
-                        // трюк для соотношения сторон 16:9
-                        "&::before": {
-                          content: '""',
-                          display: "block",
-                          paddingTop: "56.25%", // 16:9
+                        display: "grid",
+                        cursor: "pointer",
+                        gridTemplateColumns: {
+                          xs: "128px 1fr",
+                          sm: "168px 1fr",
                         },
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        gap: 1.5,
+                        p: 1.5,
+                        borderRadius: 3,
+                        bgcolor: "rgba(255, 238, 244, 0.80)", // нежно-розовые карточки на твоём фоне
+                        border: "1px solid rgba(161,19,74,0.08)",
+                        transition:
+                          "transform .18s ease, box-shadow .18s ease, background .18s ease",
+                        "&:hover": {
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 10px 22px rgba(161,19,74,0.12)",
+                          bgcolor: "rgba(255, 238, 244, 0.92)",
+                        },
                       }}
                     >
-                      {/* Если у пользовтеля есть аватар, рисуем */}
-                      {post?.User?.avatar ? (
-                        <Box
-                          component="img"
-                          src={`${process.env.REACT_APP_BASEURL}${post?.User?.avatar}`}
-                          alt="user"
-                          sx={{
-                            width: 50,
-                            height: 50,
-                            borderRadius: "50%",
-                            flex: "0 0 auto",
-                            objectFit: "cover",
-                          }}
-                        />
-                      ) : (
-                        <Avatar sx={{ width: 50, height: 50 }} />
-                      )}
-                    </Box>
-
-                    {/* контент справа */}
-                    <Box sx={{ minWidth: 0, display: "grid", gap: 0.5 }}>
-                      {/* шапка: аватар + автор + дата */}
+                      {/* превью 16:9 слева (как у YouTube) */}
                       <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: "rgba(122,26,80,0.9)",
-                            fontWeight: 600,
-                            letterSpacing: 0.2,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            maxWidth: "100%",
-                          }}
-                          title={post?.User?.name}
-                        >
-                          {post?.User?.name}
-                        </Typography>
-
-                        <Typography
-                          variant="caption"
-                          sx={{ color: "rgba(122,26,80,0.65)", ml: "auto" }}
-                        >
-                          {new Date(
-                            Date.parse(post.createdAt)
-                          ).toLocaleDateString()}
-                        </Typography>
-                      </Box>
-
-                      {/* заголовок  */}
-                      <Typography
-                        className="yt-title"
                         sx={{
-                          mt: 0.25,
-                          color: "#7a1a50",
-                          fontSize: { xs: "0.98rem", sm: "1.05rem" },
-                          fontWeight: 700,
-                          fontFamily:
-                            "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
-                          lineHeight: 1.25,
-                          cursor: "pointer",
-                          transition: "color .2s ease",
-                          "&:hover": { color: "#a1134a" },
+                          position: "relative",
+                          borderRadius: 2,
+                          overflow: "hidden",
+
+                          background:
+                            "linear-gradient(135deg, #fde4ec 0%, #fff0f5 100%)",
+                          // трюк для соотношения сторон 16:9
+                          "&::before": {
+                            content: '""',
+                            display: "block",
+                            paddingTop: "56.25%", // 16:9
+                          },
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
-                        {/* {post.postTitle.length > 150 ? (
+                        {/* Если у пользовтеля есть аватар, рисуем */}
+                        {post?.User?.avatar ? (
+                          <Box
+                            component="img"
+                            src={`${process.env.REACT_APP_BASEURL}${post?.User?.avatar}`}
+                            alt="user"
+                            sx={{
+                              width: 50,
+                              height: 50,
+                              borderRadius: "50%",
+                              flex: "0 0 auto",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          <Avatar sx={{ width: 50, height: 50 }} />
+                        )}
+                      </Box>
+
+                      {/* контент справа */}
+                      <Box sx={{ minWidth: 0, display: "grid", gap: 0.5 }}>
+                        {/* шапка: аватар + автор + дата */}
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: "rgba(122,26,80,0.9)",
+                              fontWeight: 600,
+                              letterSpacing: 0.2,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              maxWidth: "100%",
+                            }}
+                            title={post?.User?.name}
+                          >
+                            {post?.User?.name}
+                          </Typography>
+
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "rgba(122,26,80,0.65)", ml: "auto" }}
+                          >
+                            {new Date(
+                              Date.parse(post.createdAt)
+                            ).toLocaleDateString()}
+                          </Typography>
+                        </Box>
+
+                        {/* заголовок  */}
+                        <Typography
+                          className="yt-title"
+                          sx={{
+                            mt: 0.25,
+                            color: "#7a1a50",
+                            fontSize: { xs: "0.98rem", sm: "1.05rem" },
+                            fontWeight: 700,
+                            fontFamily:
+                              "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+                            lineHeight: 1.25,
+                            cursor: "pointer",
+                            transition: "color .2s ease",
+                            "&:hover": { color: "#a1134a" },
+                          }}
+                        >
+                          {/* {post.postTitle.length > 150 ? (
                             <span className="line-clamp-2">
                               {`${post.postTitle.slice(0, 80)}`}
                               <Button
@@ -394,145 +403,154 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
                               {post.postTitle}
                             </span>
                           )} */}
-                        {(() => {
-                          const full = post.postTitle || "";
-                          const isLong = full.length > 150;
-                          const isOpen = expanded.has(post.id);
+                          {(() => {
+                            const full = post.postTitle || "";
+                            const isLong = full.length > 150;
+                            const isOpen = expanded.has(post.id);
 
-                          if (!isLong) {
-                            return <span className="line-clamp-2">{full}</span>;
-                          }
-
-                          return (
-                            <>
-                              <span className="line-clamp-2">
-                                {isOpen ? full : `${full.slice(0, 80)}`}
-                              </span>
-                              <Button
-                                size="small"
-                                variant="text"
-                                onClick={() => toggleExpand(post.id)}
-                                sx={{
-                                  minWidth: "unset", // убирает минимальную ширину MUI-кнопки
-                                  p: 0, // убирает внутренние отступы
-                                  ml: 0.6,
-                                  lineHeight: 1,
-                                  fontWeight: "bold",
-                                  fontSize: "1rem", // можно увеличить/уменьшить размер точек
-                                  color: "#a1134a", // цвет точек
-                                  "&:hover": {
-                                    backgroundColor: "transparent", // чтобы при ховере не было серого фона
-                                    color: "#7a1a50", // можно добавить эффект смены цвета
-                                  },
-                                }}
-                              >
-                                {isOpen ? (
-                                  <Typography sx={{ color: "#999" }}>
-                                    {" "}
-                                    Свернуть
-                                  </Typography>
-                                ) : (
-                                  " ..."
-                                )}
-                              </Button>
-                            </>
-                          );
-                        })()}
-                      </Typography>
-
-                      <Box
-                        className="post-actions"
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 0.5,
-                          mt: 0.5,
-                          opacity: 0.75,
-                          transition: "opacity .2s ease",
-                          "& .MuiButton-startIcon": { mr: 0.5 },
-                          "&:hover": { opacity: 1 },
-                        }}
-                      >
-                        <Tooltip title="Нравится">
-                          <Button
-                            size="small"
-                            sx={{
-                              color: "#d81b60",
-                              fontWeight: 700,
-                              minWidth: 0,
-                              px: 1,
-                            }}
-                            startIcon={<ThumbUpIcon />}
-                            onClick={() =>
-                              dispatch(
-                                createReactionPostSubmit(post.id, "like")
-                              )
+                            if (!isLong) {
+                              return (
+                                <span className="line-clamp-2">{full}</span>
+                              );
                             }
-                          >
-                            {0}
-                          </Button>
-                        </Tooltip>
-                        <Tooltip title="Не нравится">
-                          <Button
-                            size="small"
-                            sx={{
-                              color: "#d81b60",
-                              fontWeight: 700,
-                              minWidth: 0,
-                              px: 1,
-                            }}
-                            startIcon={<ThumbDownIcon />}
-                            onClick={() =>
-                              dispatch(
-                                createReactionPostSubmit(post.id, "dislike")
-                              )
-                            }
-                          >
-                            {0}
-                          </Button>
-                        </Tooltip>
+
+                            return (
+                              <>
+                                <span className="line-clamp-2">
+                                  {isOpen ? full : `${full.slice(0, 80)}`}
+                                </span>
+                                <Button
+                                  size="small"
+                                  variant="text"
+                                  onClick={() => toggleExpand(post.id)}
+                                  sx={{
+                                    minWidth: "unset", // убирает минимальную ширину MUI-кнопки
+                                    p: 0, // убирает внутренние отступы
+                                    ml: 0.6,
+                                    lineHeight: 1,
+                                    fontWeight: "bold",
+                                    fontSize: "1rem", // можно увеличить/уменьшить размер точек
+                                    color: "#a1134a", // цвет точек
+                                    "&:hover": {
+                                      backgroundColor: "transparent", // чтобы при ховере не было серого фона
+                                      color: "#7a1a50", // можно добавить эффект смены цвета
+                                    },
+                                  }}
+                                >
+                                  {isOpen ? (
+                                    <Typography sx={{ color: "#999" }}>
+                                      {" "}
+                                      Свернуть
+                                    </Typography>
+                                  ) : (
+                                    " ..."
+                                  )}
+                                </Button>
+                              </>
+                            );
+                          })()}
+                        </Typography>
 
                         <Box
+                          className="post-actions"
                           sx={{
-                            ml: "auto",
                             display: "flex",
                             alignItems: "center",
                             gap: 0.5,
+                            mt: 0.5,
+                            opacity: 0.75,
+                            transition: "opacity .2s ease",
+                            "& .MuiButton-startIcon": { mr: 0.5 },
+                            "&:hover": { opacity: 1 },
                           }}
                         >
-                          <Tooltip title="Редактировать">
-                            <IconButton
+                          <Tooltip title="Нравится">
+                            <Button
                               size="small"
-                              sx={{ color: "#7a1a50" }}
-                              onClick={() => {
-                                handleEditClick(post);
-                                window.scrollTo({ top: 0, behavior: "smooth" });
+                              sx={{
+                                color: "#d81b60",
+                                fontWeight: 700,
+                                minWidth: 0,
+                                px: 1,
                               }}
-                            >
-                              <EditIcon sx={{ fontSize: "1.1rem" }} />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Удалить">
-                            <IconButton
-                              size="small"
-                              sx={{ color: "#7a1a50" }}
+                              startIcon={<ThumbUpIcon />}
                               onClick={() =>
-                                dispatch(deletePostHandler(post.id))
+                                dispatch(
+                                  createReactionPostSubmit(post.id, "like")
+                                )
                               }
                             >
-                              <DeleteIcon sx={{ fontSize: "1.1rem" }} />
-                            </IconButton>
+                              {`${likePost}`}
+                            </Button>
                           </Tooltip>
-                          <Tooltip title="Ответить">
-                            <IconButton size="small" sx={{ color: "#7a1a50" }}>
-                              <SendIcon sx={{ fontSize: "1.1rem" }} />
-                            </IconButton>
+                          <Tooltip title="Не нравится">
+                            <Button
+                              size="small"
+                              sx={{
+                                color: "#d81b60",
+                                fontWeight: 700,
+                                minWidth: 0,
+                                px: 1,
+                              }}
+                              startIcon={<ThumbDownIcon />}
+                              onClick={() =>
+                                dispatch(
+                                  createReactionPostSubmit(post.id, "dislike")
+                                )
+                              }
+                            >
+                              {`${dislikePost}`}
+                            </Button>
                           </Tooltip>
+
+                          <Box
+                            sx={{
+                              ml: "auto",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
+                            }}
+                          >
+                            <Tooltip title="Редактировать">
+                              <IconButton
+                                size="small"
+                                sx={{ color: "#7a1a50" }}
+                                onClick={() => {
+                                  handleEditClick(post);
+                                  window.scrollTo({
+                                    top: 0,
+                                    behavior: "smooth",
+                                  });
+                                }}
+                              >
+                                <EditIcon sx={{ fontSize: "1.1rem" }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Удалить">
+                              <IconButton
+                                size="small"
+                                sx={{ color: "#7a1a50" }}
+                                onClick={() =>
+                                  dispatch(deletePostHandler(post.id))
+                                }
+                              >
+                                <DeleteIcon sx={{ fontSize: "1.1rem" }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Ответить">
+                              <IconButton
+                                size="small"
+                                sx={{ color: "#7a1a50" }}
+                              >
+                                <SendIcon sx={{ fontSize: "1.1rem" }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
                         </Box>
                       </Box>
-                    </Box>
-                  </Paper>
-                ))}
+                    </Paper>
+                  );
+                })}
               </Stack>
             </AnimatePresence>
           </Box>

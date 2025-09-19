@@ -23,11 +23,11 @@ router.post("/:id", async (req, res) => {
     });
 
     // Дочитываем пост с включённым автором
-    // const postWithAuthor = await Post.findByPk(createPost.id, {
-    //   include: [{ model: User, attributes: ["id", "name", "avatar"] }],
-    // });
+    const postWithAuthor = await Post.findByPk(createPost.id, {
+      include: [{ model: User, attributes: ["id", "name", "avatar"] }],
+    });
     // Отправляем созданный пост обратно клиенту в формате JSON
-    res.json(createPost);
+    res.json(postWithAuthor);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Ошибка при создании поста" });

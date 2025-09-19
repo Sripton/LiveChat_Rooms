@@ -6,19 +6,6 @@ import {
   DELETE_POST,
 } from "../types/types"; //  константы типов Redux-действий
 // получение всех постов комнаты
-export const fetchAllPosts = (roomID) => async (dispatch) => {
-  try {
-    // GET-запрос к API, который возвращает массив постов комнаты по roomID
-    const response = await axios.get(`/api/posts/${roomID}`);
-    if (response.status === 200) {
-      const { data } = response;
-      // Загруженные посты сохраняются в Redux в state.post.allPosts
-      dispatch({ type: GET_ROOM_POSTS, payload: data });
-    }
-  } catch (error) {
-    console.error("Ошибка при получении всех постов:", error);
-  }
-};
 
 // создание нового поста
 export const createPostSubmit = (roomID, inputs) => async (dispatch) => {
@@ -30,9 +17,22 @@ export const createPostSubmit = (roomID, inputs) => async (dispatch) => {
       const { data } = response; // data содержит созданный пост
       dispatch({ type: SET_CREATE_POST, payload: data }); // dispatch обновляет Redux-состояние, добавляя новый пост в state.post.allPosts
     }
-    dispatch(fetchAllPosts(roomID));
+    // dispatch(fetchAllPosts(roomID)); Подгружаю include: [{model: User, attributes: ["id", "name", "avatar"]}]
   } catch (error) {
     console.error("Ошибка при создании   поста:", error);
+  }
+};
+export const fetchAllPosts = (roomID) => async (dispatch) => {
+  try {
+    // GET-запрос к API, который возвращает массив постов комнаты по roomID
+    const response = await axios.get(`/api/posts/${roomID}`);
+    if (response.status === 200) {
+      const { data } = response;
+      // Загруженные посты сохраняются в Redux в state.post.allPosts
+      dispatch({ type: GET_ROOM_POSTS, payload: data });
+    }
+  } catch (error) {
+    console.error("Ошибка при получении всех постов:", error);
   }
 };
 
