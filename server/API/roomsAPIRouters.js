@@ -1,5 +1,5 @@
 const express = require("express");
-const { Room, RoomAdmission, RoomRequest } = require("../db/models"); // Импорт моделей из базы данных
+const { Room, RoomAdmission, RoomRequest, User } = require("../db/models"); // Импорт моделей из базы данных
 const router = express.Router();
 
 // Маршрут для создания новой комнаты
@@ -36,7 +36,6 @@ router.post("/", async (req, res) => {
 // Тогда фронт поймёт, открывать модалку или сразу пускать в комнату.
 router.get("/", async (req, res) => {
   try {
-    // const userID = req.session.userID || null;
     const userID = req.session.userID || null;
     const findAllRoom = await Room.findAll({
       attributes: ["id", "nameroom", "description", "isPrivate", "ownerID"],
@@ -121,7 +120,10 @@ router.get("/userRooms/:id", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params; // Получаем ID из параметров URL
   try {
-    const findRoomID = await Room.findOne({ where: { id } }); // Ищем комнату по ID
+    const findRoomID = await Room.findOne({
+      where: { id },
+      include: [{ model: User, as: "owner", attributes: ["avatar"] }],
+    }); // Ищем комнату по ID
     const acceptedCount = await RoomRequest.count({
       where: { room_id: id, status: "accepted" },
     });

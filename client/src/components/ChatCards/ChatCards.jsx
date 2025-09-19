@@ -76,6 +76,7 @@ export default function ChatCards() {
 
   //  Извлечение данных комнаты, постов и ID пользователя из Redux
   const currentRoom = useSelector((store) => store.room.currentRoom); // useSelector - доступ к состоянию Redux-хранилища
+  console.log("currentRoom", currentRoom);
   const allPosts = useSelector((store) => store.post.allPosts);
   const { userID, userAvatar, userName } = useSelector((store) => store.user);
 
@@ -121,7 +122,9 @@ export default function ChatCards() {
     }
   }, [dispatch, allPosts]);
 
-  console.log("allReactionPosts", allReactionPosts);
+  console.log("userAvatar", userAvatar);
+  console.log("currentRoom", currentRoom);
+  console.log("allPosts", allPosts);
 
   return (
     // Основной макет
@@ -165,9 +168,9 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {/* Для аватара */}
-            {userAvatar ? (
+            {currentRoom?.owner?.avatar ? (
               <img
-                src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
+                src={`${process.env.REACT_APP_BASEURL}${currentRoom?.owner?.avatar}`}
                 alt="user"
                 style={{
                   width: "70px",
@@ -295,10 +298,11 @@ linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
                         justifyContent: "center",
                       }}
                     >
-                      {userAvatar ? (
+                      {/* Если у пользовтеля есть аватар, рисуем */}
+                      {post?.User?.avatar ? (
                         <Box
                           component="img"
-                          src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
+                          src={`${process.env.REACT_APP_BASEURL}${post?.User?.avatar}`}
                           alt="user"
                           sx={{
                             width: 50,

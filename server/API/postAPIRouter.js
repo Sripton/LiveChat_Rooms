@@ -21,6 +21,11 @@ router.post("/:id", async (req, res) => {
       user_id: userID,
       room_id: findRoomID.id,
     });
+
+    // Дочитываем пост с включённым автором
+    // const postWithAuthor = await Post.findByPk(createPost.id, {
+    //   include: [{ model: User, attributes: ["id", "name", "avatar"] }],
+    // });
     // Отправляем созданный пост обратно клиенту в формате JSON
     res.json(createPost);
   } catch (error) {
@@ -33,10 +38,10 @@ router.post("/:id", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params; // Получаем ID из параметров URL
   try {
-    const userID = req.session.userID;
+    // const userID = req.session.userID;
     const findAllPostsID = await Post.findAll({
-      where: { room_id: id, user_id: userID },
-      include: [{ model: User, attributes: ["id", "name"] }],
+      where: { room_id: id },
+      include: [{ model: User, attributes: ["id", "name", "avatar"] }],
     }); // Ищем все посты относящиеся к определенной комнате по ID
     res.json(findAllPostsID); // Отправляем все посты на клиент
   } catch (error) {

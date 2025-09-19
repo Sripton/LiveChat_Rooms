@@ -115,6 +115,8 @@ export default function UserDashboard({ userPropsData }) {
     }
   }, [userID, dispatch]);
 
+  console.log('userRooms', userRooms);
+
   return (
     <div
       style={{

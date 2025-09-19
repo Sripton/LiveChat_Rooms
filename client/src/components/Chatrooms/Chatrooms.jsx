@@ -12,7 +12,7 @@ import {
   Divider,
   InputBase,
 } from "@mui/material";
-import { columnGap, Stack } from "@mui/system";
+import { Stack } from "@mui/system";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -52,10 +52,10 @@ export default function Chatrooms() {
   const { userID } = useSelector((store) => store.user); // Получение ID пользователя  из Redux
   const allRooms = useSelector((store) => store.room.allRooms); // Извлечение всех комнат из хранилища Redux.
   const dispatch = useDispatch();
-
   useEffect(() => {
-    dispatch(fetchAllRooms()); // Запрашиваем комнаты при монтировании
-  }, [dispatch]);
+    // Запрашиваем комнаты при монтировании
+    dispatch(fetchAllRooms());
+  }, [dispatch, userID]);
 
   // -------------------- Хук для навгации -----------------------
   const navigate = useNavigate();
@@ -84,12 +84,12 @@ export default function Chatrooms() {
     return [...privateRooms].sort((a, b) => sortByName(a, b, asc));
   }, [privateRooms, sortConfig]);
 
-  const handleSortRooms = (key) => {
-    setSortConfig((prev) => ({
-      key,
-      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
-    }));
-  };
+  // const handleSortRooms = (key) => {
+  //   setSortConfig((prev) => ({
+  //     key,
+  //     direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+  //   }));
+  // };
 
   // -------------------- Поиск комнат ------------------------
   const [searchRooms, setSearchRooms] = useState("");
@@ -106,12 +106,6 @@ export default function Chatrooms() {
   }, [allRooms, searchRooms]);
 
   // -------------------- UI: стили ------------------------
-  const Root = styled(Box)(({ theme }) => ({
-    heigth: "100vh",
-    background: "linear-gradient(135deg, #fff0f5 0%, #f8fbff 100%)",
-    padding: theme.spacing(3, 1, 8),
-  }));
-
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("lg")); // lg = 1200px по умолчанию
 
@@ -422,11 +416,11 @@ export default function Chatrooms() {
                             // если гость — отправляем на логин и выходим
                             if (!userID) {
                               navigate("/signin");
-                            } else if (Number(currentRoom.ownerID) === userID) {
-                              navigate(`/chatcards/${currentRoom.id}`);
                             } else if (currentRoom?.hasAccess) {
+                              // Есть доступ (owner/member/accepted) — пускаем сразу
                               navigate(`/chatcards/${currentRoom.id}`);
                             } else {
+                              // Авторизован, но доступа нет — показываем модалку заявки
                               setSelectedRoomID(currentRoom.id);
                               setOpenRequestModal(true);
                             }
