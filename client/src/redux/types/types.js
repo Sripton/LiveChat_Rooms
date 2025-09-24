@@ -78,3 +78,12 @@ export const SET_REACTION_POST_CREATE = "SET_REACTION_POST_CREATE";
 
 // Тип экшена для получения реакций на  посты  пользователем
 export const GET_REACTION_POST_LIST = "GET_REACTION_POST_LIST";
+
+// -----------------------  Comments ------------------------
+// Тип экшена для создания комментария к посту пользователем
+export const SET_CREATE_COMMENT = "SET_CREATE_COMMENT";
+
+// Тип экшена для получения комментариув к посту
+export const GET_POST_COMMENTS = "GET_POST_COMMENTS";
+
+

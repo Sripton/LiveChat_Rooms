@@ -15,7 +15,11 @@ import roomRequestReducer from "../reducers/roomRequestReducer";
 // Импорт редьюсера, который обрабатывает действия, связанные с отображением  запросов
 import roomRequestStatusReducer from "../reducers/roomRequestStatusReducer";
 
+// Импорт редьюсера, который обрабатывает действия, связанные с реакциями на посты
 import reactionPostReducer from "../reducers/reactionPostReducer";
+
+// Импорт редьюсера, который обрабатывает действия, связанные с реакциями на посты
+import commentReducer from "../reducers/commentReducer";
 
 // Экспорт конфигурированного хранилища (store)
 export default configureStore({
@@ -27,5 +31,6 @@ export default configureStore({
     roomRequestStatus: roomRequestStatusReducer,
     post: postReducer, // Ключ `post` определяет ветку состояния Redux: state.post будет обрабатываться postReducer'ом
     reactionsPosts: reactionPostReducer,
+    comment: commentReducer,
   },
 });

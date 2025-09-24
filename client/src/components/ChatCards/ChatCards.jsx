@@ -16,10 +16,12 @@ import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import SendIcon from "@mui/icons-material/Send";
 import { motion, AnimatePresence } from "framer-motion";
 import { getRoomById } from "../../redux/actions/roomActions";
 import ModalPostCreate from "../ModalPostCreate";
+import CommentEditor from "../CommentEditor";
 import {
   fetchAllPosts,
   deletePostHandler,
@@ -28,6 +30,8 @@ import {
   createReactionPostSubmit,
   fetchAllReactionPosts,
 } from "../../redux/actions/reactionPostActions";
+
+import { fetchComments } from "../../redux/actions/commentActions";
 import "./chatcards.css";
 
 const easing = [0.2, 0.8, 0.2, 1];
@@ -122,6 +126,40 @@ export default function ChatCards() {
       allPosts.forEach((post) => dispatch(fetchAllReactionPosts(post.id)));
     }
   }, [dispatch, allPosts]);
+
+  // Состояние для открытия формы для создания комменатрия
+  const [openReplyPostId, setOpenReplyPostId] = useState(null);
+
+  // Функция которая следит за состоянием showReplyPostId при нажатии открывается форма для добалвения комментария
+  const toggleReplyForPost = (postID) => {
+    setOpenReplyPostId((prev) => (prev === postID ? null : postID));
+  };
+
+  // Состояние для открытия  комментариев
+  const [showReplyPostId, setShowReplyPostId] = useState(null);
+
+  // Забираем комментарии из store
+  const commentsByPostId = useSelector((store) => store.comment.byPostId);
+
+  // после объявлений commentsByPostId
+  useEffect(() => {
+    if (Array.isArray(allPosts) && allPosts.length) {
+      allPosts.forEach((post) => {
+        if (!commentsByPostId?.[post.id]) {
+          dispatch(fetchComments(post.id));
+        }
+      });
+    }
+    // важно добавить commentsByPostId, чтобы не дёргать повторно уже загруженные
+  }, [dispatch, allPosts, commentsByPostId]);
+
+  // Функция которая следит за состоянием отображения комментариев
+  const toggleShowForPost = (postID) => {
+    setShowReplyPostId((prev) => (prev === postID ? null : postID));
+    if (!commentsByPostId?.[postID]) {
+      dispatch(fetchComments(postID));
+    }
+  };
 
   return (
     // Основной макет
@@ -254,12 +292,16 @@ export default function ChatCards() {
                     (like) =>
                       like.post_id === post.id && like.reaction_type === "like"
                   ).length;
-                   // Фильтрируем ко-во дизлайков для данного поста
+                  // Фильтрируем ко-во дизлайков для данного поста
                   const dislikePost = allReactionPosts.filter(
                     (dislike) =>
                       dislike.post_id === post.id &&
                       dislike.reaction_type === "dislike"
                   ).length;
+
+                  // Массив всех комментариев по postID
+                  const comments = commentsByPostId?.[post.id] || [];
+
                   return (
                     <Paper
                       key={post.id}
@@ -374,35 +416,6 @@ export default function ChatCards() {
                             "&:hover": { color: "#a1134a" },
                           }}
                         >
-                          {/* {post.postTitle.length > 150 ? (
-                            <span className="line-clamp-2">
-                              {`${post.postTitle.slice(0, 80)}`}
-                              <Button
-                                size="small"
-                                variant="text"
-                                sx={{
-                                  minWidth: "unset", // убирает минимальную ширину MUI-кнопки
-                                  p: 0, // убирает внутренние отступы
-                                  ml: 0.5, // чуть-чуть отступ слева от текста
-                                  lineHeight: 1,
-                                  fontWeight: "bold",
-                                  fontSize: "1rem", // можно увеличить/уменьшить размер точек
-                                  color: "#a1134a", // цвет точек
-                                  "&:hover": {
-                                    backgroundColor: "transparent", // чтобы при ховере не было серого фона
-                                    color: "#7a1a50", // можно добавить эффект смены цвета
-                                  },
-                                }}
-                                onClick={() => toggleExpand(post.id)}
-                              >
-                                ...
-                              </Button>
-                            </span>
-                          ) : (
-                            <span className="line-clamp-2">
-                              {post.postTitle}
-                            </span>
-                          )} */}
                           {(() => {
                             const full = post.postTitle || "";
                             const isLong = full.length > 150;
@@ -502,6 +515,21 @@ export default function ChatCards() {
                               {`${dislikePost}`}
                             </Button>
                           </Tooltip>
+                          <Tooltip title="Комментарии">
+                            <Button
+                              size="small"
+                              sx={{
+                                color: "#d81b60",
+                                fontWeight: 700,
+                                minWidth: 0,
+                                px: 1,
+                              }}
+                              startIcon={<VisibilityIcon />}
+                              onClick={() => toggleShowForPost(post.id)}
+                            >
+                              {comments.length}
+                            </Button>
+                          </Tooltip>
 
                           <Box
                             sx={{
@@ -541,12 +569,24 @@ export default function ChatCards() {
                               <IconButton
                                 size="small"
                                 sx={{ color: "#7a1a50" }}
+                                onClick={() => toggleReplyForPost(post.id)}
                               >
                                 <SendIcon sx={{ fontSize: "1.1rem" }} />
                               </IconButton>
                             </Tooltip>
                           </Box>
                         </Box>
+                        {openReplyPostId === post.id && (
+                          <CommentEditor
+                            postID={post.id}
+                            parentID={null}
+                            setOpenReplyPostId={setOpenReplyPostId}
+                          />
+                        )}
+                        {showReplyPostId === post.id &&
+                          comments.map((comment) => (
+                            <Typography>{comment.commentTitle}</Typography>
+                          ))}
                       </Box>
                     </Paper>
                   );
