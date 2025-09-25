@@ -86,4 +86,5 @@ export const SET_CREATE_COMMENT = "SET_CREATE_COMMENT";
 // Тип экшена для получения комментариув к посту
 export const GET_POST_COMMENTS = "GET_POST_COMMENTS";
 
-
+// Тип экшена для получения ко-ва комментариев к посту
+export const SET_COMMENT_COUNTS = "SET_COMMENT_COUNTS";

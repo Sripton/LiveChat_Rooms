@@ -31,7 +31,10 @@ import {
   fetchAllReactionPosts,
 } from "../../redux/actions/reactionPostActions";
 
-import { fetchComments } from "../../redux/actions/commentActions";
+import {
+  fetchComments,
+  fetchCommentCounts,
+} from "../../redux/actions/commentActions";
 import "./chatcards.css";
 
 const easing = [0.2, 0.8, 0.2, 1];
@@ -141,17 +144,18 @@ export default function ChatCards() {
   // Забираем комментарии из store
   const commentsByPostId = useSelector((store) => store.comment.byPostId);
 
-  // после объявлений commentsByPostId
+  // Забираем счетчики коммнетриев  из store
+  const countsByPostId = useSelector((store) => store.comment.countsByPostId);
+
+  // после загрузки allPosts подгружаем *счётчики* одним батчем
+  // важно добавить commentsByPostId, чтобы не дёргать повторно уже загруженные
   useEffect(() => {
     if (Array.isArray(allPosts) && allPosts.length) {
-      allPosts.forEach((post) => {
-        if (!commentsByPostId?.[post.id]) {
-          dispatch(fetchComments(post.id));
-        }
-      });
+      allPosts.forEach((post) => dispatch(fetchComments(post.id)));
+      const ids = allPosts.map((post) => post.id);
+      dispatch(fetchCommentCounts(ids));
     }
-    // важно добавить commentsByPostId, чтобы не дёргать повторно уже загруженные
-  }, [dispatch, allPosts, commentsByPostId]);
+  }, []);
 
   // Функция которая следит за состоянием отображения комментариев
   const toggleShowForPost = (postID) => {
@@ -301,7 +305,6 @@ export default function ChatCards() {
 
                   // Массив всех комментариев по postID
                   const comments = commentsByPostId?.[post.id] || [];
-
                   return (
                     <Paper
                       key={post.id}
@@ -527,7 +530,7 @@ export default function ChatCards() {
                               startIcon={<VisibilityIcon />}
                               onClick={() => toggleShowForPost(post.id)}
                             >
-                              {comments.length}
+                              {countsByPostId[post.id] ?? 0}
                             </Button>
                           </Tooltip>
 
@@ -585,7 +588,9 @@ export default function ChatCards() {
                         )}
                         {showReplyPostId === post.id &&
                           comments.map((comment) => (
-                            <Typography>{comment.commentTitle}</Typography>
+                            <Typography key={comment.id}>
+                              {comment.commentTitle}
+                            </Typography>
                           ))}
                       </Box>
                     </Paper>
