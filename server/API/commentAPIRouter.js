@@ -3,6 +3,35 @@ const { Post, Comment } = require("../db/models");
 const { fn, col, Op } = require("sequelize");
 const router = express.Router();
 
+router.post("/counts", async (req, res) => {
+  try {
+    // Проверка Array.isArray(req.body.postIds) → если это массив, то берём его, чистим, превращаем в новый массив чисел без дублей.
+    const postIds = Array.isArray(req.body.postIds)
+      ? [...new Set(req.body.postIds.map(Number).filter(Number.isFinite))]
+      : []; // Если это не массив
+
+    // если «массив пуст» → сразу отдаём { counts: {} }.
+    if (!postIds.length) return res.json({ counts: {} });
+
+    const rows = await Comment.findAll({
+      attributes: ["post_id", [fn("COUNT", col("id")), "count"]],
+      // [
+      //   {
+      //     "post_id": 1,
+      //     "count": "5"
+      //   }
+      // ]
+      where: { post_id: { [Op.in]: postIds } },
+      group: ["post_id"],
+      raw: true,
+    });
+    const counts = Object.fromEntries(postIds.map((id) => [id, 0]));
+    rows.forEach((r) => (counts[r.post_id] = Number(r.count)));
+    res.json({ counts });
+  } catch (error) {
+    console.log(error);
+  }
+});
 router.post("/:id", async (req, res) => {
   const { id } = req.params;
   const { commentTitle, parentID } = req.body;
@@ -20,31 +49,6 @@ router.post("/:id", async (req, res) => {
     });
     // Отправляем  комментарий на клиент
     res.status(201).json(createComment);
-  } catch (error) {
-    console.log(error);
-  }
-});
-
-router.post("/counts", async (req, res) => {
-  try {
-    const postIds = Array.isArray(req.body.postIds)
-      ? [...new Set(req.body.postIds.map(Number).filter(Number.isFinite))]
-      : [];
-    if (!postIds.length) return res.json({ counts: {} });
-
-    const rows = await Comment.findAll({
-      attributes: ["post_id", [fn("COUNT", col("id")), "count"]],
-      where: { post_id: { [Op.in]: postIds } },
-      group: ["post_id"],
-      raw: true,
-    });
-    const counts = Object.fromEntries(postIds.map((id) => [id, 0]));
-    rows.forEach((r) => {
-      counts[r.post_id] = Number(r.count);
-    });
-
-    res.set("Cache-Control", "public, max-age=15");
-    res.json({ counts });
   } catch (error) {
     console.log(error);
   }

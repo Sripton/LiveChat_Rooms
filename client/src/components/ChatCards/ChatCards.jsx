@@ -149,21 +149,51 @@ export default function ChatCards() {
 
   // после загрузки allPosts подгружаем *счётчики* одним батчем
   // важно добавить commentsByPostId, чтобы не дёргать повторно уже загруженные
-  useEffect(() => {
-    if (Array.isArray(allPosts) && allPosts.length) {
-      allPosts.forEach((post) => dispatch(fetchComments(post.id)));
-      const ids = allPosts.map((post) => post.id);
-      dispatch(fetchCommentCounts(ids));
-    }
-  }, []);
+  // Не важны log
+  // useEffect(() => {
+  //   if (Array.isArray(allPosts) && allPosts.length) {
+  //     allPosts.forEach((post) => dispatch(fetchComments(post.id)));
+  //     const ids = allPosts.map((post) => post.id);
+  //     dispatch(fetchCommentCounts(ids)); // <- МАССИВ чисел [1,2,3,4]
+  //   }
+  // }, [dispatch, allPosts]);
 
-  // Функция которая следит за состоянием отображения комментариев
+  // Promise.all
+  // useEffect(() => {
+  //   if (!Array.isArray(allPosts) || allPosts.length === 0) return;
+  //   // 1) грузим комментарии параллельно
+  //   Promise.all(allPosts.map((post) => dispatch(fetchComments(post.id))))
+  //     .then((commentsResults) => {
+  //       const ids = allPosts.map((p) => p.id);
+  //       return dispatch(fetchCommentCounts(ids));
+  //     })
+  //     .then((counts) => console.log("counts", counts).unwrap())
+  //     .catch((err) => console.log(err));
+  // }, [dispatch, allPosts]);
+
+  // // Функция которая следит за состоянием отображения комментариев
   const toggleShowForPost = (postID) => {
     setShowReplyPostId((prev) => (prev === postID ? null : postID));
     if (!commentsByPostId?.[postID]) {
       dispatch(fetchComments(postID));
     }
   };
+
+  // async
+  useEffect(() => {
+    if (!Array.isArray(allPosts) || allPosts.length === 0) return;
+    (async () => {
+      try {
+        // 1) грузим комментарии для всех постов параллельно
+        await Promise.all(allPosts.map((p) => dispatch(fetchComments(p.id))));
+        // 2) одним запросом получаем счётчики
+        const ids = allPosts.map((p) => p.id);
+        await dispatch(fetchCommentCounts(ids)).unwrap(); // можно ловить ошибки детальнее
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  }, [dispatch, allPosts]);
 
   return (
     // Основной макет

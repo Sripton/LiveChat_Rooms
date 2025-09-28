@@ -37,11 +37,10 @@ export const fetchComments = (postID) => async (dispatch) => {
 // NEW: получить счётчики для набора постов
 export const fetchCommentCounts = (postIds) => async (dispatch) => {
   try {
-    if (!Array.isArray(postIds) && postIds.length === 0) return;
-    // на всякий случай уберём дубли и приведём к числам
-    const uniqueIds = [...new Set(postIds.map(Number).filter(Number.isFinite))];
-
-    const response = await axios.post(`/counts`, {
+    if (!Array.isArray(postIds) || postIds.length === 0) return;
+    // на всякий случай убераем дубли и приведём к числам
+    const uniqueIds = [...new Set(postIds.map(Number).filter(Number.isFinite))]; // [1,2,3,4]
+    const response = await axios.post(`/api/comments/counts`, {
       postIds: uniqueIds,
     });
 
@@ -50,7 +49,8 @@ export const fetchCommentCounts = (postIds) => async (dispatch) => {
         response?.data?.counts && typeof response?.data?.counts === "object"
           ? response?.data?.counts
           : {};
-      dispatch({ type: SET_COMMENT_COUNTS, payload: counts });
+      console.log("counts", counts);
+      // dispatch({ type: SET_COMMENT_COUNTS, payload: counts });
     }
   } catch (error) {
     console.log(error);
