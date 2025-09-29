@@ -1,5 +1,5 @@
 const express = require("express");
-const { Post, Comment } = require("../db/models");
+const { Post, Comment, User } = require("../db/models");
 const { fn, col, Op } = require("sequelize");
 const router = express.Router();
 
@@ -47,8 +47,16 @@ router.post("/:id", async (req, res) => {
       post_id: post.id, // ID поста, к которому относится комментарийs
       parent_id: parentID || null, // Если это ответ — сохраняем parent_id, иначе null
     });
+
+    // как варинт на сервере отдавать полный коммнетрий с пользователем
+    // дочитываем с включенным пользователем
+    const fullComment = await Comment.findByPk(createComment.id, {
+      include: [
+        { model: User, attributes: ["id", "name", "avatar", "updatedAt"] },
+      ],
+    });
     // Отправляем  комментарий на клиент
-    res.status(201).json(createComment);
+    res.status(201).json(fullComment);
   } catch (error) {
     console.log(error);
   }
@@ -58,7 +66,10 @@ router.get("/:id", async (req, res) => {
   // id - строка
   const { id } = req.params;
   try {
-    const comments = await Comment.findAll({ where: { post_id: id } });
+    const comments = await Comment.findAll({
+      where: { post_id: id },
+      include: [{ model: User }],
+    });
     res.status(200).json({ comments });
   } catch (error) {
     console.log(error);

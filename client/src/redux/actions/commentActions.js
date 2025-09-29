@@ -8,14 +8,23 @@ import {
 // inputs — объект с полем commentTitle,
 // parentID — id родительского комментария или null, если пишем к посту
 export const createComments =
-  (postID, inputs, parentID) => async (dispatch) => {
+  (postID, inputs, parentID) => async (dispatch, getState) => {
     const response = await axios.post(`/api/comments/${postID}`, {
       commentTitle: inputs.commentTitle,
       parentID, // отправляем на сервер
     });
     if (response.status === 201) {
       const { data } = response;
-      dispatch({ type: SET_CREATE_COMMENT, payload: data });
+      const { userName, userAvatar } = getState().user;
+      const payload = {
+        ...data,
+        // post_id: data?.post_id ?? postID,
+        // parent_id: data?.parent_id ?? parentID,
+        // createdAt: data?.createdAt,
+        User: data?.User ?? { name: userName, avatar: userAvatar },
+      };
+
+      dispatch({ type: SET_CREATE_COMMENT, payload });
     }
   };
 
@@ -23,10 +32,9 @@ export const fetchComments = (postID) => async (dispatch) => {
   try {
     const response = await axios.get(`/api/comments/${postID}`);
     if (response.status === 200) {
+      const { data } = response;
       // если сервер отдаёт массив, берём как есть
-      const comments = Array.isArray(response.data)
-        ? response.data
-        : response.data.comments;
+      const comments = Array.isArray(data) ? data : data.comments;
       dispatch({ type: GET_POST_COMMENTS, payload: { postID, comments } });
     }
   } catch (error) {
@@ -49,8 +57,8 @@ export const fetchCommentCounts = (postIds) => async (dispatch) => {
         response?.data?.counts && typeof response?.data?.counts === "object"
           ? response?.data?.counts
           : {};
-      console.log("counts", counts);
-      // dispatch({ type: SET_COMMENT_COUNTS, payload: counts });
+
+      dispatch({ type: SET_COMMENT_COUNTS, payload: counts });
     }
   } catch (error) {
     console.log(error);

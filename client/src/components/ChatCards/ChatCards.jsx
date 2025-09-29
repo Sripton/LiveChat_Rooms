@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getRoomById } from "../../redux/actions/roomActions";
 import ModalPostCreate from "../ModalPostCreate";
 import CommentEditor from "../CommentEditor";
+import CommentsCard from "../CommentsCard";
 import {
   fetchAllPosts,
   deletePostHandler,
@@ -616,12 +617,9 @@ export default function ChatCards() {
                             setOpenReplyPostId={setOpenReplyPostId}
                           />
                         )}
-                        {showReplyPostId === post.id &&
-                          comments.map((comment) => (
-                            <Typography key={comment.id}>
-                              {comment.commentTitle}
-                            </Typography>
-                          ))}
+                        {showReplyPostId === post.id && (
+                          <CommentsCard comments={comments} />
+                        )}
                       </Box>
                     </Paper>
                   );
