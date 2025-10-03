@@ -2,11 +2,7 @@ import React, { useState } from "react";
 import { Box, Button, TextField } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { createComments } from "../../redux/actions/commentActions";
-export default function CommentEditor({
-  postID,
-  parentID,
-  setOpenReplyPostId,
-}) {
+export default function CommentEditor({ postID, onClose, parentID }) {
   const [inputs, setInputs] = useState("");
   const dispatch = useDispatch();
   const submit = async () => {
@@ -16,7 +12,8 @@ export default function CommentEditor({
       await dispatch(
         createComments(postID, { commentTitle: commentText }, parentID)
       );
-      setOpenReplyPostId();
+      setInputs("");
+      onClose();
     } catch (error) {
       console.log(error);
     }

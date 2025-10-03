@@ -14,8 +14,6 @@ export const createReactionPostSubmit =
       });
       if (response.status === 200) {
         const { data } = response;
-        console.log("WILL_DISPATCH_REACTION", data, response.status);
-
         dispatch({ type: SET_REACTION_POST_CREATE, payload: data });
       }
     } catch (error) {

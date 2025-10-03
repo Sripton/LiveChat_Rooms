@@ -499,7 +499,7 @@ export default function ChatCards() {
                         </Typography>
 
                         <Box
-                          className="post-actions"
+                          // className="post-actions"
                           sx={{
                             display: "flex",
                             alignItems: "center",
@@ -613,12 +613,18 @@ export default function ChatCards() {
                         {openReplyPostId === post.id && (
                           <CommentEditor
                             postID={post.id}
+                            onClose={() => setOpenReplyPostId(null)}
                             parentID={null}
-                            setOpenReplyPostId={setOpenReplyPostId}
                           />
                         )}
                         {showReplyPostId === post.id && (
-                          <CommentsCard comments={comments} />
+                          <CommentsCard
+                            comments={comments}
+                            postID={post.id}
+                            post={post}
+                            expanded={expanded}
+                            toggleExpand={toggleExpand}
+                          />
                         )}
                       </Box>
                     </Paper>
