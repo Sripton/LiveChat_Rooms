@@ -14,7 +14,9 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SendIcon from "@mui/icons-material/Send";
+import { useDispatch } from "react-redux";
 import CommentEditor from "../CommentEditor";
+import { deleteComment } from "../../redux/actions/commentActions";
 
 export default function CommentsCard({
   comments,
@@ -22,6 +24,7 @@ export default function CommentsCard({
   post,
   expanded,
   toggleExpand,
+  userID,
 }) {
   const accent = "#7a1a50"; // бордовый
   const accentSoft = "rgba(161,19,74,0.08)";
@@ -36,6 +39,7 @@ export default function CommentsCard({
   //     return "";
   //   }
   // };
+  const dispatch = useDispatch();
 
   const [replyForID, setReplyForID] = useState(null);
 
@@ -59,6 +63,9 @@ export default function CommentsCard({
     // дать фокус для доступности
     el.focus?.();
   };
+
+  const [editComment, setEditComment] = useState(null);
+  console.log("comments", comments);
 
   return (
     <Paper
@@ -85,7 +92,7 @@ export default function CommentsCard({
           divider={<Divider sx={{ borderColor: accentSoft }} />}
           spacing={1.5}
         >
-          {comments.map((comment) => {
+          {comments?.map((comment) => {
             const name = comment?.User?.name;
             const avatarUrl = comment?.User?.avatar;
             const text = comment?.commentTitle || "";
@@ -95,6 +102,7 @@ export default function CommentsCard({
             const parentAuthor =
               comment?.ParentComment?.User?.name ??
               "автору удалённого комментария";
+            console.log("comment.id", typeof comment.id);
             return (
               <Box
                 key={comment.id ?? `${name}-${when}-${text.slice(0, 10)}`}
@@ -180,7 +188,7 @@ export default function CommentsCard({
                   >
                     {(() => {
                       const full = comment?.commentTitle;
-                      const isLong = full.length > 150;
+                      const isLong = full?.length > 150;
                       const isOpen = expanded.has(comment.id);
                       if (!isLong) {
                         return <span className="line-clamp-2">{full}</span>;
@@ -222,6 +230,7 @@ export default function CommentsCard({
                       );
                     })()}
                   </Typography>
+
                   <Box
                     sx={{
                       display: "flex",
@@ -286,12 +295,28 @@ export default function CommentsCard({
                       }}
                     >
                       <Tooltip title="Редактировать">
-                        <IconButton size="small" sx={{ color: "#7a1a50" }}>
+                        <IconButton
+                          size="small"
+                          sx={{ color: "#7a1a50" }}
+                          onClick={() => {
+                            setReplyForID(null);
+                            setEditComment({
+                              id: comment.id,
+                              commentTitle: comment.commentTitle,
+                            });
+                          }}
+                        >
                           <EditIcon sx={{ fontSize: "1rem" }} />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Удалить">
-                        <IconButton size="small" sx={{ color: "#7a1a50" }}>
+                        <IconButton
+                          size="small"
+                          sx={{ color: "#7a1a50" }}
+                          onClick={() =>
+                            dispatch(deleteComment(postID, comment.id))
+                          }
+                        >
                           <DeleteIcon sx={{ fontSize: "1rem" }} />
                         </IconButton>
                       </Tooltip>
@@ -299,21 +324,33 @@ export default function CommentsCard({
                         <IconButton
                           size="small"
                           sx={{ color: "#7a1a50" }}
-                          onClick={() =>
+                          onClick={() => {
                             setReplyForID(
                               replyForID === comment.id ? null : comment.id
-                            )
-                          }
+                            );
+                            setEditComment(null);
+                          }}
                         >
                           <SendIcon sx={{ fontSize: "1rem" }} />
                         </IconButton>
                       </Tooltip>
                     </Box>
+                    {/* ФОРМА ОТВЕТА */}
                     {replyForID === comment.id && (
                       <CommentEditor
                         postID={postID}
                         parentID={comment.id}
                         onClose={() => setReplyForID(null)}
+                        mode="create"
+                      />
+                    )}
+                    {/* ФОРМА РЕДАКТИРОВАНИЯ */}
+                    {editComment?.id === comment.id && (
+                      <CommentEditor
+                        postID={postID} // ВАЖНО
+                        editComment={editComment}
+                        onClose={() => setEditComment(null)}
+                        mode="edit"
                       />
                     )}
                   </Box>

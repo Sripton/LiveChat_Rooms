@@ -54,7 +54,6 @@ export const deletePostHandler = (postID) => async (dispatch) => {
     // delete - запрос на изменение конкретного  поста
     const response = await axios.delete(`/api/posts/${postID}`);
     if (response.status === 200) {
-      const { data } = response;
       return dispatch({
         type: DELETE_POST,
         payload: { id: postID }, // передаём, какой именно пост удалить

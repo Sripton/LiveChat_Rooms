@@ -1,21 +1,52 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, TextField } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { createComments } from "../../redux/actions/commentActions";
-export default function CommentEditor({ postID, onClose, parentID }) {
+import {
+  createComments,
+  editCommentSubmit,
+} from "../../redux/actions/commentActions";
+export default function CommentEditor({
+  postID,
+  onClose,
+  parentID,
+  editComment,
+  mode,
+}) {
   const [inputs, setInputs] = useState("");
   const dispatch = useDispatch();
+  // При открытии модалки — заполняем поля если режим edit
+  useEffect(() => {
+    if (mode === "edit" && editComment) {
+      setInputs(editComment.commentTitle || "");
+    } else {
+      setInputs("");
+    }
+  }, [mode, editComment]);
   const submit = async () => {
     const commentText = inputs.trim();
     if (!commentText) return;
     try {
-      await dispatch(
-        createComments(postID, { commentTitle: commentText }, parentID)
-      );
+      if (mode === "edit" && editComment?.id) {
+        dispatch(editCommentSubmit(postID, editComment?.id, commentText));
+      } else {
+        dispatch(createComments(postID, { commentTitle: inputs }, parentID));
+      }
       setInputs("");
-      onClose();
+      onClose?.();
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      return onClose?.();
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submit();
     }
   };
   return (
@@ -26,6 +57,8 @@ export default function CommentEditor({ postID, onClose, parentID }) {
         maxRows={6} // максимум 6 строк (дальше появляется скролл)
         value={inputs}
         onChange={(e) => setInputs(e.target.value)}
+        autoFocus // без autoFocus не сработает  onKeyDown
+        onKeyDown={handleKeyDown}
         sx={{
           width: {
             xs: "100%", // мобила — во всю ширину
@@ -78,7 +111,7 @@ export default function CommentEditor({ postID, onClose, parentID }) {
           },
         }}
       >
-        Отправить
+        {mode === "edit" ? "Сохранить" : "Отправить"}
       </Button>
     </Box>
   );

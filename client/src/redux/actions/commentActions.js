@@ -3,6 +3,8 @@ import {
   SET_CREATE_COMMENT,
   GET_POST_COMMENTS,
   SET_COMMENT_COUNTS,
+  SET_EDIT_COMMENT,
+  DELETE_COMMENT,
 } from "../types/types";
 // postID — id поста,
 // inputs — объект с полем commentTitle,
@@ -59,6 +61,36 @@ export const fetchCommentCounts = (postIds) => async (dispatch) => {
           : {};
 
       dispatch({ type: SET_COMMENT_COUNTS, payload: counts });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const editCommentSubmit =
+  (postID, commentID, commentTitle) => async (dispatch) => {
+    try {
+      const response = await axios.patch(`/api/comments/${commentID}`, {
+        commentTitle,
+      });
+      if (response.status === 200) {
+        const { data } = response;
+        dispatch({ type: SET_EDIT_COMMENT, payload: { postID, ...data } });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+export const deleteComment = (postID, commentID) => async (dispatch) => {
+  try {
+    const response = await axios.delete(`/api/comments/${commentID}`);
+    if (response.status === 200) {
+      const id = Number(response.data?.id) ?? Number(commentID);
+      dispatch({
+        type: DELETE_COMMENT,
+        payload: { postID, id },
+      });
     }
   } catch (error) {
     console.log(error);

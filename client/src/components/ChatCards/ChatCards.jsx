@@ -91,7 +91,7 @@ export default function ChatCards() {
 
   // Состояние для изменения поста
   const [editPost, setEditPost] = useState(null);
-  const handleEditClick = (post) => {
+  const handleEditPostClick = (post) => {
     if (!userID || userID !== post.user_id) return;
     setEditPost(post);
     setOpenModalPost((prev) => !prev);
@@ -172,7 +172,7 @@ export default function ChatCards() {
   //     .catch((err) => console.log(err));
   // }, [dispatch, allPosts]);
 
-  // // Функция которая следит за состоянием отображения комментариев
+  // Функция которая следит за состоянием отображения комментариев
   const toggleShowForPost = (postID) => {
     setShowReplyPostId((prev) => (prev === postID ? null : postID));
     if (!commentsByPostId?.[postID]) {
@@ -578,7 +578,8 @@ export default function ChatCards() {
                                 size="small"
                                 sx={{ color: "#7a1a50" }}
                                 onClick={() => {
-                                  handleEditClick(post);
+                                  handleEditPostClick(post);
+                                  // Scroll к верху
                                   window.scrollTo({
                                     top: 0,
                                     behavior: "smooth",
@@ -624,6 +625,7 @@ export default function ChatCards() {
                             post={post}
                             expanded={expanded}
                             toggleExpand={toggleExpand}
+                            userID={userID}
                           />
                         )}
                       </Box>

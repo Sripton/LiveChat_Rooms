@@ -128,4 +128,40 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.patch("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { commentTitle } = req.body;
+  try {
+    const comment = await Comment.findByPk(id);
+    if (!comment)
+      return res.status(404).json({ message: "Коммнетрий не оюнаружен" });
+    await comment.update({ commentTitle });
+    res.status(200).json(comment); // возвращаем обновлённый комментарий
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Ищем комментарий по его id
+    const comment = await Comment.findByPk(id);
+    // Если коммнетрия нет. Выводим ошибку
+    if (!comment) {
+      return res.status(404).json({ message: "Комментарий не найден" });
+    }
+    // const commentReplies = await Comment.findAll({ where: { parent_id: id } });
+    // Удаляем все ответы на данный коммнетрий
+    await Comment.destroy({ where: { parent_id: id } });
+
+    // Удаляем сам коммнетрий
+    await Comment.destroy({ where: { id } });
+    return res.status(200).json({ id });
+  } catch (error) {
+    console.error("Ошибка при удалении комментария:", error);
+    return res.status(500).json({ message: "Ошибка сервера-----" });
+  }
+});
+
 module.exports = router;

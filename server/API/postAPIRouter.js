@@ -1,5 +1,5 @@
 const express = require("express");
-const { Room, Post, User } = require("../db/models");
+const { Room, Post, User, Postreaction } = require("../db/models");
 const router = express.Router();
 
 router.post("/:id", async (req, res) => {
@@ -67,8 +67,13 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
   try {
+    // Удаляем все  реакции на пост
+    await Postreaction.destroy({ where: { post_id: id } });
+
+    // Находим сам пост
     const post = await Post.destroy({ where: { id } });
-    if (post === 0) {
+    //  Если поста нет. Выводим ошибку
+    if (!post) {
       // ничего не удалилось → поста не было
       return res.status(404).json({ message: "Пост не найден" });
     }

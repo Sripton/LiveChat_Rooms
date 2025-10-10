@@ -88,3 +88,9 @@ export const GET_POST_COMMENTS = "GET_POST_COMMENTS";
 
 // Тип экшена для получения ко-ва комментариев к посту
 export const SET_COMMENT_COUNTS = "SET_COMMENT_COUNTS";
+
+// Тип экшена для изменения  комментария
+export const SET_EDIT_COMMENT = "SET_EDIT_COMMENT";
+
+// Тип экшена для удаления  комментария
+export const DELETE_COMMENT = "DELETE_COMMENT";
