@@ -196,6 +196,8 @@ export default function ChatCards() {
     })();
   }, [dispatch, allPosts]);
 
+  console.log("openReplyPostId", openReplyPostId);
+
   return (
     // Основной макет
     <Box
@@ -343,12 +345,11 @@ export default function ChatCards() {
                       variants={itemVariants}
                       elevation={0}
                       sx={{
-                        display: "grid",
+                        display: { xs: "block", sm: "grid" }, // на мобиле — одна колонка, на sm+ — grid
                         cursor: "pointer",
-                        gridTemplateColumns: {
-                          xs: "128px 1fr",
-                          sm: "168px 1fr",
-                        },
+                        gridTemplateColumns: showReplyPostId // gridTemplateColumns  без grid он не работает
+                          ? "1fr"
+                          : { xs: "128px 1fr", sm: "168px 1fr" },
                         gap: 1.5,
                         p: 1.5,
                         borderRadius: 3,
@@ -364,43 +365,44 @@ export default function ChatCards() {
                       }}
                     >
                       {/* превью 16:9 слева (как у YouTube) */}
-                      <Box
-                        sx={{
-                          position: "relative",
-                          borderRadius: 2,
-                          overflow: "hidden",
-
-                          background:
-                            "linear-gradient(135deg, #fde4ec 0%, #fff0f5 100%)",
-                          // трюк для соотношения сторон 16:9
-                          "&::before": {
-                            content: '""',
-                            display: "block",
-                            paddingTop: "56.25%", // 16:9
-                          },
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        {/* Если у пользовтеля есть аватар, рисуем */}
-                        {post?.User?.avatar ? (
-                          <Box
-                            component="img"
-                            src={`${process.env.REACT_APP_BASEURL}${post?.User?.avatar}`}
-                            alt="user"
-                            sx={{
-                              width: 50,
-                              height: 50,
-                              borderRadius: "50%",
-                              flex: "0 0 auto",
-                              objectFit: "cover",
-                            }}
-                          />
-                        ) : (
-                          <Avatar sx={{ width: 50, height: 50 }} />
-                        )}
-                      </Box>
+                      {!showReplyPostId && (
+                        <Box
+                          sx={{
+                            position: "relative",
+                            borderRadius: 2,
+                            overflow: "hidden",
+                            background:
+                              "linear-gradient(135deg, #fde4ec 0%, #fff0f5 100%)",
+                            // трюк для соотношения сторон 16:9
+                            "&::before": {
+                              content: '""',
+                              display: "block",
+                              paddingTop: "56.25%", // 16:9
+                            },
+                            // display: "flex",
+                            display: { xs: "none", sm: "flex" },
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {post?.User?.avatar ? (
+                            <Box
+                              component="img"
+                              src={`${process.env.REACT_APP_BASEURL}${post?.User?.avatar}`}
+                              alt="user"
+                              sx={{
+                                width: 50,
+                                height: 50,
+                                borderRadius: "50%",
+                                flex: "0 0 auto",
+                                objectFit: "cover",
+                              }}
+                            />
+                          ) : (
+                            <Avatar sx={{ width: 50, height: 50 }} />
+                          )}
+                        </Box>
+                      )}
 
                       {/* контент справа */}
                       <Box sx={{ minWidth: 0, display: "grid", gap: 0.5 }}>
@@ -559,7 +561,9 @@ export default function ChatCards() {
                                 px: 1,
                               }}
                               startIcon={<VisibilityIcon />}
-                              onClick={() => toggleShowForPost(post.id)}
+                              onClick={() => {
+                                toggleShowForPost(post.id);
+                              }}
                             >
                               {countsByPostId[post.id] ?? 0}
                             </Button>
@@ -626,6 +630,7 @@ export default function ChatCards() {
                             expanded={expanded}
                             toggleExpand={toggleExpand}
                             userID={userID}
+                            toggleReplyForPost={() => toggleReplyForPost(null)}
                           />
                         )}
                       </Box>

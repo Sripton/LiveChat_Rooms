@@ -2,6 +2,7 @@ const express = require("express");
 const { Post, Comment, User } = require("../db/models");
 const { fn, col, Op } = require("sequelize");
 const router = express.Router();
+const { checkUserForComment } = require("../MiddleWares/checkUser");
 
 router.post("/counts", async (req, res) => {
   try {
@@ -142,7 +143,7 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", checkUserForComment, async (req, res) => {
   const { id } = req.params;
   try {
     // Ищем комментарий по его id

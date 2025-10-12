@@ -11,25 +11,52 @@ const initialState = {
   countsByPostId: {}, //  { [postId]: number }
 };
 
-function commentDescendants(list, rootId) {
-  const target = Number(rootId); // id
-  const toDelete = new Set([target]); // {[id]}
-  let change = true;
-  while (change) {
-    change = false;
-    // Перебираем все комментарии
-    for (const comment of list) {
-      const commentID = Number(comment.id);
-      const parentID =
-        comment.parent_id === null ? null : Number(comment.parent_id);
+// function commentDescendants(list, rootId) {
+//   const target = Number(rootId); // id
+//   const toDelete = new Set([target]); // {[id]}
+//   let change = true;
+//   while (change) {
+//     change = false;
+//     // Перебираем все комментарии
+//     for (const comment of list) {
+//       const commentID = Number(comment.id);
+//       const parentID =
+//         comment.parent_id === null ? null : Number(comment.parent_id);
 
-      if (
-        parentID !== null &&
-        toDelete.has(parentID) &&
-        !toDelete.has(commentID)
-      ) {
-        toDelete.add(commentID);
-        change = true;
+//       if (
+//         parentID !== null &&
+//         toDelete.has(parentID) &&
+//         !toDelete.has(commentID)
+//       ) {
+//         toDelete.add(commentID);
+//         change = true;
+//       }
+//     }
+//   }
+//   return toDelete;
+// }
+
+function commentDescendants(list, rootId) {
+  const target = Number(rootId);
+  const byParent = new Map();
+
+  for (let i = 0; i < list.length; i += 1) {
+    const comment = list[i];
+    const commentID = Number(comment.id);
+    const parentID = comment.parent_id === null ? null : comment.parent_id;
+    if (!byParent.has(parentID)) byParent.set(parentID, []);
+    byParent.get(parentID).push(commentID);
+  }
+
+  const toDelete = new Set([target]);
+  const stack = [target];
+  while (stack.length) {
+    const kids = byParent.get(stack.pop());
+    if (!kids) continue;
+    for (let i = 0; i < kids.length; i += 1) {
+      if (!toDelete.has(kids[i])) {
+        toDelete.add(kids[i]);
+        stack.push(kids[i]);
       }
     }
   }
@@ -92,7 +119,9 @@ export default function commentReducer(state = initialState, action) {
       const prevCounts = state.countsByPostId[key] ?? list.length ?? 0;
 
       const toDelete = commentDescendants(list, id);
-      const nextList = list.filter((comment) => !toDelete.has(comment.id));
+      const nextList = list.filter(
+        (comment) => !toDelete.has(Number(comment.id))
+      );
       const removed = list.length - nextList.length;
       return {
         ...state,

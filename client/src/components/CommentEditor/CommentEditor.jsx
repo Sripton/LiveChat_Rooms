@@ -49,6 +49,7 @@ export default function CommentEditor({
       submit();
     }
   };
+
   return (
     <Box sx={{ display: "flex", gap: 2, mt: 1, alignItems: "center" }}>
       <TextField

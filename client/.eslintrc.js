@@ -41,6 +41,7 @@ module.exports = {
     "no-confusing-arrow": 0,
     "function-paren-newline": 0,
     indent: 0,
-    "no-restricted-syntax": 0,
+    // "no-restricted-syntax": 0,
+    "no-continue": 0,
   },
 };

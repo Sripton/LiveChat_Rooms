@@ -25,6 +25,7 @@ export default function CommentsCard({
   expanded,
   toggleExpand,
   userID,
+  toggleReplyForPost,
 }) {
   const accent = "#7a1a50"; // бордовый
   const accentSoft = "rgba(161,19,74,0.08)";
@@ -102,7 +103,6 @@ export default function CommentsCard({
             const parentAuthor =
               comment?.ParentComment?.User?.name ??
               "автору удалённого комментария";
-            console.log("comment.id", typeof comment.id);
             return (
               <Box
                 key={comment.id ?? `${name}-${when}-${text.slice(0, 10)}`}
@@ -329,6 +329,7 @@ export default function CommentsCard({
                               replyForID === comment.id ? null : comment.id
                             );
                             setEditComment(null);
+                            toggleReplyForPost();
                           }}
                         >
                           <SendIcon sx={{ fontSize: "1rem" }} />
