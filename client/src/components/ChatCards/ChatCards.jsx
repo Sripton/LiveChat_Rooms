@@ -196,7 +196,7 @@ export default function ChatCards() {
     })();
   }, [dispatch, allPosts]);
 
-  console.log("openReplyPostId", openReplyPostId);
+  console.log("userID", userID);
 
   return (
     // Основной макет
@@ -568,52 +568,74 @@ export default function ChatCards() {
                               {countsByPostId[post.id] ?? 0}
                             </Button>
                           </Tooltip>
-
-                          <Box
-                            sx={{
-                              ml: "auto",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 0.5,
-                            }}
-                          >
-                            <Tooltip title="Редактировать">
-                              <IconButton
-                                size="small"
-                                sx={{ color: "#7a1a50" }}
-                                onClick={() => {
-                                  handleEditPostClick(post);
-                                  // Scroll к верху
-                                  window.scrollTo({
-                                    top: 0,
-                                    behavior: "smooth",
-                                  });
-                                }}
-                              >
-                                <EditIcon sx={{ fontSize: "1.1rem" }} />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Удалить">
-                              <IconButton
-                                size="small"
-                                sx={{ color: "#7a1a50" }}
-                                onClick={() =>
-                                  dispatch(deletePostHandler(post.id))
-                                }
-                              >
-                                <DeleteIcon sx={{ fontSize: "1.1rem" }} />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Ответить">
-                              <IconButton
-                                size="small"
-                                sx={{ color: "#7a1a50" }}
-                                onClick={() => toggleReplyForPost(post.id)}
-                              >
-                                <SendIcon sx={{ fontSize: "1.1rem" }} />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
+                          {/* Если пользователь не яв-ся автором поста показываем кнопку "Ответить" */}
+                          {userID !== post?.user_id ? (
+                            <Box
+                              sx={{
+                                ml: "auto",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                              }}
+                            >
+                              <Tooltip title="Ответить">
+                                <IconButton
+                                  size="small"
+                                  sx={{ color: "#7a1a50" }}
+                                  onClick={() => toggleReplyForPost(post.id)}
+                                >
+                                  <SendIcon sx={{ fontSize: "1.1rem" }} />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          ) : (
+                            <Box
+                              sx={{
+                                ml: "auto",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                              }}
+                            >
+                              {/* Если пользователь  яв-ся автором поста показываем все  кнопки */}
+                              <Tooltip title="Редактировать">
+                                <IconButton
+                                  size="small"
+                                  sx={{ color: "#7a1a50" }}
+                                  onClick={() => {
+                                    handleEditPostClick(post);
+                                    // Scroll к верху
+                                    window.scrollTo({
+                                      top: 0,
+                                      behavior: "smooth",
+                                    });
+                                  }}
+                                >
+                                  <EditIcon sx={{ fontSize: "1.1rem" }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Удалить">
+                                <IconButton
+                                  size="small"
+                                  sx={{ color: "#7a1a50" }}
+                                  onClick={() =>
+                                    dispatch(deletePostHandler(post.id))
+                                  }
+                                >
+                                  <DeleteIcon sx={{ fontSize: "1.1rem" }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Ответить">
+                                <IconButton
+                                  size="small"
+                                  sx={{ color: "#7a1a50" }}
+                                  onClick={() => toggleReplyForPost(post.id)}
+                                >
+                                  <SendIcon sx={{ fontSize: "1.1rem" }} />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          )}
                         </Box>
                         {openReplyPostId === post.id && (
                           <CommentEditor

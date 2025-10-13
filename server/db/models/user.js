@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       RoomRequest,
       Postreaction,
       Comment,
+      CommentReaction,
     }) {
       // define association here
       this.hasMany(Room, { foreignKey: "ownerID", as: "ownedRooms" });
@@ -25,6 +26,8 @@ module.exports = (sequelize, DataTypes) => {
       this.hasMany(RoomRequest, { foreignKey: "user_id" });
       this.hasMany(Postreaction, { foreignKey: "user_id" });
       this.hasMany(Comment, { foreignKey: "user_id" });
+
+      this.hasMany(CommentReaction, { foreignKey: "user_id" });
     }
   }
   User.init(

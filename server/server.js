@@ -13,6 +13,7 @@ const postAPIRouter = require("./API/postAPIRouter"); // Импортируем 
 const roomRequestAPIRouter = require("./API/roomRequestAPIRouter");
 const reactionPostAPIRouter = require("./API/reactionPostAPIRouter");
 const commentAPIRouter = require("./API/commentAPIRouter");
+const reactionCommentAPIRouter = require("./API/reactionCommentAPIRouter");
 const FileStore = session_file_store(session); // Используем FileStore для хранения сессий в файлах
 const path = require("path");
 
@@ -56,4 +57,5 @@ app.use("/api/room-requests", roomRequestAPIRouter); // Маршрут для з
 app.use("/api/posts", postAPIRouter); // Маршрут для постов
 app.use("/api/reaction-post", reactionPostAPIRouter); // Маршрут для реакций на посты
 app.use("/api/comments", commentAPIRouter);
+app.use("/api/reaction-comment", reactionCommentAPIRouter);
 app.listen(PORT, () => console.log(`---> Server started on ${PORT} port <---`));

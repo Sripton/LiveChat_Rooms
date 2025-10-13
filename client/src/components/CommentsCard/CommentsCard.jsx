@@ -66,7 +66,6 @@ export default function CommentsCard({
   };
 
   const [editComment, setEditComment] = useState(null);
-  console.log("comments", comments);
 
   return (
     <Paper
@@ -286,56 +285,85 @@ export default function CommentsCard({
                       </Typography>
                     )}
 
-                    <Box
-                      sx={{
-                        ml: "auto",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                      }}
-                    >
-                      <Tooltip title="Редактировать">
-                        <IconButton
-                          size="small"
-                          sx={{ color: "#7a1a50" }}
-                          onClick={() => {
-                            setReplyForID(null);
-                            setEditComment({
-                              id: comment.id,
-                              commentTitle: comment.commentTitle,
-                            });
-                          }}
-                        >
-                          <EditIcon sx={{ fontSize: "1rem" }} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Удалить">
-                        <IconButton
-                          size="small"
-                          sx={{ color: "#7a1a50" }}
-                          onClick={() =>
-                            dispatch(deleteComment(postID, comment.id))
-                          }
-                        >
-                          <DeleteIcon sx={{ fontSize: "1rem" }} />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Ответить">
-                        <IconButton
-                          size="small"
-                          sx={{ color: "#7a1a50" }}
-                          onClick={() => {
-                            setReplyForID(
-                              replyForID === comment.id ? null : comment.id
-                            );
-                            setEditComment(null);
-                            toggleReplyForPost();
-                          }}
-                        >
-                          <SendIcon sx={{ fontSize: "1rem" }} />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
+                    {/* Если пользователь не яв-ся автором комментария показываем кнопку "Ответить" */}
+                    {userID !== comment.user_id ? (
+                      <Box
+                        sx={{
+                          ml: "auto",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                        }}
+                      >
+                        <Tooltip title="Ответить">
+                          <IconButton
+                            size="small"
+                            sx={{ color: "#7a1a50" }}
+                            onClick={() => {
+                              setReplyForID(
+                                replyForID === comment.id ? null : comment.id
+                              );
+                              setEditComment(null);
+                              toggleReplyForPost();
+                            }}
+                          >
+                            <SendIcon sx={{ fontSize: "1rem" }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    ) : (
+                      <Box
+                        sx={{
+                          ml: "auto",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                        }}
+                      >
+                        {/* Если пользователь  яв-ся автором комментария показываем все  кнопки */}
+                        <Tooltip title="Редактировать">
+                          <IconButton
+                            size="small"
+                            sx={{ color: "#7a1a50" }}
+                            onClick={() => {
+                              setReplyForID(null);
+                              setEditComment({
+                                id: comment.id,
+                                commentTitle: comment.commentTitle,
+                              });
+                            }}
+                          >
+                            <EditIcon sx={{ fontSize: "1rem" }} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Удалить">
+                          <IconButton
+                            size="small"
+                            sx={{ color: "#7a1a50" }}
+                            onClick={() =>
+                              dispatch(deleteComment(postID, comment.id))
+                            }
+                          >
+                            <DeleteIcon sx={{ fontSize: "1rem" }} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Ответить">
+                          <IconButton
+                            size="small"
+                            sx={{ color: "#7a1a50" }}
+                            onClick={() => {
+                              setReplyForID(
+                                replyForID === comment.id ? null : comment.id
+                              );
+                              setEditComment(null);
+                              toggleReplyForPost();
+                            }}
+                          >
+                            <SendIcon sx={{ fontSize: "1rem" }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    )}
                     {/* ФОРМА ОТВЕТА */}
                     {replyForID === comment.id && (
                       <CommentEditor
