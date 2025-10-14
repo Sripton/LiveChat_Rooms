@@ -57,7 +57,7 @@ export default function ModalPostCreate({
         sx={{
           display: "flex",
           justifyContent: "center",
-          mt: 4,
+          mt: 2,
           px: 2,
         }}
       >
@@ -69,7 +69,7 @@ export default function ModalPostCreate({
             width: "100%",
             backgroundColor: "#ffe4e9",
             borderRadius: 4,
-            p: 4,
+            p: 2,
           }}
         >
           <IconButton
@@ -79,7 +79,7 @@ export default function ModalPostCreate({
               top: 5,
               right: 5,
               minWidth: 0,
-              p: 0.8,
+              p: 0.2,
               color: "#d81b60",
               borderRadius: "50%",
               background: "#f8bbd0",
@@ -90,7 +90,7 @@ export default function ModalPostCreate({
             <CloseIcon sx={{ fontSize: "24px" }} />
           </IconButton>
           <Typography
-            variant="h4"
+            variant="h6"
             sx={{
               color: "#c2185b",
               fontFamily: "monospace",
@@ -108,7 +108,7 @@ export default function ModalPostCreate({
                 onChange={postInputsHandler}
                 multiline
                 fullWidth
-                rows={4}
+                rows={3}
                 label="Заголовок поста..."
                 // variant="outlined"
                 sx={{

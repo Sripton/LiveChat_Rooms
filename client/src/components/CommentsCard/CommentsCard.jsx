@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Avatar,
   Button,
@@ -14,9 +14,13 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SendIcon from "@mui/icons-material/Send";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CommentEditor from "../CommentEditor";
 import { deleteComment } from "../../redux/actions/commentActions";
+import {
+  createReactionCommentSubmit,
+  fetchAllCommentReactions,
+} from "../../redux/actions/reactionCommentActions";
 
 export default function CommentsCard({
   comments,
@@ -67,6 +71,19 @@ export default function CommentsCard({
 
   const [editComment, setEditComment] = useState(null);
 
+  // Забираем все реакции на комментарии из store
+  const allReactionComments = useSelector(
+    (store) => store?.reactionsComments?.allReactionComments
+  );
+
+  useEffect(() => {
+    if (Array.isArray(comments) && comments.length) {
+      comments.forEach((comment) =>
+        dispatch(fetchAllCommentReactions(comment.id))
+      );
+    }
+  }, [dispatch, comments]);
+
   return (
     <Paper
       elevation={0}
@@ -102,6 +119,16 @@ export default function CommentsCard({
             const parentAuthor =
               comment?.ParentComment?.User?.name ??
               "автору удалённого комментария";
+
+            const likeComments = allReactionComments.filter(
+              (like) =>
+                like.comment_id === comment.id && like.reaction_type === "like"
+            ).length;
+            const disLikeComments = allReactionComments.filter(
+              (dislike) =>
+                dislike.comment_id === comment.id &&
+                dislike.reaction_type === "dislike"
+            ).length;
             return (
               <Box
                 key={comment.id ?? `${name}-${when}-${text.slice(0, 10)}`}
@@ -250,10 +277,16 @@ export default function CommentsCard({
                           fontWeight: 700,
                           minWidth: 0,
                           px: 1,
-                          fontSize: "1.1rem",
                         }}
                         startIcon={<ThumbUpIcon />}
-                      />
+                        onClick={() =>
+                          dispatch(
+                            createReactionCommentSubmit(comment.id, "like")
+                          )
+                        }
+                      >
+                        {likeComments}
+                      </Button>
                     </Tooltip>
                     <Tooltip title="Не нравится">
                       <Button
@@ -263,10 +296,16 @@ export default function CommentsCard({
                           fontWeight: 700,
                           minWidth: 0,
                           px: 1,
-                          fontSize: "1.1rem",
                         }}
                         startIcon={<ThumbDownIcon />}
-                      />
+                        onClick={() =>
+                          dispatch(
+                            createReactionCommentSubmit(comment.id, "dislike")
+                          )
+                        }
+                      >
+                        {disLikeComments}
+                      </Button>
                     </Tooltip>
                     {comment?.parent_id === null ? (
                       <Typography

@@ -21,6 +21,9 @@ import reactionPostReducer from "../reducers/reactionPostReducer";
 // Импорт редьюсера, который обрабатывает действия, связанные с реакциями на посты
 import commentReducer from "../reducers/commentReducer";
 
+// Импорт редьюсера, который обрабатывает действия, связанные с реакциями на комментарии
+import reactionCommentReducer from "../reducers/reactionCommentReducer";
+
 // Экспорт конфигурированного хранилища (store)
 export default configureStore({
   // Объект всех редьюсеров приложения
@@ -32,5 +35,6 @@ export default configureStore({
     post: postReducer, // Ключ `post` определяет ветку состояния Redux: state.post будет обрабатываться postReducer'ом
     reactionsPosts: reactionPostReducer,
     comment: commentReducer,
+    reactionsComments: reactionCommentReducer,
   },
 });

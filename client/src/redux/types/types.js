@@ -98,3 +98,6 @@ export const DELETE_COMMENT = "DELETE_COMMENT";
 // ----------------------- Reaction Comments ------------------------
 // Тип экшена для создания реакций на  комментарии  пользователем
 export const SET_REACTION_COMMENT_CREATE = "SET_REACTION_COMMENT_CREATE";
+
+// Тип экшена для получения реакций на  посты  пользователем
+export const GET_REACTION_COMMENT_LIST = "GET_REACTION_COMMENT_LIST";
