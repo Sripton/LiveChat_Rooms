@@ -6,23 +6,6 @@ import {
   GET_ONE_ROOM,
 } from "../types/types";
 
-// Асинхронная функция для отправки формы создания комнаты на сервер
-export const createRoomsSubmit = (roomCreate) => async (dispatch) => {
-  // roomCreate — объект с данными формы
-  try {
-    //  POST-запрос на backend API, чтобы создать комнату
-    const response = await axios.post(`/api/rooms`, roomCreate);
-    // При успешном ответе (200): извлекаются данные новой комнаты
-    if (response.status === 200) {
-      const { data } = response;
-      // dispatch обновляет Redux-состояние (добавляется новая комната)
-      dispatch({ type: SET_CREATE_ROOM, payload: data });
-    }
-  } catch (error) {
-    console.error("Ошибка при создании  комнат:", error);
-  }
-};
-
 //  Асинхронная функция для получения всех комнат (открытых и закрытых)
 export const fetchAllRooms = () => async (dispatch) => {
   try {
@@ -35,6 +18,34 @@ export const fetchAllRooms = () => async (dispatch) => {
     }
   } catch (error) {
     console.error("Ошибка при получении всех комнат:", error);
+  }
+};
+
+// Асинхронная функция для отправки формы создания комнаты на сервер
+export const createRoomsSubmit = (roomCreate) => async (dispatch) => {
+  // roomCreate — объект с данными формы
+  try {
+    //  POST-запрос на backend API, чтобы создать комнату
+    const response = await axios.post(`/api/rooms`, roomCreate);
+    // При успешном ответе (200): извлекаются данные новой комнаты
+    if (response.status === 200) {
+      const { data } = response;
+      // dispatch обновляет Redux-состояние (добавляется новая комната)
+      dispatch({
+        type: SET_CREATE_ROOM,
+        // чтоюбы не было мгновенного отсутствия доступа до прихода GET_ALL_ROOMS.
+        payload: {
+          ...data,
+          isOwner: true,
+          isMember: !!data.isPrivate,
+          myRequestStatus: null,
+          hasAccess: true,
+        },
+      });
+      await dispatch(fetchAllRooms()); // получаем комнаты с флагами
+    }
+  } catch (error) {
+    console.error("Ошибка при создании  комнат:", error);
   }
 };
 

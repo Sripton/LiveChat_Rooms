@@ -24,21 +24,23 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // 3. Собираем payload так же, как в GET /api/rooms
-    const json = newRoom.get({ plain: true });
-    const isOwner = true;
-    const isMember = !!isPrivate;
-    const myRequestStatus = null;
-    const hasAccess = isPrivate ? isOwner || isMember : true;
+    // // 3. Собираем payload так же, как в GET /api/rooms
+    // const json = newRoom.get({ plain: true });
+    // const isOwner = true;
+    // const isMember = !!isPrivate;
+    // const myRequestStatus = null;
+    // const hasAccess = isPrivate ? isOwner || isMember : true;
 
     // 4. Возвращаем клиенту созданную комнату
-    res.status(200).json({
-      ...json,
-      isOwner,
-      isMember,
-      myRequestStatus,
-      hasAccess,
-    });
+    // res.status(200).json({
+    //   ...json,
+    //   isOwner,
+    //   isMember,
+    //   myRequestStatus,
+    //   hasAccess,
+    // });
+
+    res.status(200).json(newRoom);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Ошибка при создании комнаты" });
