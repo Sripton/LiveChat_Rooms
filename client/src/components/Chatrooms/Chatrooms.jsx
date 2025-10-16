@@ -15,7 +15,7 @@ import {
 import { Stack } from "@mui/system";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
 // Иконки
 import ListAltIcon from "@mui/icons-material/ListAlt";
@@ -296,9 +296,18 @@ export default function Chatrooms() {
                       }}
                     >
                       <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        component={NavLink}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          fontFamily: "monospace",
+                          fontSize: "0.9rem",
+                          textDecoration: "none",
+                        }}
+                        to={`/chatcards/${room.id}`}
                       >
-                        <Typography
+                        {/* <Typography
                           sx={{ fontFamily: "monospace", fontSize: "0.9rem" }}
                           variant="h6"
                           color="primary"
@@ -306,12 +315,13 @@ export default function Chatrooms() {
                           🌐
                           <MLink
                             component={NavLink}
-                            to={`/chatcards/${room.id}`}
+                            // to={`/chatcards/${room.id}`}
                             sx={{ textDecoration: "none" }}
                           >
                             {` ${room.nameroom}`}
                           </MLink>
-                        </Typography>
+                        </Typography> */}
+                        {` 🌐 ${room.nameroom}`}
                       </Box>
                     </Box>
                   </Grid>
@@ -405,9 +415,30 @@ export default function Chatrooms() {
                       }}
                     >
                       <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          fontFamily: "monospace",
+                          fontSize: "0.9rem",
+                          textDecoration: "none",
+                        }}
+                        onClick={() => {
+                          const currentRoom = room;
+                          // если гость — отправляем на логин и выходим
+                          if (!userID) {
+                            navigate("/signin");
+                          } else if (currentRoom?.hasAccess) {
+                            // Есть доступ (owner/member/accepted) — пускаем сразу
+                            navigate(`/chatcards/${currentRoom.id}`);
+                          } else {
+                            // Авторизован, но доступа нет — показываем модалку заявки
+                            setSelectedRoomID(currentRoom.id);
+                            setOpenRequestModal(true);
+                          }
+                        }}
                       >
-                        <Typography
+                        {/* <Typography
                           sx={{ fontFamily: "monospace", fontSize: "0.9rem" }}
                           variant="h6"
                           color="primary"
@@ -428,7 +459,8 @@ export default function Chatrooms() {
                         >
                           🔒
                           {` ${room.nameroom}`}
-                        </Typography>
+                        </Typography> */}
+                        {`🔒 ${room.nameroom}`}
                       </Box>
                     </Box>
                   </Grid>

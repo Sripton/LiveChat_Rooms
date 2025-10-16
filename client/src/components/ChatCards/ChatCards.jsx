@@ -59,12 +59,70 @@ const itemVariants = {
 };
 
 export default function ChatCards() {
-  //  Управление отображением модального окна создания поста
+  const dispatch = useDispatch(); // useDispatch — отправка действий
+  const navigate = useNavigate(); // переход по маршрутам
+  const location = useLocation();
+  const { id } = useParams(); //  извлекает id комнаты из URL
+  //  Извлечение данных пользователя из Redux
+  const { userID, userAvatar, userName } = useSelector((store) => store.user);
+  //  Извлечение данных комнаты из Redux
+  const currentRoom = useSelector((store) => store.room.currentRoom); // useSelector - доступ к состоянию Redux-хранилища
+  //  Извлечение всех постов из Reduxs
+  const allPosts = useSelector((store) => store.post.allPosts);
+
+  //  Состояние для управления отображением модального окна для создания поста
   const [openModalPost, setOpenModalPost] = useState(false);
+  // Состояние для создания или изменения поста
+  const [editPost, setEditPost] = useState(null);
+
+  // Состояние для открытия формы для создания комменатрия
+  const [openReplyPostId, setOpenReplyPostId] = useState(null);
 
   // Состояние для отображения полного текста поста
   const [expanded, setExpanded] = useState(() => new Set());
 
+  // Состояние для открытия  комментариев
+  const [showReplyPostId, setShowReplyPostId] = useState(null);
+
+  // Забираем комментарии из store
+  const commentsByPostId = useSelector((store) => store.comment.byPostId);
+
+  // Забираем счетчики коммнетриев  из store
+  const countsByPostId = useSelector((store) => store.comment.countsByPostId);
+
+  // -------------------- Создание комментария ----------------------
+  // Функция которая следит за состоянием showReplyPostId при нажатии открывается форма для добалвения комментария
+  const toggleReplyForPost = (postID) => {
+    setOpenReplyPostId((prev) => (prev === postID ? null : postID));
+    setOpenModalPost(false);
+  };
+  // ------------------- Создание и изменение поста -------------------------------------
+
+  //  Если пользователь не авторизован, редирект на /signin
+  //  Иначе переключение отображения модального окна
+  const handleAddPostClick = () => {
+    if (!userID) {
+      navigate("/signin", {
+        state: { from: location },
+      });
+      return;
+    }
+    setEditPost(null);
+    setOpenReplyPostId(null);
+    setOpenModalPost(true);
+  };
+
+  // Функция которая следжит за состоянием измнения поста
+  const handleEditPostClick = (post) => {
+    if (!userID || userID !== post.user_id) return;
+    setEditPost(post);
+    setOpenReplyPostId(null);
+    setOpenModalPost(true);
+  };
+
+  // ------------------- Отображение полного поста ---------------------
+
+  // Функция которая следит за отображением полного текста (поста/кооментария)
   const toggleExpand = (postID) => {
     setExpanded((prev) => {
       const next = new Set(prev);
@@ -75,38 +133,6 @@ export default function ChatCards() {
       }
       return next;
     });
-  };
-
-  const dispatch = useDispatch(); // useDispatch — отправка действий
-  const navigate = useNavigate(); // переход по маршрутам
-  const location = useLocation();
-  const { id } = useParams(); //  извлекает id комнаты из URL
-
-  //  Извлечение данных комнаты, постов и ID пользователя из Redux
-  const currentRoom = useSelector((store) => store.room.currentRoom); // useSelector - доступ к состоянию Redux-хранилища
-
-  //  Извлечение данных реакций на посты и ID пользователя из Redux
-  const allPosts = useSelector((store) => store.post.allPosts);
-  const { userID, userAvatar, userName } = useSelector((store) => store.user);
-
-  // Состояние для изменения поста
-  const [editPost, setEditPost] = useState(null);
-  const handleEditPostClick = (post) => {
-    if (!userID || userID !== post.user_id) return;
-    setEditPost(post);
-    setOpenModalPost((prev) => !prev);
-  };
-
-  //  Если пользователь не авторизован, редирект на /signin
-  //  Иначе переключение отображения модального окна
-  const handleAddPostClick = () => {
-    if (!userID) {
-      navigate("/signin", {
-        state: { from: location },
-      });
-    }
-    setEditPost(null);
-    setOpenModalPost((prev) => !prev);
   };
 
   // Загрузка данных. При монтировании компонента (или изменении id)
@@ -131,23 +157,7 @@ export default function ChatCards() {
     }
   }, [dispatch, allPosts]);
 
-  // Состояние для открытия формы для создания комменатрия
-  const [openReplyPostId, setOpenReplyPostId] = useState(null);
-
-  // Функция которая следит за состоянием showReplyPostId при нажатии открывается форма для добалвения комментария
-  const toggleReplyForPost = (postID) => {
-    setOpenReplyPostId((prev) => (prev === postID ? null : postID));
-  };
-
-  // Состояние для открытия  комментариев
-  const [showReplyPostId, setShowReplyPostId] = useState(null);
-
-  // Забираем комментарии из store
-  const commentsByPostId = useSelector((store) => store.comment.byPostId);
-
-  // Забираем счетчики коммнетриев  из store
-  const countsByPostId = useSelector((store) => store.comment.countsByPostId);
-
+  // -------------------- Отображение всех коммнетриев для определенного поста ----------------------
   // после загрузки allPosts подгружаем *счётчики* одним батчем
   // важно добавить commentsByPostId, чтобы не дёргать повторно уже загруженные
   // Не важны log
@@ -195,8 +205,6 @@ export default function ChatCards() {
       }
     })();
   }, [dispatch, allPosts]);
-
-  console.log("userID", userID);
 
   return (
     // Основной макет
@@ -637,7 +645,8 @@ export default function ChatCards() {
                             </Box>
                           )}
                         </Box>
-                        {openReplyPostId === post.id && (
+                        {/* Страховка  */}
+                        {!openModalPost && openReplyPostId === post.id && (
                           <CommentEditor
                             postID={post.id}
                             onClose={() => setOpenReplyPostId(null)}
