@@ -28,16 +28,28 @@ router.post("/", async (req, res) => {
     }
 
     // 3. Проверка: уже существует такой запрос?
-    const existingRequest = await RoomRequest.findOne({
-      where: {
-        user_id: userID,
-        room_id: roomID,
-        owner_id: room.ownerID,
-        status: "pending",
-      },
+    // const existingRequest = await RoomRequest.findOne({
+    //   where: {
+    //     user_id: userID,
+    //     room_id: roomID,
+    //     owner_id: room.ownerID,
+    //     status: "pending",
+    //   },
+    // });
+    // if (existingRequest) {
+    //   return res.status(400).json({ message: "Запрос уже отправлен." });
+    // }
+
+    const lastRequest = await RoomRequest.findOne({
+      where: { user_id: userID, room_id: roomID },
     });
-    if (existingRequest) {
-      return res.status(400).json({ message: "Запрос уже отправлен." });
+    if (lastRequest) {
+      if (lastRequest.status === "pending") {
+        return res.status(400).json({ message: "Запрос уже отправлен" });
+      }
+      if (lastRequest.status === "rejected") {
+        return res.status(403).json({ message: "Доступ отклонён." });
+      }
     }
 
     // 4. Создаём новый запрос

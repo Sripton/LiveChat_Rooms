@@ -304,23 +304,10 @@ export default function Chatrooms() {
                           fontFamily: "monospace",
                           fontSize: "0.9rem",
                           textDecoration: "none",
+                          color: "#60a5fa",
                         }}
                         to={`/chatcards/${room.id}`}
                       >
-                        {/* <Typography
-                          sx={{ fontFamily: "monospace", fontSize: "0.9rem" }}
-                          variant="h6"
-                          color="primary"
-                        >
-                          🌐
-                          <MLink
-                            component={NavLink}
-                            // to={`/chatcards/${room.id}`}
-                            sx={{ textDecoration: "none" }}
-                          >
-                            {` ${room.nameroom}`}
-                          </MLink>
-                        </Typography> */}
                         {` 🌐 ${room.nameroom}`}
                       </Box>
                     </Box>
@@ -333,7 +320,9 @@ export default function Chatrooms() {
                       fontWeight: 600,
                       fontSize: "1rem",
                       textTransform: "none",
-                      animation: "pulse 1.5s infinite",
+                      display: openRoomsSorted.length > 6 ? "block" : "none",
+                      animation:
+                        openRoomsSorted.length > 6 ? "pulse 1.5s infinite" : 0,
                       backgroundColor: "transparent", // убрать фон
                       "@keyframes pulse": {
                         "0%": {
@@ -422,10 +411,12 @@ export default function Chatrooms() {
                           fontFamily: "monospace",
                           fontSize: "0.9rem",
                           textDecoration: "none",
+                          color: "#60a5fa",
                         }}
                         onClick={() => {
                           const currentRoom = room;
                           // если гость — отправляем на логин и выходим
+                          console.log("currentRoom", currentRoom);
                           if (!userID) {
                             navigate("/signin");
                           } else if (currentRoom?.hasAccess) {
@@ -438,28 +429,6 @@ export default function Chatrooms() {
                           }
                         }}
                       >
-                        {/* <Typography
-                          sx={{ fontFamily: "monospace", fontSize: "0.9rem" }}
-                          variant="h6"
-                          color="primary"
-                          onClick={() => {
-                            const currentRoom = room;
-                            // если гость — отправляем на логин и выходим
-                            if (!userID) {
-                              navigate("/signin");
-                            } else if (currentRoom?.hasAccess) {
-                              // Есть доступ (owner/member/accepted) — пускаем сразу
-                              navigate(`/chatcards/${currentRoom.id}`);
-                            } else {
-                              // Авторизован, но доступа нет — показываем модалку заявки
-                              setSelectedRoomID(currentRoom.id);
-                              setOpenRequestModal(true);
-                            }
-                          }}
-                        >
-                          🔒
-                          {` ${room.nameroom}`}
-                        </Typography> */}
                         {`🔒 ${room.nameroom}`}
                       </Box>
                     </Box>
@@ -473,7 +442,10 @@ export default function Chatrooms() {
                       fontSize: "1rem",
                       textTransform: "none",
                       backgroundColor: "transparent",
-                      animation: "pulse 1.5s infinite",
+                      animation:
+                        privateRoomsSorted.length > 6
+                          ? "pulse 1.5s infinite"
+                          : 0,
                       "@keyframes pulse": {
                         "0%": {
                           boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",

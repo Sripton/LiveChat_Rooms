@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Avatar,
   Box,
@@ -90,18 +90,6 @@ export default function UserDashboard({ userPropsData }) {
     setTabIndex(newValue);
   };
 
-  const [arrowReauest, setArrowRequest] = useState(false);
-
-  const handleArraowRequest = () => {
-    setArrowRequest(!arrowReauest);
-  };
-
-  // Функция для направления в компонент по редатированию профиля
-  const goToProfileEditor = () => {
-    navigate("/profileeditor", {
-      state: { from: location }, //  сохраняем текущий путь
-    });
-  };
   // Слияние вех запросов в один массив
   const allRequests = [...outgoing, ...incoming];
   useEffect(() => {
@@ -115,7 +103,42 @@ export default function UserDashboard({ userPropsData }) {
     }
   }, [userID, dispatch]);
 
-  console.log('userRooms', userRooms);
+  const [arrowRequest, setArrowRequest] = useState(false);
+  const [needsExpand, setNeedsExpand] = useState(false); // показывать кнопку?
+  const listWrapRef = useRef(null);
+
+  const handleArraowRequest = () => setArrowRequest((prev) => !prev);
+
+  // Эффект, который вычисляет «переполнен ли список»
+  useEffect(() => {
+    const element = listWrapRef.current;
+    if (!element) return;
+
+    const compute = () => {
+      // на 1px запас, чтобы избежать дрожания из-за округления
+      // scrollHeight - полная высота содержимого (включая скрытое)
+      // clientHeight - видимая высота контейнера
+      setNeedsExpand(element.scrollHeight > element.clientHeight + 1);
+    };
+    compute(); // первичный расчёт
+
+    const res = new ResizeObserver(compute);
+    res.observe(element);
+
+    window.addEventListener("resize", compute);
+    return () => {
+      res.disconnect();
+      window.removeEventListener("resize", compute);
+    };
+    // зависим от длины данных и активной вкладки
+  }, [allRequests.length, tabIndex]);
+
+  // Функция для направления в компонент по редатированию профиля
+  const goToProfileEditor = () => {
+    navigate("/profileeditor", {
+      state: { from: location }, //  сохраняем текущий путь
+    });
+  };
 
   return (
     <div
@@ -123,7 +146,7 @@ export default function UserDashboard({ userPropsData }) {
         width: "100%",
         height: "95vh",
         backgroundColor: "#fff5f7",
-        overflow: arrowReauest ? "auto" : "hidden",
+        overflow: arrowRequest ? "auto" : "hidden",
       }}
     >
       <Box
@@ -257,155 +280,145 @@ export default function UserDashboard({ userPropsData }) {
 
         {/* Panel: Запросы */}
         <TabPanel value={tabIndex} index={1}>
-          {/* Если запросов нет не показывать кнопку */}
-          {allRequests.length > 0 ? (
-            <Button onClick={handleArraowRequest}>
-              <span
-                className="arrow-request"
-                style={{
-                  borderLeft: "8px solid transparent",
-                  borderRight: "8px solid transparent",
-                  borderTop: "12px solid #880e4f",
-                  cursor: "pointer",
-                  display: "inline-block",
-                  transform: arrowReauest ? "rotate(180deg)" : "rotate(0deg)",
-                  transition: "0.3s",
-                }}
-              />
-            </Button>
-          ) : (
-            <Typography sx={{ mt: 2, color: "#999" }}>Запросов нет</Typography>
-          )}
-          <List sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {(allRequests || []).map((request) => {
-              // Если запрос отправил сам пользователь
-              const isOutgoing = request.user_id === userID;
-              // Для спинера в момент когда статус обновляется
-              /* const isUpdating = updatingIds.includes(request.id); */
-              const rid = String(request.id);
-              const isUpdating = Boolean(updatingById?.[rid]);
-              // Когда запрос в статусе оюидания
-              const isPending = request.status === "pending";
-              let avatarSrc;
-              if (isOutgoing) {
-                avatarSrc = userAvatar
-                  ? `${process.env.REACT_APP_BASEURL}${userAvatar}`
-                  : undefined;
-              } else {
-                avatarSrc = request?.requester?.avatar
-                  ? `${process.env.REACT_APP_BASEURL}${request?.requester?.avatar}`
-                  : undefined;
-              }
+          <Box
+            ref={listWrapRef}
+            sx={{
+              maxHeight: "58vh",
+              overflowY: needsExpand ? "auto" : "hidden",
+              pr: 1, // чтобы скроллбар не ел текст
+            }}
+          >
+            <List sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {(allRequests || []).map((request) => {
+                // Если запрос отправил сам пользователь
+                const isOutgoing = request.user_id === userID;
+                // Для спинера в момент когда статус обновляется
+                /* const isUpdating = updatingIds.includes(request.id); */
+                const rid = String(request.id);
+                const isUpdating = Boolean(updatingById?.[rid]);
+                // Когда запрос в статусе оюидания
+                const isPending = request.status === "pending";
+                let avatarSrc;
+                if (isOutgoing) {
+                  avatarSrc = userAvatar
+                    ? `${process.env.REACT_APP_BASEURL}${userAvatar}`
+                    : undefined;
+                } else {
+                  avatarSrc = request?.requester?.avatar
+                    ? `${process.env.REACT_APP_BASEURL}${request?.requester?.avatar}`
+                    : undefined;
+                }
 
-              const altText = isOutgoing
-                ? "Вы отправили запрос "
-                : `${request?.requester?.name}` || "Пользователь";
+                const altText = isOutgoing
+                  ? "Вы отправили запрос "
+                  : `${request?.requester?.name}` || "Пользователь";
 
-              const primaryText = isOutgoing
-                ? `${request?.Room?.nameroom}`
-                : `${request?.requester?.name} отправил Вам запрос, ${request?.Room?.nameroom}`;
+                const primaryText = isOutgoing
+                  ? `${request?.Room?.nameroom}`
+                  : `${request?.requester?.name} отправил Вам запрос, ${request?.Room?.nameroom}`;
 
-              return (
-                <ListItem
-                  key={request.id}
-                  sx={{
-                    backgroundColor: "#fff0f5",
-                    cursor: "pointer",
-                    boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
-                    borderRadius: 3,
-                    "&:hover": {
-                      boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
-                      transform: "translateY(-2px)",
-                      transition: "0.3s",
-                    },
-                  }}
-                  secondaryAction={
-                    isUpdating ? (
-                      <ActionSpinner intent={updatingById[rid]} />
-                    ) : isOutgoing ? (
-                      request?.status === "accepted" ? (
+                return (
+                  <ListItem
+                    key={request.id}
+                    sx={{
+                      backgroundColor: "#fff0f5",
+                      cursor: "pointer",
+                      boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
+                      borderRadius: 3,
+                      "&:hover": {
+                        boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
+                        transform: "translateY(-2px)",
+                        transition: "0.3s",
+                      },
+                    }}
+                    secondaryAction={
+                      isUpdating ? (
+                        <ActionSpinner intent={updatingById[rid]} />
+                      ) : isOutgoing ? (
+                        request?.status === "accepted" ? (
+                          <CheckCircleIcon sx={{ color: "green" }} />
+                        ) : request?.status === "rejected" ? (
+                          <CancelIcon sx={{ color: "red" }} />
+                        ) : (
+                          <HourglassEmptyIcon sx={{ color: "orange" }} />
+                        )
+                      ) : isPending ? (
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <Button
+                            variant="contained"
+                            sx={{
+                              background:
+                                "linear-gradient(90deg, #f8bbd0, #f48fb1)",
+                              color: "#fff",
+                              "&:hover": {
+                                background:
+                                  "linear-gradient(90deg,rgb(209, 243, 173),rgb(200, 239, 166))",
+                                color: "gray",
+                              },
+                            }}
+                            onClick={() =>
+                              dispatch(
+                                updateRoomRequestStatus(request.id, "accepted")
+                              )
+                            }
+                          >
+                            Принять
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            sx={{
+                              color: "#d81b60",
+                              borderColor: "#f48fb1",
+                              "&:hover": {
+                                borderColor: "#d81b60",
+                                backgroundColor: "#fff0f6",
+                              },
+                            }}
+                            onClick={() => {
+                              dispatch(
+                                updateRoomRequestStatus(request.id, "rejected")
+                              );
+                            }}
+                          >
+                            Отклонить
+                          </Button>
+                        </Box>
+                      ) : request.status === "accepted" ? (
                         <CheckCircleIcon sx={{ color: "green" }} />
-                      ) : request?.status === "rejected" ? (
+                      ) : request.status === "rejected" ? (
                         <CancelIcon sx={{ color: "red" }} />
                       ) : (
                         <HourglassEmptyIcon sx={{ color: "orange" }} />
                       )
-                    ) : isPending ? (
-                      <Box sx={{ display: "flex", gap: 1 }}>
-                        <Button
-                          variant="contained"
-                          sx={{
-                            background:
-                              "linear-gradient(90deg, #f8bbd0, #f48fb1)",
-                            color: "#fff",
-                            "&:hover": {
-                              background:
-                                "linear-gradient(90deg,rgb(209, 243, 173),rgb(200, 239, 166))",
-                              color: "gray",
-                            },
-                          }}
-                          onClick={() =>
-                            dispatch(
-                              updateRoomRequestStatus(request.id, "accepted")
-                            )
-                          }
-                        >
-                          Принять
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          sx={{
-                            color: "#d81b60",
-                            borderColor: "#f48fb1",
-                            "&:hover": {
-                              borderColor: "#d81b60",
-                              backgroundColor: "#fff0f6",
-                            },
-                          }}
-                          onClick={() => {
-                            dispatch(
-                              updateRoomRequestStatus(request.id, "rejected")
-                            );
-                          }}
-                        >
-                          Отклонить
-                        </Button>
-                      </Box>
-                    ) : request.status === "accepted" ? (
-                      <CheckCircleIcon sx={{ color: "green" }} />
-                    ) : request.status === "rejected" ? (
-                      <CancelIcon sx={{ color: "red" }} />
-                    ) : (
-                      <HourglassEmptyIcon sx={{ color: "orange" }} />
-                    )
-                  }
-                >
-                  <ListItemAvatar>
-                    <Avatar src={avatarSrc} alt={`${altText}`} />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={altText}
-                    primaryTypographyProps={{
-                      sx: {
-                        color: " #1976d2",
-                        fontSize: "1.2rem",
-                        fontFamily: "monospace",
-                      },
-                    }}
-                    secondary={
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        sx={{ fontFamily: "monospace" }}
-                      >
-                        {primaryText}
-                      </Typography>
                     }
-                  />
-                </ListItem>
-              );
-            })}
-          </List>
+                  >
+                    <ListItemAvatar>
+                      <Avatar src={avatarSrc} alt={`${altText}`} />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={altText}
+                      primaryTypographyProps={{
+                        sx: {
+                          color: " #1976d2",
+                          fontSize: "1.2rem",
+                          fontFamily: "monospace",
+                        },
+                      }}
+                      secondary={
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          sx={{ fontFamily: "monospace" }}
+                        >
+                          {primaryText}
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Box>
         </TabPanel>
 
         {/* Panel: Ответы на комменатарии */}
