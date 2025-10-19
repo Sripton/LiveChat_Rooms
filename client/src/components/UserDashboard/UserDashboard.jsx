@@ -91,6 +91,13 @@ export default function UserDashboard({ userPropsData }) {
     setTabIndex(newValue);
   };
 
+  // Функция определения доступа
+  const canEnterRoom = (request, user_id) => {
+    const isOwner = request?.Room?.ownerID === user_id;
+    const isAccepted = request?.status === "accepted";
+    return Boolean(isOwner || isAccepted);
+  };
+
   // Слияние вех запросов в один массив
   const allRequests = [...outgoing, ...incoming];
   useEffect(() => {
@@ -395,10 +402,10 @@ export default function UserDashboard({ userPropsData }) {
                       )
                     }
                   >
-                    <ListItemAvatar>
+                    {/* <ListItemAvatar>
                       <Avatar src={avatarSrc} alt={`${altText}`} />
-                    </ListItemAvatar>
-                    <ListItemText
+                    </ListItemAvatar> */}
+                    {/* <ListItemText
                       primary={altText}
                       primaryTypographyProps={{
                         sx: {
@@ -416,7 +423,55 @@ export default function UserDashboard({ userPropsData }) {
                           {primaryText}
                         </Typography>
                       }
-                    />
+                    /> */}
+                    {(() => {
+                      const enterAllowed = canEnterRoom(request, userID);
+                      return (
+                        <ListItemButton
+                          disabled={!enterAllowed}
+                          disableRipple
+                          disableTouchRipple
+                          sx={{
+                            bgcolor: "transparent",
+                            "&:hover": { bgcolor: "transparent" },
+                            "&.Mui-focusVisible": { bgcolor: "transparent" },
+                            "&.Mui-selected": { bgcolor: "transparent" },
+                            "&.Mui-selected:hover": { bgcolor: "transparent" },
+                            // убираем анимации, отступы и курсор
+                            transition: "none",
+                            p: 0,
+                            cursor: enterAllowed ? "pointer" : "default",
+                          }}
+                          onClick={() => {
+                            if (!enterAllowed) return;
+                            navigate(`/chatcards/${request?.Room?.id}`);
+                          }}
+                        >
+                          <ListItemAvatar>
+                            <Avatar src={avatarSrc} alt={`${altText}`} />
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={altText}
+                            primaryTypographyProps={{
+                              sx: {
+                                color: " #1976d2",
+                                fontSize: "1.2rem",
+                                fontFamily: "monospace",
+                              },
+                            }}
+                            secondary={
+                              <Typography
+                                component="span"
+                                variant="body2"
+                                sx={{ fontFamily: "monospace" }}
+                              >
+                                {primaryText}
+                              </Typography>
+                            }
+                          />
+                        </ListItemButton>
+                      );
+                    })()}
                   </ListItem>
                 );
               })}
