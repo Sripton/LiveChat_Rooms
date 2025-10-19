@@ -76,7 +76,7 @@ router.get("/userRequest/:id", async (req, res) => {
     const outgoing = await RoomRequest.findAll({
       where: { user_id: id },
       order: [["createdAt", "DESC"]],
-      include: [{ model: Room, attributes: ["nameroom"] }],
+      include: [{ model: Room, attributes: ["id", "nameroom", "ownerID"] }],
     });
     // Входящие запросы пользователя
     const incoming = await RoomRequest.findAll({
@@ -84,7 +84,7 @@ router.get("/userRequest/:id", async (req, res) => {
       order: [["createdAt", "DESC"]],
       include: [
         { model: User, as: "requester", attributes: ["name", "avatar"] },
-        { model: Room, attributes: ["nameroom"] },
+        { model: Room, attributes: ["id", "nameroom", "ownerID"] },
       ],
     });
     res.status(200).json({ outgoing, incoming });

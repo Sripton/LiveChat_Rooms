@@ -206,6 +206,10 @@ export default function ChatCards() {
     })();
   }, [dispatch, allPosts]);
 
+  // !openModalPost && openReplyPostId
+  console.log("openModalPost", openModalPost);
+  console.log("openReplyPostId", openReplyPostId);
+
   return (
     // Основной макет
     <Box
@@ -308,6 +312,7 @@ export default function ChatCards() {
             </Button>
           )}
         </Box>
+        {/* Модальное окно для создания поста */}
         {openModalPost && (
           <Box sx={{ mt: 2 }}>
             <ModalPostCreate
@@ -662,6 +667,9 @@ export default function ChatCards() {
                             toggleExpand={toggleExpand}
                             userID={userID}
                             toggleReplyForPost={() => toggleReplyForPost(null)}
+                            setOpenReplyPostId={setOpenReplyPostId}
+                            setOpenModalPost={setOpenModalPost}
+                            openModalPost={openModalPost}
                           />
                         )}
                       </Box>

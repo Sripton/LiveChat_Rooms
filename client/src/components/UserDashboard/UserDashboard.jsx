@@ -13,6 +13,7 @@ import {
   ListItemAvatar,
   ListItemText,
   CircularProgress,
+  ListItemButton,
 } from "@mui/material";
 
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -298,6 +299,8 @@ export default function UserDashboard({ userPropsData }) {
                 const isUpdating = Boolean(updatingById?.[rid]);
                 // Когда запрос в статусе оюидания
                 const isPending = request.status === "pending";
+                const isAccepted = request.status === "accepted";
+                const isRejected = request.status === "rejected";
                 let avatarSrc;
                 if (isOutgoing) {
                   avatarSrc = userAvatar

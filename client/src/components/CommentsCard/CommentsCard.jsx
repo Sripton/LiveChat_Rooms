@@ -27,9 +27,12 @@ export default function CommentsCard({
   postID,
   post,
   expanded,
-  toggleExpand,
+  toggleExpand, // функция для отображения полного текста коммнетрия
   userID,
   toggleReplyForPost,
+  setOpenReplyPostId,
+  setOpenModalPost,
+  openModalPost,
 }) {
   const accent = "#7a1a50"; // бордовый
   const accentSoft = "rgba(161,19,74,0.08)";
@@ -83,6 +86,13 @@ export default function CommentsCard({
       );
     }
   }, [dispatch, comments]);
+
+  useEffect(() => {
+    if (openModalPost) {
+      setReplyForID(null);
+      setEditComment(null);
+    }
+  }, [openModalPost]);
 
   return (
     <Paper
@@ -395,7 +405,9 @@ export default function CommentsCard({
                                 replyForID === comment.id ? null : comment.id
                               );
                               setEditComment(null);
-                              toggleReplyForPost();
+                              toggleReplyForPost(null);
+                              setOpenReplyPostId(null);
+                              setOpenModalPost(null);
                             }}
                           >
                             <SendIcon sx={{ fontSize: "1rem" }} />

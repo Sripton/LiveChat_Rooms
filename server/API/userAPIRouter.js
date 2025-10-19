@@ -3,6 +3,9 @@ const { User } = require("../db/models");
 const bcrypt = require("bcrypt");
 const router = express.Router();
 const upload = require("../MiddleWares/upload");
+const path = require("path");
+const fs = require("fs").promises;
+const fsSync = require("fs");
 // Обработчик POST-запроса на маршрут "/signup" для регистрации пользователя
 
 router.post("/signup", async (req, res) => {
@@ -74,45 +77,125 @@ router.post("/signin", async (req, res) => {
 // сохраняет загруженный файл в папку public/usersimg;
 // в объект req.file кладёт информацию о файле (имя, путь и т.п.).
 
-router.patch("/uploadprofile", upload.single("avatar"), async (req, res) => {
+// router.patch("/uploadprofile", upload.single("avatar"), async (req, res) => {
+//   const { name } = req.body;
+//   try {
+//     const userID = req.session.userID;
+//     const user = await User.findOne({ where: { id: userID } });
+//     if (!user) {
+//       return res.status(404).json({ message: "Пользователь не найден" });
+//     }
+
+//     // Обновляем имя, если оно передано
+//     if (name && name.trim() !== "") {
+//       user.name = name.trim();
+//     }
+
+//     // Обновляем аватар, если файл был загружен
+//     if (req.file) {
+//       user.avatar = `/usersimg/${req.file.filename}`;
+//     }
+
+//     await user.save();
+//     req.session.userName = user.name;
+//     req.session.userAvatar = user.avatar;
+
+//     // Если нужно — сохраняем сессию вручную
+//     req.session.save((err) => {
+//       if (err) {
+//         console.error("Ошибка при сохранении сессии:", err);
+//         return res.status(500).json({ message: "Ошибка сохранения сессии" });
+//       }
+
+//       res.json({
+//         userName: user.name,
+//         userAvatar: user.avatar,
+//       });
+//     });
+//   } catch (error) {
+//     console.error("Ошибка при обновлении профиля:", error);
+//     res.status(500).json({ message: "Внутренняя ошибка сервера" });
+//   }
+// });
+
+router.patch(`/uploadprofile`, upload.single("avatar"), async (req, res) => {
   const { name } = req.body;
-  try {
-    const userID = req.session.userID;
-    const user = await User.findOne({ where: { id: userID } });
-    if (!user) {
-      return res.status(404).json({ message: "Пользователь не найден" });
-    }
+  const removeOldAvatarSafe = async (avatarPath) => {
+    try {
+      if (!avatarPath) return; // ничего не удаляем
 
-    // Обновляем имя, если оно передано
-    if (name && name.trim() !== "") {
-      user.name = name.trim();
-    }
+      // Защита: удаляем только файлы внутри /usersimg/.
+      // Если по какой-то причине в БД лежит другой путь — игнорируем.
+      if (!avatarPath.startsWith("/usersimg/")) return;
 
-    // Обновляем аватар, если файл был загружен
-    if (req.file) {
-      user.avatar = `/usersimg/${req.file.filename}`;
-    }
+      // const absPath = path.join(
+      //   __dirname,
+      //   "../public/usersimg",
+      //   `/${avatarPath}`
+      // );
 
-    await user.save();
-    req.session.userName = user.name;
-    req.session.userAvatar = user.avatar;
+      // Собираем абсолютный путь до файла, который лежит в ../public/usersimg
+      // avatarPath хранится с начальным слешем ("/usersimg/..."),
+      // поэтому добавляем точку перед ним, чтобы path.resolve корректно соединил.
+      const absPath = path.resolve(__dirname, "../public", `.${avatarPath}`); // path.resolve() - Преобразует относительные пути в абсолютные. Склеивает части пути правильно для текущей ОС
 
-    // Если нужно — сохраняем сессию вручную
-    req.session.save((err) => {
-      if (err) {
-        console.error("Ошибка при сохранении сессии:", err);
-        return res.status(500).json({ message: "Ошибка сохранения сессии" });
+      // Проверяем существование файла перед удалением
+      if (fsSync.existsSync(absPath)) {
+        await fs.unlink(absPath); // удаляем файл
       }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-      res.json({
-        userName: user.name,
-        userAvatar: user.avatar,
-      });
-    });
-  } catch (error) {
-    console.error("Ошибка при обновлении профиля:", error);
-    res.status(500).json({ message: "Внутренняя ошибка сервера" });
+  //  id текущего пользователя из сессии
+  const userID = req.session.userID;
+
+  // Ищем пользователя в БД
+  const user = await User.findOne({ where: { id: userID } });
+  if (!user) {
+    return res.status(404).json({ message: "Пользователь не найден" });
   }
+
+  // Запоминаем текущий (старый) путь к аватару, чтобы после обновления удалить файл
+  const oldAvatar = user.avatar;
+
+  // Если прислали новое имя — обрежем пробелы и сохраним
+  if (name && name.trim() !== "") {
+    user.name = name.trim();
+  }
+
+  // Если через multer пришёл файл — формируем относительный путь и сохраняем в БД
+  if (req.file) {
+    user.avatar = `/usersimg/${req.file.filename}`;
+  }
+
+  // Сохраняем изменения пользователя в БД
+  await user.save();
+
+  // Обновляем данные в сессии (чтобы UI сразу видел новое имя/аватар)
+  req.session.userName = user.name;
+  req.session.userAvatar = user.avatar;
+
+  // Если действительно загрузили новый файл (req.file есть)
+  // и старый путь отличен от нового — удаляем старый файл
+  if (req.file && oldAvatar && oldAvatar !== user.avatar) {
+    await removeOldAvatarSafe(oldAvatar);
+  }
+
+  // Явно сохраняем сессию (если ваша конфигурация этого требует)
+  req.session.save((err) => {
+    if (err) {
+      console.error("Ошибка при сохранении сессии:", err);
+      return res.status(500).json({ message: "Ошибка сохранения сессии" });
+    }
+
+    // Отправляем клиенту актуальные данные пользователя
+    res.json({
+      userName: user.name,
+      userAvatar: user.avatar,
+    });
+  });
 });
 
 // Обработчик GET-запроса на маршрут "/checkUser" для проверки авторизованного пользователя
