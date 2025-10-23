@@ -25,7 +25,6 @@ export const createComments =
         // createdAt: data?.createdAt,
         User: data?.User ?? { name: userName, avatar: userAvatar },
       };
-
       dispatch({ type: SET_CREATE_COMMENT, payload });
     }
   };

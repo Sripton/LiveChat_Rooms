@@ -239,7 +239,7 @@ export default function Chatrooms() {
                   borderRadius: 2,
                   p: 2,
                   boxShadow: 3,
-                  bgcolor: "#fce4ec", // нежный светло-бордовый
+                  bgcolor: "#fce4ec", //  светло-бордовый
                 }}
               >
                 <Stack
@@ -416,7 +416,6 @@ export default function Chatrooms() {
                         onClick={() => {
                           const currentRoom = room;
                           // если гость — отправляем на логин и выходим
-                          console.log("currentRoom", currentRoom);
                           if (!userID) {
                             navigate("/signin");
                           } else if (currentRoom?.hasAccess) {

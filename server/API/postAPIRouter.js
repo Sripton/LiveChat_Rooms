@@ -1,7 +1,6 @@
 const express = require("express");
 const { Room, Post, User, Postreaction } = require("../db/models");
 const router = express.Router();
-
 const { checkUserForPost } = require("../MiddleWares/checkUser");
 
 router.post("/:id", async (req, res) => {
@@ -9,11 +8,20 @@ router.post("/:id", async (req, res) => {
   const { id } = req.params;
   // Извлекаем поле postTitle из тела запроса
   const { postTitle } = req.body;
+
+  if (!postTitle) {
+    return res.status(400).json({ message: "Заголовок не может быть пустым" });
+  }
   try {
     // Получаем id пользователя из сессии
     const userID = req.session.userID;
+    if (!userID)
+      return res.status(401).json({ message: "Необходима авторизация." });
+    
     // Ищем объект Room по его первичному ключу (id)
     const findRoomID = await Room.findByPk(id);
+    if (!findRoomID)
+      return res.status(404).json({ message: "Комната не найдена." });
     // Создаем новый пост, используя данные из запроса:
     // - posttitle: заголовок поста из тела запроса
     // - user_id: идентификатор пользователя, полученный из сессии

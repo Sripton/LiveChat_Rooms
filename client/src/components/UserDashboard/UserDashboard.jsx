@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   Avatar,
   Box,
@@ -21,12 +21,15 @@ import { useDispatch, useSelector } from "react-redux";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 import {
   fetchUserRequestsStatus,
   updateRoomRequestStatus,
 } from "../../redux/actions/roomRequestStatusActions";
 import { fetchUserRooms } from "../../redux/actions/roomActions";
+import { fetchAllPosts } from "../../redux/actions/postActions";
+import { fetchComments } from "../../redux/actions/commentActions";
 
 function TabPanel(props) {
   const { index, value, children } = props;
@@ -148,6 +151,39 @@ export default function UserDashboard({ userPropsData }) {
     });
   };
 
+  // Посты пользователя (дожидаемся roomID)
+  const allPosts = useSelector((store) => store.post.allPosts);
+
+  // Берём последний roomId, но без pop() и только если массив не пуст
+  const roomID = userRooms.length
+    ? userRooms[userRooms.length - 1]?.id
+    : undefined;
+
+  useEffect(() => {
+    if (!roomID) return; // не дергаем API без ID
+    dispatch(fetchAllPosts(roomID));
+  }, [dispatch, roomID]);
+
+  // postIDs — новый массив на каждом рендере
+  // заново диспатчится fetchComments на том же id, что снова меняет стейт и триггерит ререндер.
+  // const postIDs = Array.isArray(allPosts)
+  //   ? allPosts.map((post) => post.id).filter((id) => Number.isInteger(id))
+  //   : [];
+
+  // Список валидных id постов (чисел)
+  // postIDs стабильный через useMemo и не запрашивает повторно для уже загруженных id
+  const postIDs = useMemo(() => {
+    if (!Array.isArray(allPosts)) return [];
+    return allPosts.map((post) => post.id).filter((id) => Number.isInteger(id));
+  }, [allPosts]);
+
+  const commentsByPostId = useSelector((store) => store.comment.byPostId);
+  useEffect(() => {
+    if (postIDs.length === 0) return;
+    postIDs.forEach((id) => dispatch(fetchComments(id)));
+  }, [postIDs]);
+  console.log("commentsByPostId", commentsByPostId);
+
   return (
     <div
       style={{
@@ -185,7 +221,7 @@ export default function UserDashboard({ userPropsData }) {
                 }}
               />
             ) : (
-              <Avatar
+              <AccountCircleIcon
                 alt="user"
                 sx={{
                   width: 70,
@@ -306,8 +342,7 @@ export default function UserDashboard({ userPropsData }) {
                 const isUpdating = Boolean(updatingById?.[rid]);
                 // Когда запрос в статусе оюидания
                 const isPending = request.status === "pending";
-                const isAccepted = request.status === "accepted";
-                const isRejected = request.status === "rejected";
+
                 let avatarSrc;
                 if (isOutgoing) {
                   avatarSrc = userAvatar
@@ -428,7 +463,7 @@ export default function UserDashboard({ userPropsData }) {
                       const enterAllowed = canEnterRoom(request, userID);
                       return (
                         <ListItemButton
-                          disabled={!enterAllowed}
+                          // disabled={!enterAllowed}
                           disableRipple
                           disableTouchRipple
                           sx={{
@@ -482,28 +517,25 @@ export default function UserDashboard({ userPropsData }) {
         {/* Panel: Ответы на комменатарии */}
         <TabPanel value={tabIndex} index={2}>
           {/* <Typography variant="h6">Ответы на посты</Typography> */}
-          <List>
-            <ListItem>
-              <ListItemAvatar>
-                <Avatar />
-              </ListItemAvatar>
-              <ListItemText
-                primary="Maria ответила на ваш пост"
-                secondary={
-                  <>
-                    <Typography
-                      component="span"
-                      variant="body2"
-                      color="text.primary"
-                    >
-                      В комнате: Frontend Room
-                    </Typography>
-                    {" — Согласна, React Query — хороший выбор."}
-                  </>
-                }
-              />
-            </ListItem>
-          </List>
+          {commentsByPostId[postIDs]?.map((comment) => (
+            <List key={comment.id}>
+              <ListItem>
+                <ListItemAvatar>
+                  {comment?.User?.avatar ? (
+                    <Avatar
+                      src={`${process.env.REACT_APP_BASEURL}${comment?.User?.avatar}`}
+                    />
+                  ) : (
+                    <Avatar />
+                  )}
+                </ListItemAvatar>
+                <ListItemText
+                  primary={`${comment?.User?.name} ответил(a) на ваш пост`}
+                  secondary={`${comment?.commentTitle}`}
+                />
+              </ListItem>
+            </List>
+          ))}
         </TabPanel>
       </Box>
     </div>

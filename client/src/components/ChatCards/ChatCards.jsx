@@ -206,8 +206,6 @@ export default function ChatCards() {
     })();
   }, [dispatch, allPosts]);
 
-  // !openModalPost && openReplyPostId
-  console.log("openModalPost", openModalPost);
   console.log("openReplyPostId", openReplyPostId);
 
   return (
@@ -226,7 +224,7 @@ export default function ChatCards() {
       }}
     >
       <Paper
-        elevation={0} // интесивнгость тени
+        elevation={0} // интенсивность тени
         sx={{
           width: "100%",
           maxWidth: 1200,
@@ -516,7 +514,7 @@ export default function ChatCards() {
                         <Box
                           // className="post-actions"
                           sx={{
-                            display: "flex",
+                            display: openReplyPostId ? "none" : "flex",
                             alignItems: "center",
                             gap: 0.5,
                             mt: 0.5,
