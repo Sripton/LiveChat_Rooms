@@ -17,11 +17,10 @@ export default function CommentEditor({
   return (
     <BaseEditor
       variant="comment"
+      initialValues={mode === "edit" ? (editComment?.commentTitle ?? "") : ""}
       onSubmit={async (value) => {
         if (mode === "edit" && editComment?.id) {
-          dispatch(
-            editCommentSubmit(postID, editComment?.id, { commentTitle: value })
-          );
+          dispatch(editCommentSubmit(postID, editComment?.id, value));
         } else {
           dispatch(createComments(postID, { commentTitle: value }, parentID));
         }

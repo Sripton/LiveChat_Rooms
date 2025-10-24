@@ -21,10 +21,22 @@ export default function BaseEditor({
     onSubmit(trimmed);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      return onCancel?.();
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submit(e);
+    }
+  };
+
   return (
     <Box
       component="form"
       onSubmit={submit}
+      onKeyDown={handleKeyDown}
       sx={{ display: "flex", gap: 2, mt: 1, alignItems: "center" }}
     >
       <TextField
