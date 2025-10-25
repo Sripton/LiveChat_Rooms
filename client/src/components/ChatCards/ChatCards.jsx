@@ -20,7 +20,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import SendIcon from "@mui/icons-material/Send";
 import { motion, AnimatePresence } from "framer-motion";
 import { getRoomById } from "../../redux/actions/roomActions";
-import ModalPostCreate from "../ModalPostCreate";
+import PostEditor from "../PostEditor";
 import CommentEditor from "../CommentEditor";
 import CommentsCard from "../CommentsCard";
 import {
@@ -94,6 +94,7 @@ export default function ChatCards() {
   // Функция которая следит за состоянием showReplyPostId при нажатии открывается форма для добалвения комментария
   const toggleReplyForPost = (postID) => {
     setOpenReplyPostId((prev) => (prev === postID ? null : postID));
+    setShowReplyPostId(null); // Закрывать комментарии если открыта форма для создания комментария
     setOpenModalPost(false);
   };
   // ------------------- Создание и изменение поста -------------------------------------
@@ -107,17 +108,17 @@ export default function ChatCards() {
       });
       return;
     }
-    setEditPost(null);
-    setOpenReplyPostId(null);
-    setOpenModalPost(true);
+    setEditPost(null); // Если добаялем пост то редактирвание закрываем
+    setOpenReplyPostId(null); // Если добаялем пост то форму создания комментария  закрываем
+    setOpenModalPost(true); // Если добаялем пост, открываем PostEditor для создания поста
   };
 
   // Функция которая следжит за состоянием измнения поста
   const handleEditPostClick = (post) => {
     if (!userID || userID !== post.user_id) return;
-    setEditPost(post);
-    setOpenReplyPostId(null);
-    setOpenModalPost(true);
+    setEditPost(post); //  Если изменяем пост то редактируем конкретный пост
+    setOpenReplyPostId(null); // Если изменяем пост то форму создания комментария  закрываем
+    setOpenModalPost(true); // Если изменяем пост, открываем PostEditor для изменения поста
   };
 
   // ------------------- Отображение полного поста ---------------------
@@ -158,33 +159,10 @@ export default function ChatCards() {
   }, [dispatch, allPosts]);
 
   // -------------------- Отображение всех коммнетриев для определенного поста ----------------------
-  // после загрузки allPosts подгружаем *счётчики* одним батчем
-  // важно добавить commentsByPostId, чтобы не дёргать повторно уже загруженные
-  // Не важны log
-  // useEffect(() => {
-  //   if (Array.isArray(allPosts) && allPosts.length) {
-  //     allPosts.forEach((post) => dispatch(fetchComments(post.id)));
-  //     const ids = allPosts.map((post) => post.id);
-  //     dispatch(fetchCommentCounts(ids)); // <- МАССИВ чисел [1,2,3,4]
-  //   }
-  // }, [dispatch, allPosts]);
-
-  // Promise.all
-  // useEffect(() => {
-  //   if (!Array.isArray(allPosts) || allPosts.length === 0) return;
-  //   // 1) грузим комментарии параллельно
-  //   Promise.all(allPosts.map((post) => dispatch(fetchComments(post.id))))
-  //     .then((commentsResults) => {
-  //       const ids = allPosts.map((p) => p.id);
-  //       return dispatch(fetchCommentCounts(ids));
-  //     })
-  //     .then((counts) => console.log("counts", counts).unwrap())
-  //     .catch((err) => console.log(err));
-  // }, [dispatch, allPosts]);
-
   // Функция которая следит за состоянием отображения комментариев
-  const toggleShowForPost = (postID) => {
+  const toggleShowCommentToPost = (postID) => {
     setShowReplyPostId((prev) => (prev === postID ? null : postID));
+    setOpenReplyPostId(null); // Закрываем форму для создания комментария
     if (!commentsByPostId?.[postID]) {
       dispatch(fetchComments(postID));
     }
@@ -205,8 +183,6 @@ export default function ChatCards() {
       }
     })();
   }, [dispatch, allPosts]);
-
-  console.log("openReplyPostId", openReplyPostId);
 
   return (
     // Основной макет
@@ -313,7 +289,7 @@ export default function ChatCards() {
         {/* Модальное окно для создания поста */}
         {openModalPost && (
           <Box sx={{ mt: 2 }}>
-            <ModalPostCreate
+            <PostEditor
               openModalPost={openModalPost}
               setOpenModalPost={setOpenModalPost}
               closeModalPost={() => setOpenModalPost(false)}
@@ -514,7 +490,8 @@ export default function ChatCards() {
                         <Box
                           // className="post-actions"
                           sx={{
-                            display: openReplyPostId ? "none" : "flex",
+                            display:
+                              openReplyPostId === post.id ? "none" : "flex", // Убираем действия к посту если пишем коммeнтарий
                             alignItems: "center",
                             gap: 0.5,
                             mt: 0.5,
@@ -573,7 +550,7 @@ export default function ChatCards() {
                               }}
                               startIcon={<VisibilityIcon />}
                               onClick={() => {
-                                toggleShowForPost(post.id);
+                                toggleShowCommentToPost(post.id);
                               }}
                             >
                               {countsByPostId[post.id] ?? 0}
@@ -664,9 +641,8 @@ export default function ChatCards() {
                             expanded={expanded}
                             toggleExpand={toggleExpand}
                             userID={userID}
-                            toggleReplyForPost={() => toggleReplyForPost(null)}
-                            setOpenReplyPostId={setOpenReplyPostId}
-                            setOpenModalPost={setOpenModalPost}
+                            openReplyPostId={openReplyPostId}
+                            setOpenModalPost={setOpenModalPost} // Функция состояния при  открытии PostEditor для создания поста
                             openModalPost={openModalPost}
                           />
                         )}

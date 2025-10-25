@@ -8,7 +8,7 @@ import {
 } from "../../redux/actions/postActions";
 
 import BaseEditor from "../BaseEditor/BaseEditor";
-export default function ModalPostCreate({
+export default function PostEditor({
   openModalPost,
   setOpenModalPost,
   closeModalPost,

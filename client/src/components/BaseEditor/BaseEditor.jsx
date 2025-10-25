@@ -36,7 +36,6 @@ export default function BaseEditor({
     <Box
       component="form"
       onSubmit={submit}
-      onKeyDown={handleKeyDown}
       sx={{ display: "flex", gap: 2, mt: 1, alignItems: "center" }}
     >
       <TextField
@@ -47,6 +46,8 @@ export default function BaseEditor({
         fullWidth
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        autoFocus // Важно. Иначе не срабатывает  onKeyDown={handleKeyDown}
         sx={{
           width: "clamp(280px, 70vw, 720px)",
           "& .MuiOutlinedInput-root": {
@@ -94,7 +95,7 @@ export default function BaseEditor({
   );
 }
 
-BaseEditor.prototype = {
+BaseEditor.prototypes = {
   variant: ProtoTypes.oneOf(["post", "comment"]).isRequired,
   initialValues: ProtoTypes.string,
   onSubmit: ProtoTypes.func.isRequired,
