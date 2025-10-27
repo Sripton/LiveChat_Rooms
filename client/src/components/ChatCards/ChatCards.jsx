@@ -163,8 +163,9 @@ export default function ChatCards() {
   const toggleShowCommentToPost = (postID) => {
     setShowReplyPostId((prev) => (prev === postID ? null : postID));
     setOpenReplyPostId(null); // Закрываем форму для создания комментария
-    if (!commentsByPostId?.[postID]) {
-      dispatch(fetchComments(postID));
+    // берём массив комментариев для postID, либо получаем undefined, если их ещё нет в сторе.
+    if (!commentsByPostId?.[postID]) { // если массива нет (то есть undefined/null/falsey)
+      dispatch(fetchComments(postID)); // делаем загрузку: dispatch(fetchComments(postID))
     }
   };
 

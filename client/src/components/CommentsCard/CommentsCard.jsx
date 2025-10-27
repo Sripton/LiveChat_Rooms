@@ -92,7 +92,6 @@ export default function CommentsCard({
       setEditComment(null); // Закрываем CommentEditor для изменения комментария
     }
   }, [openModalPost]); // Зависимоость от openModalPost
-  console.log("openModalPost", openModalPost);
 
   return (
     <Paper
