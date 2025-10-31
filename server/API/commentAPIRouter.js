@@ -105,6 +105,87 @@ router.post("/:id", async (req, res) => {
   }
 });
 
+// Отдаём последние ответы, адресованные пользователю:
+router.get("/notifications/replies", async (req, res) => {
+  try {
+    const userID = Number(req.session.userID); // userId (обязательный) - ID пользователя, для которого получаем уведомления
+
+    if (!Number.isInteger(userID)) {
+      return res.status(400).json({ message: "userId must be an integer" });
+    }
+    const limit = Math.min(Number(req.query.limit) || 50, 200); // limit (по необходимости) - максимальное количество записей (макс. 200)
+    const before = req.query.before ? new Date(req.query.before) : new Date(); // "2025-10-28T08:31:03.547Z"
+
+    // Условие: это комментарии НЕ текущего юзера,
+    // которые либо ответы к постам юзера, либо являются ответами на его комментарии.
+    const rows = await Comment.findAll({
+      subQuery: false, // важно в некоторых версиях
+      distinct: true, // чтобы limit считался по Comment, а не по join-строкам
+      where: {
+        user_id: { [Op.ne]: userID }, // Не ответы самого пользователя
+        createdAt: { [Op.lt]: before },
+        // [Op.or]: [
+        //   // 1) Верхнеуровневый коммент к моему посту — это "ответ на мой пост"
+        //   {
+        //     [Op.and]: [{ parent_id: null }, { "$Post.user_id$": userID }],
+        //   },
+        //   { "$ParentComment.user_id$": userID },
+        // ],
+      },
+      include: [
+        {
+          model: Post,
+          required: false,
+          attributes: ["id", "user_id", "room_id"],
+        },
+        // Родительский комментарий, если это ответ
+        {
+          model: Comment,
+          as: "ParentComment", // ВАЖНО: алиас совпадает с where "$ParentComment.user_id$"
+          required: false,
+          attributes: ["id", "user_id"],
+        },
+        {
+          model: User, // автор текущего комментария
+          attributes: ["id", "name", "avatar"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      limit,
+    });
+
+    // Фильтрация.
+    // const result = rows.filter((comment) => {
+    //   const isReplyPost = comment?.Post?.user_id === userID;
+    //   const isReplyComment = comment?.Comment?.user_id === userID;
+    //   return isReplyPost || isReplyComment;
+    // });
+    // res.status(200).json({
+    //   // Вместо «сырого массива» возвращаем курсор:
+    //   items: rows,
+    //   nextBefore: rows.length ? rows[rows.length - 1].createdAt : null,
+    // });
+
+    // Фильтрация. Отдаем только коммнетарии к постам и комментариям
+    const result = rows.filter(
+      (comment) =>
+        (comment.user_id !== userID &&
+          comment.ParentComment === null &&
+          comment?.Post?.user_id === userID) ||
+        comment.ParentComment?.user_id === userID
+    );
+
+    res.json({
+      items: result,
+      //nextBefore хранит время последнего элемента, чтобы следующая подгрузка получила ещё более старые ответы.
+      nextBefore: result.length ? result[result.length - 1].createdAt : null, // nextBefore = createdAt последнего  элемента.
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Ошибка при получении ответов" });
+  }
+});
+
 router.get("/:id", async (req, res) => {
   // id - строка
   const { id } = req.params;

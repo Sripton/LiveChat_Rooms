@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Avatar,
   Box,
@@ -14,6 +14,7 @@ import {
   ListItemText,
   CircularProgress,
   ListItemButton,
+  Chip,
 } from "@mui/material";
 
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -28,8 +29,8 @@ import {
   updateRoomRequestStatus,
 } from "../../redux/actions/roomRequestStatusActions";
 import { fetchUserRooms } from "../../redux/actions/roomActions";
-import { fetchAllPosts } from "../../redux/actions/postActions";
-import { fetchComments } from "../../redux/actions/commentActions";
+import { fetchUserReplies } from "../../redux/actions/commentActions";
+import { REPLIES_SET } from "../../redux/types/types";
 
 function TabPanel(props) {
   const { index, value, children } = props;
@@ -81,10 +82,13 @@ function ActionSpinner({ intent }) {
 export default function UserDashboard({ userPropsData }) {
   const [tabIndex, setTabIndex] = useState(0);
   const { userAvatar, userName, userID } = userPropsData;
-  const userRooms = useSelector((store) => store.room.userRooms);
+
   const { incoming, outgoing, updatingIds, updatingById } = useSelector(
     (store) => store.roomRequestStatus
   );
+
+  // Забираем все комнаты пользователя  из  store
+  const userRooms = useSelector((store) => store.room.userRooms);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -151,38 +155,17 @@ export default function UserDashboard({ userPropsData }) {
     });
   };
 
-  // Посты пользователя (дожидаемся roomID)
-  const allPosts = useSelector((store) => store.post.allPosts);
-
-  // Берём последний roomId, но без pop() и только если массив не пуст
-  const roomID = userRooms.length
-    ? userRooms[userRooms.length - 1]?.id
-    : undefined;
-
+  const items = useSelector((store) => store.comment.replies.items);
+  // первая загрузка
+  // очищаем и грузим заново при смене userID
   useEffect(() => {
-    if (!roomID) return; // не дергаем API без ID
-    dispatch(fetchAllPosts(roomID));
-  }, [dispatch, roomID]);
-
-  // postIDs — новый массив на каждом рендере
-  // заново диспатчится fetchComments на том же id, что снова меняет стейт и триггерит ререндер.
-  // const postIDs = Array.isArray(allPosts)
-  //   ? allPosts.map((post) => post.id).filter((id) => Number.isInteger(id))
-  //   : [];
-
-  // Список валидных id постов (чисел)
-  // postIDs стабильный через useMemo и не запрашивает повторно для уже загруженных id
-  const postIDs = useMemo(() => {
-    if (!Array.isArray(allPosts)) return [];
-    return allPosts.map((post) => post.id).filter((id) => Number.isInteger(id));
-  }, [allPosts]);
-
-  const commentsByPostId = useSelector((store) => store.comment.byPostId);
-  useEffect(() => {
-    if (postIDs.length === 0) return;
-    postIDs.forEach((id) => dispatch(fetchComments(id)));
-  }, [postIDs]);
-  console.log("commentsByPostId", commentsByPostId);
+    if (!userID) return;
+    dispatch({
+      type: REPLIES_SET,
+      payload: { items: [], nextBefore: null, apend: false },
+    });
+    dispatch(fetchUserReplies({ limit: 20 }));
+  }, [userID, dispatch]); // ← зависим от userID
 
   return (
     <div
@@ -437,28 +420,6 @@ export default function UserDashboard({ userPropsData }) {
                       )
                     }
                   >
-                    {/* <ListItemAvatar>
-                      <Avatar src={avatarSrc} alt={`${altText}`} />
-                    </ListItemAvatar> */}
-                    {/* <ListItemText
-                      primary={altText}
-                      primaryTypographyProps={{
-                        sx: {
-                          color: " #1976d2",
-                          fontSize: "1.2rem",
-                          fontFamily: "monospace",
-                        },
-                      }}
-                      secondary={
-                        <Typography
-                          component="span"
-                          variant="body2"
-                          sx={{ fontFamily: "monospace" }}
-                        >
-                          {primaryText}
-                        </Typography>
-                      }
-                    /> */}
                     {(() => {
                       const enterAllowed = canEnterRoom(request, userID);
                       return (
@@ -516,26 +477,149 @@ export default function UserDashboard({ userPropsData }) {
 
         {/* Panel: Ответы на комменатарии */}
         <TabPanel value={tabIndex} index={2}>
-          {/* <Typography variant="h6">Ответы на посты</Typography> */}
-          {commentsByPostId[postIDs]?.map((comment) => (
-            <List key={comment.id}>
-              <ListItem>
-                <ListItemAvatar>
-                  {comment?.User?.avatar ? (
-                    <Avatar
-                      src={`${process.env.REACT_APP_BASEURL}${comment?.User?.avatar}`}
-                    />
-                  ) : (
-                    <Avatar />
-                  )}
-                </ListItemAvatar>
-                <ListItemText
-                  primary={`${comment?.User?.name} ответил(a) на ваш пост`}
-                  secondary={`${comment?.commentTitle}`}
-                />
-              </ListItem>
-            </List>
-          ))}
+          <Box
+            sx={{
+              p: 2,
+              background:
+                "linear-gradient(135deg, rgba(248,187,208,0.25) 0%, rgba(255,240,245,0.45) 100%)",
+              borderRadius: 3,
+              border: "1px solid #f8bbd0",
+            }}
+          >
+            {!items || items.length === 0 ? (
+              <Box>
+                <Typography> Пока нет ответов</Typography>
+                <Typography>
+                  {" "}
+                  Здесь появятся ответы на ваши посты и комментарии
+                </Typography>
+              </Box>
+            ) : (
+              <List>
+                {items.map((comment) => {
+                  const isReplyToComment = Boolean(comment?.ParentComment);
+                  const replyTypeLabel = isReplyToComment
+                    ? " на ваш коммнетрий"
+                    : " на ваш пост";
+                  const created = comment?.createdAt
+                    ? new Date(comment?.createdAt).toLocaleString()
+                    : "";
+
+                  return (
+                    <ListItem
+                      key={comment.id}
+                      alignItems="flex-start"
+                      sx={{
+                        border: "1px solid #f8bbd0",
+                        py: 1.5,
+                        px: 2,
+                        cursor: "pointer",
+                        borderRadius: 3,
+                        bgcolor: "#fff0f5",
+                        boxShadow: "0 6px 14px rgba(216,27,96,0.08)",
+                        transition:
+                          "transform .2s ease, box-shadow .2s ease, background-color .2s ease",
+                        "&:hover": {
+                          transform: "translateY(-3px)",
+                          boxShadow: "0 10px 20px rgba(216,27,96,0.16)",
+                          bgcolor: "#ffe6ee",
+                        },
+
+                        // левый акцент
+                        position: "relative",
+                        "&:before": {
+                          content: '""',
+                          position: "absolute",
+                          width: 4,
+                          left: 0,
+                          top: 8,
+                          bottom: 8,
+                          borderRadius: "8px",
+                          background:
+                            "linear-gradient(180deg, #d81b60 0%, #f48fb1 100%)",
+                        },
+                      }}
+                      secondaryAction={
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <Chip
+                            label={replyTypeLabel}
+                            size="small"
+                            sx={{
+                              bgcolor: isReplyToComment ? "#f8bbd0" : "#fce4ec",
+                              color: "#880e4f",
+                              borderRadius: 2,
+                              fontWeight: 600,
+                            }}
+                          />
+                        </Box>
+                      }
+                    >
+                      <ListItemAvatar>
+                        {comment?.User?.avatar ? (
+                          <Avatar
+                            src={`${process.env.REACT_APP_BASEURL}${comment?.User?.avatar}`}
+                            sx={{
+                              width: "48px",
+                              height: "48px",
+                              border: "2px solid  #f8bbd0",
+                            }}
+                          />
+                        ) : (
+                          <Avatar
+                            sx={{ bgcolor: "#f8bbd0", color: "#880e4f" }}
+                          />
+                        )}
+                      </ListItemAvatar>
+                      <ListItemText
+                        // UserDashboard.jsx:596 In HTML, <p> cannot be a descendant of <p>.
+                        // This will cause a hydration error.
+                        primaryTypographyProps={{ component: "div" }}
+                        secondaryTypographyProps={{ component: "div" }}
+                        primary={
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "baseline",
+                              gap: 1,
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle1"
+                              sx={{
+                                color: "#ad1457",
+                                fontWeight: 700,
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {comment?.User?.name}
+                            </Typography>
+                          </Box>
+                        }
+                        secondary={
+                          <Box sx={{ mt: 0.5 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: "#5e2750" }}
+                            >
+                              {comment?.commentTitle}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{ color: "#8e245f", opacity: 0.7 }}
+                            >
+                              {created}
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                    </ListItem>
+                  );
+                })}
+              </List>
+            )}
+          </Box>
         </TabPanel>
       </Box>
     </div>

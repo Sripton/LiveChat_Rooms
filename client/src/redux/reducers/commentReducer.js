@@ -4,37 +4,17 @@ import {
   SET_COMMENT_COUNTS,
   SET_EDIT_COMMENT,
   DELETE_COMMENT,
+  REPLIES_SET,
 } from "../types/types";
 
 const initialState = {
   byPostId: {}, // { [postId]: Comment[] }
   countsByPostId: {}, //  { [postId]: number }
+  replies: {
+    items: [],
+    nextBefore: null,
+  },
 };
-
-// function commentDescendants(list, rootId) {
-//   const target = Number(rootId); // id
-//   const toDelete = new Set([target]); // {[id]}
-//   let change = true;
-//   while (change) {
-//     change = false;
-//     // Перебираем все комментарии
-//     for (const comment of list) {
-//       const commentID = Number(comment.id);
-//       const parentID =
-//         comment.parent_id === null ? null : Number(comment.parent_id);
-
-//       if (
-//         parentID !== null &&
-//         toDelete.has(parentID) &&
-//         !toDelete.has(commentID)
-//       ) {
-//         toDelete.add(commentID);
-//         change = true;
-//       }
-//     }
-//   }
-//   return toDelete;
-// }
 
 function commentDescendants(list, rootId) {
   const target = Number(rootId);
@@ -62,6 +42,21 @@ function commentDescendants(list, rootId) {
   }
   return toDelete;
 }
+
+// сортировка по времени убыв.
+const dedupeAndSortDesc = (list) => {
+  const map = new Map();
+  for (let i = 0; i < list.length; i += 1) {
+    const comment = list[i];
+    map.set(comment.id, comment);
+  }
+  const array = Array.from(map.values());
+  array.sort((a, b) => {
+    const t = new Date(b.createdAt) - new Date(a.createdAt);
+    return t;
+  });
+  return array;
+};
 export default function commentReducer(state = initialState, action) {
   const { type, payload } = action;
   switch (type) {
@@ -133,6 +128,16 @@ export default function commentReducer(state = initialState, action) {
           ...state.countsByPostId,
           [key]: Math.max(0, prevCounts - removed),
         },
+      };
+    }
+
+    case REPLIES_SET: {
+      const { items = [], nextBefore = null, apend = false } = payload || {};
+      const base = apend ? state.replies.items : [];
+      const merged = dedupeAndSortDesc([...base, ...items]);
+      return {
+        ...state,
+        replies: { items: merged, nextBefore },
       };
     }
     default:

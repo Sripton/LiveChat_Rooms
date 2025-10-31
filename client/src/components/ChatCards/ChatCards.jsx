@@ -17,6 +17,7 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import SendIcon from "@mui/icons-material/Send";
 import { motion, AnimatePresence } from "framer-motion";
 import { getRoomById } from "../../redux/actions/roomActions";
@@ -87,6 +88,7 @@ export default function ChatCards() {
   // Забираем комментарии из store
   const commentsByPostId = useSelector((store) => store.comment.byPostId);
 
+  const [focusedPostID, setFocusedPostID] = useState(null);
   // Забираем счетчики коммнетриев  из store
   const countsByPostId = useSelector((store) => store.comment.countsByPostId);
 
@@ -161,13 +163,24 @@ export default function ChatCards() {
   // -------------------- Отображение всех коммнетриев для определенного поста ----------------------
   // Функция которая следит за состоянием отображения комментариев
   const toggleShowCommentToPost = (postID) => {
-    setShowReplyPostId((prev) => (prev === postID ? null : postID));
-    setOpenReplyPostId(null); // Закрываем форму для создания комментария
+    setShowReplyPostId((prev) => {
+      const next = prev === postID ? null : postID;
+      setFocusedPostID(next ? postID : null);
+      return next;
+    });
     // берём массив комментариев для postID, либо получаем undefined, если их ещё нет в сторе.
-    if (!commentsByPostId?.[postID]) { // если массива нет (то есть undefined/null/falsey)
+    // Грузим комментарии только тогда, когда необходимо их показать
+    if (!commentsByPostId?.[postID]) {
+      // если массива нет (то есть undefined/null/falsey)
       dispatch(fetchComments(postID)); // делаем загрузку: dispatch(fetchComments(postID))
     }
   };
+
+  const postRender = Array.isArray(allPosts)
+    ? focusedPostID
+      ? allPosts.filter((post) => post.id === focusedPostID)
+      : allPosts
+    : [];
 
   // async
   useEffect(() => {
@@ -302,7 +315,7 @@ export default function ChatCards() {
         )}
         <Divider sx={{ my: 3, borderColor: "rgba(194,24,91,0.15)" }} />
         {/* Плоский список постов */}
-        {Array.isArray(allPosts) && allPosts.length > 0 ? (
+        {Array.isArray(postRender) && postRender.length > 0 ? (
           <Box
             component={motion.div}
             variants={containerVariants}
@@ -311,7 +324,7 @@ export default function ChatCards() {
           >
             <AnimatePresence>
               <Stack spacing={1.5}>
-                {allPosts.map((post) => {
+                {postRender.map((post) => {
                   // Фильтрируем ко-во лайков для данного поста
                   const likePost = allReactionPosts.filter(
                     (like) =>
@@ -549,7 +562,13 @@ export default function ChatCards() {
                                 minWidth: 0,
                                 px: 1,
                               }}
-                              startIcon={<VisibilityIcon />}
+                              startIcon={
+                                focusedPostID ? (
+                                  <VisibilityIcon />
+                                ) : (
+                                  <VisibilityOffIcon />
+                                )
+                              }
                               onClick={() => {
                                 toggleShowCommentToPost(post.id);
                               }}

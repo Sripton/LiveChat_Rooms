@@ -1,7 +1,8 @@
 const express = require("express");
-const { Room, Post, User, Postreaction } = require("../db/models");
+const { Room, Post, User, Postreaction, Comment } = require("../db/models");
 const router = express.Router();
 const { checkUserForPost } = require("../MiddleWares/checkUser");
+const { Op } = require("sequelize");
 
 router.post("/:id", async (req, res) => {
   // Извлекаем параметр id из URL запроса
@@ -17,7 +18,7 @@ router.post("/:id", async (req, res) => {
     const userID = req.session.userID;
     if (!userID)
       return res.status(401).json({ message: "Необходима авторизация." });
-    
+
     // Ищем объект Room по его первичному ключу (id)
     const findRoomID = await Room.findByPk(id);
     if (!findRoomID)
@@ -49,10 +50,11 @@ router.get("/:id", async (req, res) => {
   const { id } = req.params; // Получаем ID из параметров URL
   try {
     // const userID = req.session.userID;
+    // Ищем все посты относящиеся к определенной комнате по ID
     const findAllPostsID = await Post.findAll({
       where: { room_id: id },
       include: [{ model: User, attributes: ["id", "name", "avatar"] }],
-    }); // Ищем все посты относящиеся к определенной комнате по ID
+    });
     res.json(findAllPostsID); // Отправляем все посты на клиент
   } catch (error) {
     console.log(error);

@@ -111,32 +111,34 @@ export default function BaseEditor({
         }}
       />
 
-      <Button
-        type="submit"
-        sx={{
-          px: 2.5,
-          borderRadius: 3,
-          fontWeight: 700,
-          background:
-            "linear-gradient(180deg,rgb(165, 241, 161),rgb(143, 178, 145))",
-          boxShadow: "0 4px 12px rgba(173,20,87,0.35)",
-          textTransform: "none",
-          transition: "all .25s ease",
-          color: "#fff",
-          "&:hover": {
+      {hasWord && (
+        <Button
+          type="submit"
+          sx={{
+            px: 2.5,
+            borderRadius: 3,
+            fontWeight: 700,
             background:
-              "linear-gradient(180deg,rgb(26, 84, 50),rgb(21, 109, 54))",
-            boxShadow: "0 6px 18px rgba(136,14,79,0.4)",
-            transform: "translateY(-1px)",
-          },
-          "&:disabled": {
-            background: "rgba(194, 24, 91, 0.2)",
-            color: "rgba(194, 24, 91, 0.5)",
-          },
-        }}
-      >
-        Отправить
-      </Button>
+              "linear-gradient(180deg,rgb(165, 241, 161),rgb(143, 178, 145))",
+            boxShadow: "0 4px 12px rgba(173,20,87,0.35)",
+            textTransform: "none",
+            transition: "all .25s ease",
+            color: "#fff",
+            "&:hover": {
+              background:
+                "linear-gradient(180deg,rgb(26, 84, 50),rgb(21, 109, 54))",
+              boxShadow: "0 6px 18px rgba(136,14,79,0.4)",
+              transform: "translateY(-1px)",
+            },
+            "&:disabled": {
+              background: "rgba(194, 24, 91, 0.2)",
+              color: "rgba(194, 24, 91, 0.5)",
+            },
+          }}
+        >
+          Отправить
+        </Button>
+      )}
     </Box>
   );
 }

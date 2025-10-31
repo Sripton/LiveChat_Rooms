@@ -5,6 +5,7 @@ import {
   SET_COMMENT_COUNTS,
   SET_EDIT_COMMENT,
   DELETE_COMMENT,
+  REPLIES_SET,
 } from "../types/types";
 // postID — id поста,
 // inputs — объект с полем commentTitle,
@@ -95,3 +96,28 @@ export const deleteComment = (postID, commentID) => async (dispatch) => {
     console.log(error);
   }
 };
+
+// первая загрузка для компонента UserDashboard где отображаются ответы к комм/постам пользователя
+export const fetchUserReplies =
+  ({ limit = 20 } = {}) =>
+  async (dispatch) => {
+    try {
+      const params = new URLSearchParams({ limit: String(limit) });
+      const response = await axios.get(
+        `/api/comments/notifications/replies?${params.toString()}`
+      );
+
+      // сервер возвращает: { items, nextBefore }
+      const { data } = response;
+      dispatch({
+        type: REPLIES_SET,
+        payload: {
+          items: data.items,
+          nextBefore: data.nextBefore,
+          apend: false,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };

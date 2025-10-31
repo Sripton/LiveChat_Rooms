@@ -52,3 +52,17 @@ export default function postReducer(state = initialState, action) {
       return state;
   }
 }
+
+// (comment.user_id !== me) AND (
+//   (ParentComment === null AND Post.user_id === me)   // ответ на мой пост
+//   OR
+//   (ParentComment?.user_id === me)                    // ответ на мой комментарий
+// )
+
+// const me = userID;
+// const result = rows.filter(c =>
+//   c.user_id !== me && (
+//     (c.ParentComment == null && c.Post?.user_id === me) ||
+//     (c.ParentComment?.user_id === me)
+//   )
+// );
