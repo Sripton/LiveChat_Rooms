@@ -177,7 +177,7 @@ router.get("/notifications/replies", async (req, res) => {
 
     res.json({
       items: result,
-      //nextBefore хранит время последнего элемента, чтобы следующая подгрузка получила ещё более старые ответы.
+      // nextBefore хранит время последнего элемента, чтобы следующая подгрузка получила ещё более старые ответы.
       nextBefore: result.length ? result[result.length - 1].createdAt : null, // nextBefore = createdAt последнего  элемента.
     });
   } catch (error) {

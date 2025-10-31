@@ -99,7 +99,7 @@ export const deleteComment = (postID, commentID) => async (dispatch) => {
 
 // первая загрузка для компонента UserDashboard где отображаются ответы к комм/постам пользователя
 export const fetchUserReplies =
-  ({ limit = 20 } = {}) =>
+  ({ limit = 20 } = {}, userID) =>
   async (dispatch) => {
     try {
       const params = new URLSearchParams({ limit: String(limit) });
@@ -112,9 +112,10 @@ export const fetchUserReplies =
       dispatch({
         type: REPLIES_SET,
         payload: {
+          userID,
           items: data.items,
           nextBefore: data.nextBefore,
-          apend: false,
+          append: false,
         },
       });
     } catch (error) {

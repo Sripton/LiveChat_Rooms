@@ -10,12 +10,12 @@ import {
 const initialState = {
   byPostId: {}, // { [postId]: Comment[] }
   countsByPostId: {}, //  { [postId]: number }
-  replies: {
-    items: [],
-    nextBefore: null,
-  },
+  // repliesByUserId: {
+  //   items: [],
+  //   nextBefore: null,
+  // },
+  repliesByUserId: {}, // [userID]: items
 };
-
 function commentDescendants(list, rootId) {
   const target = Number(rootId);
   const byParent = new Map();
@@ -42,7 +42,6 @@ function commentDescendants(list, rootId) {
   }
   return toDelete;
 }
-
 // сортировка по времени убыв.
 const dedupeAndSortDesc = (list) => {
   const map = new Map();
@@ -106,7 +105,6 @@ export default function commentReducer(state = initialState, action) {
         byPostId: { ...state.byPostId, [postID]: nextList },
       };
     }
-
     case DELETE_COMMENT: {
       const { postID, id } = payload;
       const key = String(postID);
@@ -130,14 +128,21 @@ export default function commentReducer(state = initialState, action) {
         },
       };
     }
-
     case REPLIES_SET: {
-      const { items = [], nextBefore = null, apend = false } = payload || {};
-      const base = apend ? state.replies.items : [];
+      const {
+        userID,
+        items = [],
+        nextBefore = null,
+        append = false,
+      } = payload || {};
+      const base = append ? state.repliesByUserId[userID]?.items : [];
       const merged = dedupeAndSortDesc([...base, ...items]);
       return {
         ...state,
-        replies: { items: merged, nextBefore },
+        repliesByUserId: {
+          ...state.repliesByUserId,
+          [userID]: { items: merged, nextBefore },
+        },
       };
     }
     default:

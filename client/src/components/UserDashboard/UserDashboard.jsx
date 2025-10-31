@@ -155,16 +155,18 @@ export default function UserDashboard({ userPropsData }) {
     });
   };
 
-  const items = useSelector((store) => store.comment.replies.items);
+  const items = useSelector(
+    (store) => store.comment.repliesByUserId[userID]?.items || [] // чтобы рендер не падал, когда данных ещё нет:
+  );
   // первая загрузка
   // очищаем и грузим заново при смене userID
   useEffect(() => {
     if (!userID) return;
     dispatch({
       type: REPLIES_SET,
-      payload: { items: [], nextBefore: null, apend: false },
+      payload: { userID, items: [], nextBefore: null, append: false },
     });
-    dispatch(fetchUserReplies({ limit: 20 }));
+    dispatch(fetchUserReplies({ limit: 20 }, userID));
   }, [userID, dispatch]); // ← зависим от userID
 
   return (
