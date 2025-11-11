@@ -11,22 +11,18 @@ import {
   IconButton,
   Divider,
   InputBase,
+  Stack,
+  useMediaQuery,
 } from "@mui/material";
-import { Stack } from "@mui/system";
-import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-
-// Иконки
+import { NavLink, useNavigate } from "react-router-dom";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import SearchIcon from "@mui/icons-material/Search";
 import CreateIcon from "@mui/icons-material/Create";
-
-// Redux
+import AddIcon from "@mui/icons-material/Add";
+import Fab from "@mui/material/Fab";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllRooms } from "../../redux/actions/roomActions";
-
-// Компоненты
 import ModalRoomCreate from "../ModalRoomCreate";
 import ModalRoomRequest from "../ModalRoomRequest";
 import ModalRoomLists from "../ModalRoomLists/ModalRoomLists";
@@ -84,13 +80,6 @@ export default function Chatrooms() {
     return [...privateRooms].sort((a, b) => sortByName(a, b, asc));
   }, [privateRooms, sortConfig]);
 
-  // const handleSortRooms = (key) => {
-  //   setSortConfig((prev) => ({
-  //     key,
-  //     direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
-  //   }));
-  // };
-
   // -------------------- Поиск комнат ------------------------
   const [searchRooms, setSearchRooms] = useState("");
   // useMemo  нельзя вызывать внутри функции (кроме как на верхнем уровне компонента).
@@ -110,138 +99,58 @@ export default function Chatrooms() {
   const isSmall = useMediaQuery(theme.breakpoints.down("lg")); // lg = 1200px по умолчанию
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        height: "100vh",
-        backgroundColor: "#fff0f5",
-      }}
-    >
-      <Grid container sx={{ width: "100%", height: isSmall ? "70%" : "100%" }}>
-        {/* Правая колонка */}
-        <Grid item xs={4} sx={{ p: 2 }}>
-          {/* Для мониторов веньше 1200px */}
+    <Box sx={{ width: "100%", height: "100vh", bgcolor: "#fff0f5" }}>
+      <Grid container sx={{ width: "100%", height: "100%" }}>
+        {/* Левая колонка (на мобильных сверху) */}
+        <Grid item xs={12} md={4} sx={{ p: 2 }}>
           {isSmall ? (
-            <Box>
-              {/* Секция 1 */}
-              <Box
-                sx={{
-                  borderRadius: 2,
-                  p: 1,
-                  boxShadow: 3,
-                  bgcolor: "#fce4ec", // нежный светло-бордовый
-                  mb: 2,
-                }}
-              >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  sx={{ mb: 1 }}
-                >
-                  <IconButton
-                    size="small"
-                    aria-label="Показать весь список"
-                    sx={{
-                      animation: "pulseIcon 1.5s infinite",
-                      bgcolor: "rgba(194,24,91,0.1)",
-                      "@keyframes pulseIcon": {
-                        "0%": {
-                          boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
-                          bgcolor: "#f8bbd0",
-                        },
-                        "50%": {
-                          boxShadow: "0 0 0 10px rgba(244,143,177, 0)",
-                          bgcolor: "#f48fb1",
-                        },
-                        "100%": {
-                          boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
-                          bgcolor: "#f8bbd0",
-                        },
-                      },
-                      "&:hover": { bgcolor: "rgba(194,24,91,0.2)" },
-                    }}
-                    onClick={() => {
-                      setRoomsView("open");
-                      setOpenModalRomsShow(true);
-                    }}
-                  >
-                    <ListAltIcon sx={{ color: "#ad1457" }} />
-                  </IconButton>
-                  <Typography variant="h6" sx={{ flexGrow: 1, color: " #777" }}>
-                    Открытые комнаты
-                  </Typography>
-                  {/* Ко-во новых комнат */}
-                  <Typography size="small">{openRoomsSorted.length}</Typography>
-                </Stack>
-              </Box>
-
-              {/* Секция 2 */}
-              <Box
-                sx={{
-                  borderRadius: 2,
-                  p: 1,
-                  boxShadow: 3,
-                  bgcolor: "#fce4ec", // тот же светло-бордовый
-                  mb: 2,
-                }}
-              >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  sx={{ mb: 1 }}
-                >
-                  <IconButton
-                    size="small"
-                    aria-label="Показать весь список"
-                    sx={{
-                      animation: "pulseIcon 1.5s infinite",
-                      bgcolor: "rgba(194,24,91,0.1)",
-                      "@keyframes pulseIcon": {
-                        "0%": {
-                          boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
-                          bgcolor: "#f8bbd0",
-                        },
-                        "50%": {
-                          boxShadow: "0 0 0 10px rgba(244,143,177, 0)",
-                          bgcolor: "#f48fb1",
-                        },
-                        "100%": {
-                          boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
-                          bgcolor: "#f8bbd0",
-                        },
-                      },
-                      "&:hover": { bgcolor: "rgba(194,24,91,0.2)" },
-                    }}
-                    onClick={() => {
-                      setRoomsView("private");
-                      setOpenModalRomsShow(true);
-                    }}
-                  >
-                    <ListAltIcon sx={{ color: "#ad1457" }} />
-                  </IconButton>
-                  <Typography variant="h6" sx={{ flexGrow: 1, color: " #777" }}>
-                    Приватные комнаты
-                  </Typography>
-                  {/* Ко-во новых пользователей */}
-                  <Typography size="small">
-                    {privateRoomsSorted.length}
-                  </Typography>
-                </Stack>
-              </Box>
-            </Box>
-          ) : (
             <Stack spacing={2}>
-              {/* Секция 1 */}
-              <Box
+              {/* Открытые */}
+              <Button
+                onClick={() => {
+                  setRoomsView("open");
+                  setOpenModalRomsShow(true);
+                }}
+                startIcon={<ListAltIcon />}
                 sx={{
+                  justifyContent: "space-between",
+                  bgcolor: "#fce4ec",
+                  color: "#ad1457",
                   borderRadius: 2,
                   p: 2,
                   boxShadow: 3,
-                  bgcolor: "#fce4ec", //  светло-бордовый
                 }}
               >
+                <Typography sx={{ flexGrow: 1, textAlign: "left" }}>
+                  {`Открытые комнаты ${openRoomsSorted.length}`}
+                </Typography>
+              </Button>
+
+              {/* Приватные */}
+              <Button
+                onClick={() => {
+                  setRoomsView("private");
+                  setOpenModalRomsShow(true);
+                }}
+                startIcon={<ListAltIcon />}
+                sx={{
+                  justifyContent: "space-between",
+                  bgcolor: "#fce4ec",
+                  color: "#ad1457",
+                  borderRadius: 2,
+                  p: 2,
+                  boxShadow: 3,
+                }}
+              >
+                <Typography sx={{ flexGrow: 1, textAlign: "left" }}>
+                  {`Приватные комнаты ${privateRoomsSorted.length}`}
+                </Typography>
+              </Button>
+            </Stack>
+          ) : (
+            <Stack>
+              {/* Открытые */}
+              <Box>
                 <Stack
                   direction="row"
                   alignItems="center"
@@ -250,111 +159,71 @@ export default function Chatrooms() {
                 >
                   <IconButton
                     size="small"
-                    aria-label="Показать весь список"
-                    sx={{
-                      bgcolor: "rgba(194,24,91,0.1)",
-                      "&:hover": { bgcolor: "rgba(194,24,91,0.2)" },
-                    }}
+                    sx={{ bgcolor: "rgba(194,24,91,0.1)" }}
                   >
                     <ListAltIcon sx={{ color: "#ad1457" }} />
                   </IconButton>
                   <Typography
                     variant="h6"
-                    sx={{
-                      flexGrow: 1,
-                      color: " #777",
-                      fontFamily: "monospace",
-                    }}
+                    sx={{ flexGrow: 1, color: "#777", fontFamily: "monospace" }}
                   >
                     Открытые комнаты
                   </Typography>
-                  {/* Ко-во новых комнат */}
                   <Typography size="small">{openRoomsSorted.length}</Typography>
                 </Stack>
-
                 <Divider sx={{ mb: 1 }} />
-
-                {openRoomsSorted.slice(0, 6).map((room) => (
-                  <Grid key={room.id}>
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      gap={1}
-                      mb={1}
-                      sx={{
-                        cursor: "pointer",
-                        backgroundColor: "#fff0f5",
-                        p: 1,
-                        borderRadius: 3,
-                        boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
-                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                        "&:hover": {
-                          transform: "translateY(-4px) scale(1.02)",
-                          boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
-                          backgroundColor: "#ffe4ec",
-                        },
-                      }}
-                    >
-                      <Box
-                        component={NavLink}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          fontFamily: "monospace",
-                          fontSize: "0.9rem",
-                          textDecoration: "none",
-                          color: "#60a5fa",
-                        }}
-                        to={`/chatcards/${room.id}`}
-                      >
-                        {` 🌐 ${room.nameroom}`}
-                      </Box>
-                    </Box>
-                  </Grid>
-                ))}
-
-                <Box textAlign="right" mt={1}>
-                  <Button
+                {openRoomsSorted.slice(0, 7).map((room) => (
+                  <Box
+                    key={room.id}
                     sx={{
-                      fontWeight: 600,
-                      fontSize: "1rem",
-                      textTransform: "none",
-                      display: openRoomsSorted.length > 6 ? "block" : "none",
-                      animation:
-                        openRoomsSorted.length > 6 ? "pulse 1.5s infinite" : 0,
-                      backgroundColor: "transparent", // убрать фон
-                      "@keyframes pulse": {
-                        "0%": {
-                          boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
-                        },
-                        "50%": {
-                          boxShadow: "0 0 0 10px rgba(244,143,177, 0)",
-                        },
-                        "100%": {
-                          boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
-                        },
+                      cursor: "pointer",
+                      bgcolor: "#fff0f5",
+                      p: 1,
+                      mb: 1,
+                      borderRadius: 3,
+                      boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      "&:hover": {
+                        transform: "translateY(-4px) scale(1.02)",
+                        boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
+                        bgcolor: "#ffe4ec",
                       },
                     }}
-                    onClick={() => {
-                      setRoomsView("open");
-                      setOpenModalRomsShow(true);
-                    }}
                   >
-                    ...
-                  </Button>
-                </Box>
+                    <Box
+                      component={NavLink}
+                      to={`/chatcards/${room.id}`}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        fontFamily: "monospace",
+                        fontSize: "0.9rem",
+                        textDecoration: "none",
+                        color: "#60a5fa",
+                      }}
+                    >
+                      {` 🌐 ${room.nameroom}`}
+                    </Box>
+                  </Box>
+                ))}
+                {openRoomsSorted.length > 8 && (
+                  <Box textAlign="right" mt={1}>
+                    <Button
+                      onClick={() => {
+                        setRoomsView("open");
+                        setOpenModalRomsShow(true);
+                      }}
+                      sx={{ textTransform: "none" }}
+                    >
+                      ...
+                    </Button>
+                  </Box>
+                )}
               </Box>
 
-              {/* Секция 2 */}
-              <Box
-                sx={{
-                  borderRadius: 2,
-                  p: 2,
-                  boxShadow: 3,
-                  bgcolor: "#fce4ec", // тот же светло-бордовый
-                }}
-              >
+              {/* Приватные */}
+              <Box>
                 <Stack
                   direction="row"
                   alignItems="center"
@@ -363,148 +232,95 @@ export default function Chatrooms() {
                 >
                   <IconButton
                     size="small"
-                    aria-label="Показать весь список"
-                    sx={{
-                      bgcolor: "rgba(194,24,91,0.1)",
-                      "&:hover": { bgcolor: "rgba(194,24,91,0.2)" },
-                    }}
+                    sx={{ bgcolor: "rgba(194,24,91,0.1)" }}
                   >
                     <ListAltIcon sx={{ color: "#ad1457" }} />
                   </IconButton>
-                  <Typography variant="h6" sx={{ flexGrow: 1, color: " #777" }}>
+                  <Typography variant="h6" sx={{ flexGrow: 1, color: "#777" }}>
                     Приватные комнаты
                   </Typography>
-                  {/* Ко-во новых пользователей */}
                   <Typography size="small">
                     {privateRoomsSorted.length}
                   </Typography>
                 </Stack>
-
                 <Divider sx={{ mb: 1 }} />
-
-                {privateRoomsSorted.slice(0, 6).map((room) => (
-                  <Grid key={room.id}>
-                    <Box
-                      display="flex"
-                      alignItems="center"
-                      gap={1}
-                      mb={1}
-                      sx={{
-                        cursor: "pointer",
-                        backgroundColor: "#fff0f5",
-                        p: 1,
-                        borderRadius: 3,
-                        boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
-                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                        "&:hover": {
-                          transform: "translateY(-4px) scale(1.02)",
-                          boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
-                          backgroundColor: "#ffe4ec",
-                        },
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          fontFamily: "monospace",
-                          fontSize: "0.9rem",
-                          textDecoration: "none",
-                          color: "#60a5fa",
-                        }}
-                        onClick={() => {
-                          const currentRoom = room;
-                          // если гость — отправляем на логин и выходим
-                          if (!userID) {
-                            navigate("/signin");
-                          } else if (currentRoom?.hasAccess) {
-                            // Есть доступ (owner/member/accepted) — пускаем сразу
-                            navigate(`/chatcards/${currentRoom.id}`);
-                          } else {
-                            // Авторизован, но доступа нет — показываем модалку заявки
-                            setSelectedRoomID(currentRoom.id);
-                            setOpenRequestModal(true);
-                          }
-                        }}
-                      >
-                        {`🔒 ${room.nameroom}`}
-                      </Box>
-                    </Box>
-                  </Grid>
-                ))}
-
-                <Box textAlign="right" mt={1}>
-                  <Button
+                {privateRoomsSorted.slice(0, 7).map((room) => (
+                  <Box
+                    key={room.id}
                     sx={{
-                      fontWeight: 600,
-                      fontSize: "1rem",
-                      textTransform: "none",
-                      backgroundColor: "transparent",
-                      animation:
-                        privateRoomsSorted.length > 6
-                          ? "pulse 1.5s infinite"
-                          : 0,
-                      "@keyframes pulse": {
-                        "0%": {
-                          boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
-                        },
-                        "50%": {
-                          boxShadow: "0 0 0 10px rgba(244,143,177, 0)",
-                        },
-                        "100%": {
-                          boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
-                        },
+                      cursor: "pointer",
+                      bgcolor: "#fff0f5",
+                      p: 1,
+                      mb: 1,
+                      borderRadius: 3,
+                      boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
+                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      "&:hover": {
+                        transform: "translateY(-4px) scale(1.02)",
+                        boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
+                        bgcolor: "#ffe4ec",
                       },
                     }}
-                    onClick={() => {
-                      setRoomsView("private");
-                      setOpenModalRomsShow(true);
-                    }}
                   >
-                    ...
-                  </Button>
-                </Box>
+                    <Box
+                      onClick={() => {
+                        const currentRoom = room;
+                        if (!userID) return navigate("/signin");
+                        if (currentRoom?.hasAccess) {
+                          navigate(`/chatcards/${currentRoom.id}`);
+                        } else {
+                          setSelectedRoomID(currentRoom.id);
+                          setOpenRequestModal(true);
+                        }
+                      }}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        fontFamily: "monospace",
+                        fontSize: "0.9rem",
+                        color: "#60a5fa",
+                      }}
+                    >
+                      {`🔒 ${room.nameroom}`}
+                    </Box>
+                  </Box>
+                ))}
+                {privateRoomsSorted.length > 8 && (
+                  <Box textAlign="right" mt={1}>
+                    <Button
+                      onClick={() => {
+                        setRoomsView("private");
+                        setOpenModalRomsShow(true);
+                      }}
+                      sx={{ textTransform: "none" }}
+                    >
+                      ...
+                    </Button>
+                  </Box>
+                )}
               </Box>
             </Stack>
           )}
         </Grid>
 
+        {/* Правая колонка */}
         <Grid
           item
-          xs={8}
-          sx={{
-            p: 2,
-            height: "100%",
-            minHeight: 0,
-            display: "flex",
-            flexDirection: "column", // обязателен, чтобы justifyContent работал по вертикали
-            alignItems: "center", // центр по горизонтали
-            justifyContent: "flex-start",
-            pt: isSmall ? "5vh" : "30vh",
-            pl: isSmall ? "8vw" : "12vw",
-            overflow: "auto",
-          }}
+          xs={12}
+          md={8}
+          sx={{ p: 2, display: "flex", flexDirection: "column", minHeight: 0 }}
         >
           <Stack
             sx={{
-              width: isSmall ? "80%" : "100%",
-              position: isSmall ? "absolute" : "",
-              top: isSmall ? "350px" : "",
-              right: isSmall ? "10%" : "",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "stretch",
-              gap: 2,
+              width: "100%",
+              maxWidth: 720,
+              mx: "auto",
+              flex: 1,
+              minHeight: 0,
             }}
           >
-            <Box
-              sx={{
-                width: "100%",
-                maxWidth: 720,
-                mx: "auto",
-              }}
-            >
+            <Box>
               <Paper
                 component="form"
                 onSubmit={(e) => e.preventDefault()}
@@ -530,7 +346,7 @@ export default function Chatrooms() {
                 />
                 <Button
                   sx={{
-                    backgroundColor: "#fff0f5",
+                    bgcolor: "#fff0f5",
                     mr: 0.5,
                     borderRadius: 999,
                     textTransform: "none",
@@ -538,35 +354,23 @@ export default function Chatrooms() {
                     color: "#1976d2",
                     fontFamily: "monospace",
                     fontWeight: 600,
-                    "&:hover": {
-                      boxShadow: "0 6px 14px rgba(255,105,180,.35)",
-                      transform: "translateY(-1px)",
-                      transition: ".3s",
-                    },
                   }}
                 >
                   Поиск
                 </Button>
               </Paper>
             </Box>
-            {/* Результаты поиска */}
+
             <Box
-              sx={{
-                position: isSmall ? "absolute" : "",
-                top: isSmall ? "60px" : "",
-                flex: 1, // займёт оставшееся место в колонке
-                maxHeight: isSmall ? "40vh" : "auto", // ограничиваем высоту только на маленьких экранах
-                overflowY: isSmall ? "auto" : "visible", // скроллим при переполнении
-                pr: 1, // чтобы скроллбар не перекрывал текст
-              }}
+              sx={{ flex: 1, minHeight: 0, overflowY: "auto", pr: 1, mt: 2 }}
             >
               <Grid container direction="column">
-                {filteredSearchRooms.slice(0, 8).map((room) => (
-                  <Grid item>
+                {filteredSearchRooms.slice(0, 12).map((room) => (
+                  <Grid item key={room.id}>
                     <Box
                       sx={{
                         cursor: "pointer",
-                        backgroundColor: "#fff0f5",
+                        bgcolor: "#fff0f5",
                         p: 1,
                         mb: 1,
                         borderRadius: 3,
@@ -575,19 +379,16 @@ export default function Chatrooms() {
                         "&:hover": {
                           transform: "translateY(-4px) scale(1.02)",
                           boxShadow: "0 6px 14px rgba(255,105,180,.35)",
-                          backgroundColor: "#ffe4ec",
+                          bgcolor: "#ffe4ec",
                         },
                       }}
                     >
                       <Typography
-                        sx={{ fontFamily: "monospace", fontSize: "0.8rem" }}
-                        variant="h6"
+                        sx={{ fontFamily: "monospace", fontSize: "0.9rem" }}
                         color="primary"
                         onClick={() => {
                           const currentRoom = room;
-                          if (!userID) {
-                            navigate(`/signin`);
-                          }
+                          if (!userID) return navigate("/signin");
                           if (room?.hasAccess) {
                             navigate(`/chatcards/${currentRoom.id}`);
                           } else {
@@ -605,50 +406,35 @@ export default function Chatrooms() {
             </Box>
           </Stack>
         </Grid>
-        {!isSmall ? (
-          <Grid item>
-            <Button
-              size="small"
-              sx={{
-                position: "absolute",
-                top: 90,
-                right: 16,
-                background: "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-                color: "#d81b60",
-              }}
-              variant="contained"
-              onClick={() => setOpenModalRoomCreate(true)}
-            >
-              Создать комнату
-            </Button>
-          </Grid>
-        ) : (
-          <Button
+        {/* FAB на мобильных, кнопка на десктопе */}
+        {isSmall ? (
+          <Fab
+            color="primary"
             sx={{
               position: "fixed",
-              top: 80,
-              right: 5,
-              fontWeight: 600,
-              fontSize: "1rem",
-              textTransform: "none",
-              animation: "pulse 1.5s infinite",
-              backgroundColor: "transparent", // убрать фон
-              "@keyframes pulse": {
-                "0%": {
-                  boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
-                },
-                "50%": {
-                  boxShadow: "0 0 0 10px rgba(244,143,177, 0)",
-                },
-                "100%": {
-                  boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
-                },
-              },
+              bottom: 24,
+              right: 16,
+              bgcolor: "#d81b60",
+              ":hover": { bgcolor: "#c2185b" },
             }}
             onClick={() => setOpenModalRoomCreate(true)}
           >
-            <CreateIcon sx={{ color: "#d81b60" }} />
-          </Button>
+            <AddIcon />
+          </Fab>
+        ) : (
+          <Fab
+            color="primary"
+            sx={{
+              position: "fixed",
+              top: 75,
+              right: 16,
+              bgcolor: "#d81b60",
+              ":hover": { bgcolor: "#c2185b" },
+            }}
+            onClick={() => setOpenModalRoomCreate(true)}
+          >
+            <AddIcon />
+          </Fab>
         )}
       </Grid>
       <ModalRoomRequest
@@ -665,7 +451,6 @@ export default function Chatrooms() {
         userID={userID}
         openModalRoomsShow={openModalRoomsShow}
         closeModalRoomsShow={() => setOpenModalRomsShow(false)}
-        isSmall={isSmall}
         roomsView={roomsView}
         setOpenRequestModal={setOpenRequestModal}
         setSelectedRoomID={setSelectedRoomID}

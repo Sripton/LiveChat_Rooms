@@ -1,8 +1,7 @@
 const express = require("express");
-const { Room, Post, User, Postreaction, Comment } = require("../db/models");
+const { Room, Post, User, Postreaction } = require("../db/models");
 const router = express.Router();
 const { checkUserForPost } = require("../MiddleWares/checkUser");
-const { Op } = require("sequelize");
 
 router.post("/:id", async (req, res) => {
   // Извлекаем параметр id из URL запроса
@@ -62,7 +61,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", checkUserForPost, async (req, res) => {
   const { id } = req.params;
   const { postTitle } = req.body;
   try {

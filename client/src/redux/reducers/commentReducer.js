@@ -10,10 +10,6 @@ import {
 const initialState = {
   byPostId: {}, // { [postId]: Comment[] }
   countsByPostId: {}, //  { [postId]: number }
-  // repliesByUserId: {
-  //   items: [],
-  //   nextBefore: null,
-  // },
   repliesByUserId: {}, // [userID]: items
 };
 function commentDescendants(list, rootId) {
@@ -135,7 +131,7 @@ export default function commentReducer(state = initialState, action) {
         nextBefore = null,
         append = false,
       } = payload || {};
-      const base = append ? state.repliesByUserId[userID]?.items : [];
+      const base = append ? state.repliesByUserId[userID]?.items || [] : [];
       const merged = dedupeAndSortDesc([...base, ...items]);
       return {
         ...state,

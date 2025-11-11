@@ -29,7 +29,10 @@ import {
   updateRoomRequestStatus,
 } from "../../redux/actions/roomRequestStatusActions";
 import { fetchUserRooms } from "../../redux/actions/roomActions";
-import { fetchUserReplies } from "../../redux/actions/commentActions";
+import {
+  fetchUserReplies,
+  fetchMoreUserReplies,
+} from "../../redux/actions/commentActions";
 import { REPLIES_SET } from "../../redux/types/types";
 
 function TabPanel(props) {
@@ -120,13 +123,51 @@ export default function UserDashboard({ userPropsData }) {
 
   const [arrowRequest, setArrowRequest] = useState(false);
   const [needsExpand, setNeedsExpand] = useState(false); // показывать кнопку?
-  const listWrapRef = useRef(null);
+  const requestWrapRef = useRef(null);
+  const repliesWrapRef = useRef(null);
 
   const handleArraowRequest = () => setArrowRequest((prev) => !prev);
 
+  // Функция для направления в компонент по редатированию профиля
+  const goToProfileEditor = () => {
+    navigate("/profileeditor", {
+      state: { from: location }, //  сохраняем текущий путь
+    });
+  };
+
+  const items = useSelector(
+    (store) => store.comment.repliesByUserId[userID]?.items || [] // чтобы рендер не падал, когда данных ещё нет:
+  );
+  const nextBefore =
+    useSelector((store) => store.comment.repliesByUserId[userID]?.nextBefore) ||
+    null;
+  // первая загрузка
+  // очищаем и грузим заново при смене userID
+  useEffect(() => {
+    if (!userID) return;
+    dispatch({
+      type: REPLIES_SET,
+      payload: { userID, items: [], nextBefore: null, append: false },
+    });
+    dispatch(fetchUserReplies({ limit: 20 }, userID));
+  }, [userID, dispatch]); // ← зависим от userID
+
+  const hasMore = Boolean(nextBefore);
+  const loadMore = () => {
+    if (nextBefore) {
+      dispatch(fetchMoreUserReplies({ limit: 20, before: nextBefore }, userID));
+    }
+  };
+
   // Эффект, который вычисляет «переполнен ли список»
   useEffect(() => {
-    const element = listWrapRef.current;
+    // выбираем контейнер той панели, которая сейчас видна
+    const element =
+      tabIndex === 1
+        ? requestWrapRef.current
+        : tabIndex === 2
+        ? repliesWrapRef.current
+        : null;
     if (!element) return;
 
     const compute = () => {
@@ -140,34 +181,15 @@ export default function UserDashboard({ userPropsData }) {
     const res = new ResizeObserver(compute);
     res.observe(element);
 
-    window.addEventListener("resize", compute);
+    const onResize = () => compute();
+
+    window.addEventListener("resize", onResize);
     return () => {
       res.disconnect();
-      window.removeEventListener("resize", compute);
+      window.removeEventListener("resize", onResize);
     };
     // зависим от длины данных и активной вкладки
-  }, [allRequests.length, tabIndex]);
-
-  // Функция для направления в компонент по редатированию профиля
-  const goToProfileEditor = () => {
-    navigate("/profileeditor", {
-      state: { from: location }, //  сохраняем текущий путь
-    });
-  };
-
-  const items = useSelector(
-    (store) => store.comment.repliesByUserId[userID]?.items || [] // чтобы рендер не падал, когда данных ещё нет:
-  );
-  // первая загрузка
-  // очищаем и грузим заново при смене userID
-  useEffect(() => {
-    if (!userID) return;
-    dispatch({
-      type: REPLIES_SET,
-      payload: { userID, items: [], nextBefore: null, append: false },
-    });
-    dispatch(fetchUserReplies({ limit: 20 }, userID));
-  }, [userID, dispatch]); // ← зависим от userID
+  }, [tabIndex, allRequests.length, items.length]); // Переключение tabIndex когда вкладка "Запросы" не активна
 
   return (
     <div
@@ -237,14 +259,12 @@ export default function UserDashboard({ userPropsData }) {
             Редактировать
           </Button>
         </Box>
-
         {/* Tabs */}
         <Tabs value={tabIndex} sx={{ mb: 4 }} onChange={handleChangeTab}>
           <Tab sx={{ color: "#880e4f" }} label="Мои комнаты" />
           <Tab sx={{ color: "#880e4f" }} label="Запросы" />
           <Tab sx={{ color: "#880e4f" }} label="Ответы к комментариям" />
         </Tabs>
-
         {/* Panel: Мои комнаты */}
         <TabPanel value={tabIndex} index={0}>
           <Grid container spacing={2} mb={4}>
@@ -310,9 +330,11 @@ export default function UserDashboard({ userPropsData }) {
         {/* Panel: Запросы */}
         <TabPanel value={tabIndex} index={1}>
           <Box
-            ref={listWrapRef}
+            ref={requestWrapRef}
+            // Существует только  на вкладке “Запросы” (index=1), а его высота может меняться при переключении вкладок.
+            // поэтому в useEffect(()) -> указываем зависимость tabIndex
             sx={{
-              maxHeight: "58vh",
+              maxHeight: "60vh",
               overflowY: needsExpand ? "auto" : "hidden",
               pr: 1, // чтобы скроллбар не ел текст
             }}
@@ -476,16 +498,19 @@ export default function UserDashboard({ userPropsData }) {
             </List>
           </Box>
         </TabPanel>
-
         {/* Panel: Ответы на комменатарии */}
         <TabPanel value={tabIndex} index={2}>
           <Box
+            ref={repliesWrapRef}
             sx={{
               p: 2,
               background:
                 "linear-gradient(135deg, rgba(248,187,208,0.25) 0%, rgba(255,240,245,0.45) 100%)",
               borderRadius: 3,
               border: "1px solid #f8bbd0",
+              maxHeight: "65vh",
+              overflowY: needsExpand ? "auto" : "hidden",
+              pr: 1, // чтобы скроллбар не ел текст
             }}
           >
             {!items || items.length === 0 ? (
@@ -543,7 +568,11 @@ export default function UserDashboard({ userPropsData }) {
                       }}
                       secondaryAction={
                         <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
                         >
                           <Chip
                             label={replyTypeLabel}

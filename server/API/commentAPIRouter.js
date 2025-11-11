@@ -123,7 +123,10 @@ router.get("/notifications/replies", async (req, res) => {
       distinct: true, // чтобы limit считался по Comment, а не по join-строкам
       where: {
         user_id: { [Op.ne]: userID }, // Не ответы самого пользователя
-        createdAt: { [Op.lt]: before },
+        // createdAt - это поле даты/времени создания записи в базе данных
+        // [Op.lt] - оператор Sequelize для "less than" (меньше чем)
+        // before - это дата, до которой мы хотим получить записи
+        createdAt: { [Op.lt]: before }, // Это означает: "выбрать все комментарии, созданные ДО
         // [Op.or]: [
         //   // 1) Верхнеуровневый коммент к моему посту — это "ответ на мой пост"
         //   {
@@ -153,18 +156,6 @@ router.get("/notifications/replies", async (req, res) => {
       order: [["createdAt", "DESC"]],
       limit,
     });
-
-    // Фильтрация.
-    // const result = rows.filter((comment) => {
-    //   const isReplyPost = comment?.Post?.user_id === userID;
-    //   const isReplyComment = comment?.Comment?.user_id === userID;
-    //   return isReplyPost || isReplyComment;
-    // });
-    // res.status(200).json({
-    //   // Вместо «сырого массива» возвращаем курсор:
-    //   items: rows,
-    //   nextBefore: rows.length ? rows[rows.length - 1].createdAt : null,
-    // });
 
     // Фильтрация. Отдаем только коммнетарии к постам и комментариям
     const result = rows.filter(
@@ -210,7 +201,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", checkUserForComment, async (req, res) => {
   const { id } = req.params;
   const { commentTitle } = req.body;
   try {

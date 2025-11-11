@@ -122,3 +122,24 @@ export const fetchUserReplies =
       console.log(error);
     }
   };
+
+// загрузить ещё (append = true)
+export const fetchMoreUserReplies =
+  ({ limit = 20, before } = {}, userID) =>
+  async (dispatch) => {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (before) params.set("before", before);
+    const response = await axios.get(
+      `/api/comments/notifications/replies?${params.toString()}`
+    );
+    const { data } = response;
+    dispatch({
+      type: REPLIES_SET,
+      payload: {
+        userID,
+        items: data.items,
+        nextBefore: data.nextBefore,
+        append: true,
+      },
+    });
+  };
