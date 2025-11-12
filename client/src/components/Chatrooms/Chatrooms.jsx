@@ -27,8 +27,6 @@ import ModalRoomCreate from "../ModalRoomCreate";
 import ModalRoomRequest from "../ModalRoomRequest";
 import ModalRoomLists from "../ModalRoomLists/ModalRoomLists";
 
-// import "./chatrooms.css";
-
 export default function Chatrooms() {
   // -------------------- Сортировка -----------------------
   // Состояние для хранения информации о текущей сортировке
@@ -214,7 +212,10 @@ export default function Chatrooms() {
                         setRoomsView("open");
                         setOpenModalRomsShow(true);
                       }}
-                      sx={{ textTransform: "none" }}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: "1rem",
+                      }}
                     >
                       ...
                     </Button>
@@ -293,7 +294,10 @@ export default function Chatrooms() {
                         setRoomsView("private");
                         setOpenModalRomsShow(true);
                       }}
-                      sx={{ textTransform: "none" }}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: "1rem",
+                      }}
                     >
                       ...
                     </Button>
@@ -413,9 +417,21 @@ export default function Chatrooms() {
             sx={{
               position: "fixed",
               bottom: 24,
-              right: 16,
+              right: 32,
               bgcolor: "#d81b60",
               ":hover": { bgcolor: "#c2185b" },
+              animation: "pulse 1.5s infinite",
+              "@keyframes pulse": {
+                "0%": {
+                  boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
+                },
+                "50%": {
+                  boxShadow: "0 0 0 20px rgba(244,143,177, 0)",
+                },
+                "100%": {
+                  boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
+                },
+              },
             }}
             onClick={() => setOpenModalRoomCreate(true)}
           >
@@ -426,10 +442,23 @@ export default function Chatrooms() {
             color="primary"
             sx={{
               position: "fixed",
-              top: 75,
-              right: 16,
+              bottom: 24,
+              right: 32,
               bgcolor: "#d81b60",
               ":hover": { bgcolor: "#c2185b" },
+              animation: "pulse 1.5s infinite",
+              //  backgroundColor: "transparent", // убрать фон
+              "@keyframes pulse": {
+                "0%": {
+                  boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
+                },
+                "50%": {
+                  boxShadow: "0 0 0 20px rgba(244,143,177, 0)",
+                },
+                "100%": {
+                  boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
+                },
+              },
             }}
             onClick={() => setOpenModalRoomCreate(true)}
           >
@@ -448,6 +477,7 @@ export default function Chatrooms() {
         setOpenModalRoomCreate={setOpenModalRoomCreate}
       />
       <ModalRoomLists
+        // key={roomsView}  проблема с парвильным отображением комнат
         userID={userID}
         openModalRoomsShow={openModalRoomsShow}
         closeModalRoomsShow={() => setOpenModalRomsShow(false)}

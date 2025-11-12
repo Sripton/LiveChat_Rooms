@@ -1,4 +1,4 @@
-import React, { useMemo, useState, forwardRef } from "react";
+import React, { useMemo, useState, forwardRef, useEffect } from "react";
 import {
   AppBar,
   Box,
@@ -48,17 +48,50 @@ export default function ModalRoomLists({
   const privateRooms = allRooms.filter((room) => room.isPrivate === true);
 
   // локальные состояния
-  const [tab, setTab] = useState(roomsView === "private" ? 1 : 0);
+  // инициализация  из пропсов (useState(roomsView === "private" ? 1 : 0)),
+  // дальнейшие изменения roomsView автоматически tab не обновляет
+  const [tab, setTab] = useState(roomsView === "private" ? 1 : 0); // локальный стейт компонента
   const [sortAsc, setSortAsc] = useState(true);
   const [query, setQuery] = useState("");
 
+  const filterAndSort = (rooms) => {
+    const q = query.trim().toLocaleLowerCase();
+    const base = q
+      ? rooms.filter((room) =>
+          (room?.nameroom || "").toLocaleLowerCase().includes(q)
+        )
+      : rooms;
+    return base;
+  };
+  const visibleOpen = useMemo(
+    () => filterAndSort(openRooms),
+    [openRooms, query]
+  );
+  const visiblePrivate = useMemo(
+    () => filterAndSort(privateRooms),
+    [privateRooms, query]
+  );
+
   const isOpenTab = tab === 0;
-  const currentLists = isOpenTab ? openRooms : privateRooms;
+  const currentLists = isOpenTab ? visibleOpen : visiblePrivate;
+
+  // проблема с парвильным отображением комнат
+  useEffect(() => {
+    if (openModalRoomsShow) {
+      setTab(roomsView === "private" ? 1 : 0); // если roomsView изменился, вызывает setTab(...)
+    }
+  }, [roomsView, openModalRoomsShow]);
+  console.log("openRooms", openRooms);
+  console.log("privateRooms", privateRooms);
+
+  const handleEnterRoom = (room) => {
+    if (!room) return;
+    if (!userID && room.isPrivate === false) navigate(`/chatcards/${room.id}`);
+  };
 
   return (
     <Dialog
       open={Boolean(openModalRoomsShow)}
-      key={tab}
       onClose={closeModalRoomsShow}
       fullScreen={fullScreen}
       fullWidth
@@ -108,6 +141,8 @@ export default function ModalRoomLists({
             {/* Надо доработать стили */}
             <InputBase
               placeholder="Поиск комнат"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               sx={{ flex: 1, fontSize: { xs: "0.95rem", md: "1rem" } }}
             />
             <Button sx={{ textTransform: "none" }}> Искать</Button>
@@ -145,13 +180,13 @@ export default function ModalRoomLists({
             <ListItem
               key={room.id}
               disablePadding
-              secondaryAction={
-                room.isPrivate ? (
-                  <Chip label="🔒" size="small" />
-                ) : (
-                  <Chip label="🌐" size="small" />
-                )
-              }
+              // secondaryAction={
+              //   room.isPrivate ? (
+              //     <Chip label="🔒" size="small" />
+              //   ) : (
+              //     <Chip label="🌐" size="small" />
+              //   )
+              // }
             >
               <ListItemButton
                 sx={{
@@ -161,10 +196,15 @@ export default function ModalRoomLists({
                   boxShadow: "0 2px 6px rgba(216,27,96,0.15)",
                   "&:hover": { bgcolor: "#ffe4ec" },
                 }}
+                onClick={() => handleEnterRoom(room)}
               >
-                {/* <ListItemIcon>
-                  {room.isPrivate ? <LockIcon /> : <PublicIcon />}
-                </ListItemIcon> */}
+                <ListItemIcon>
+                  {room.isPrivate ? (
+                    <LockIcon sx={{ color: "red" }} />
+                  ) : (
+                    <PublicIcon sx={{ color: "green" }} />
+                  )}
+                </ListItemIcon>
                 <ListItemText
                   primary={
                     <Typography
