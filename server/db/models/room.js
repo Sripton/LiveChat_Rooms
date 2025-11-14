@@ -34,10 +34,9 @@ module.exports = (sequelize, DataTypes) => {
   Room.init(
     {
       nameroom: DataTypes.STRING,
-      description: DataTypes.STRING,
       isPrivate: DataTypes.BOOLEAN,
       ownerID: DataTypes.INTEGER,
-    }, 
+    },
     {
       sequelize,
       modelName: "Room",

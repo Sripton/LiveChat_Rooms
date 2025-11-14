@@ -15,12 +15,18 @@ import {
   CircularProgress,
   ListItemButton,
   Chip,
+  useMediaQuery,
+  Fab,
+  Tooltip,
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import BorderColorIcon from "@mui/icons-material/BorderColor";
+import CommentIcon from "@mui/icons-material/Comment";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
@@ -90,6 +96,8 @@ export default function UserDashboard({ userPropsData }) {
     (store) => store.roomRequestStatus
   );
 
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("lg"));
   // Забираем все комнаты пользователя  из  store
   const userRooms = useSelector((store) => store.room.userRooms);
 
@@ -191,6 +199,16 @@ export default function UserDashboard({ userPropsData }) {
     // зависим от длины данных и активной вкладки
   }, [tabIndex, allRequests.length, items.length]); // Переключение tabIndex когда вкладка "Запросы" не активна
 
+  const commonPanelBoxSx = {
+    p: 2,
+    background:
+      "linear-gradient(135deg, rgba(248,187,208,0.25) 0%, rgba(255,240,245,0.45) 100%)",
+    borderRadius: 3,
+    border: "1px solid #f8bbd0",
+    maxHeight: "65vh",
+    overflowY: needsExpand ? "auto" : "hidden",
+    pr: 1, // чтобы скроллбар не ел текст
+  };
   return (
     <div
       style={{
@@ -210,13 +228,12 @@ export default function UserDashboard({ userPropsData }) {
         {/* Header */}
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            position: "absolute",
+            right: 40,
             mb: 3,
           }}
         >
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          {/* <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             {userAvatar ? (
               <img
                 className="avatar"
@@ -246,18 +263,47 @@ export default function UserDashboard({ userPropsData }) {
             >
               {userName}
             </Typography>
-          </Box>
+          </Box> */}
 
-          <Button
-            sx={{
-              background: "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-              color: "#d81b60",
-            }}
-            variant="contained"
-            onClick={goToProfileEditor}
-          >
-            Редактировать
-          </Button>
+          {isSmall ? (
+            <Fab
+              color="primary"
+              sx={{
+                position: "fixed",
+                bottom: 24,
+                right: 32,
+                bgcolor: "#d81b60",
+                ":hover": { bgcolor: "#c2185b" },
+                animation: "pulse 1.5s infinite",
+                "@keyframes pulse": {
+                  "0%": {
+                    boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
+                  },
+                  "50%": {
+                    boxShadow: "0 0 0 20px rgba(244,143,177, 0)",
+                  },
+                  "100%": {
+                    boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
+                  },
+                },
+              }}
+              onClick={goToProfileEditor}
+            >
+              <BorderColorIcon />
+            </Fab>
+          ) : (
+            <Button
+              sx={{
+                // background: "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
+                bgcolor: "#d81b60",
+                color: "#fff",
+              }}
+              variant="contained"
+              onClick={goToProfileEditor}
+            >
+              Редактировать
+            </Button>
+          )}
         </Box>
         {/* Tabs */}
         <Tabs value={tabIndex} sx={{ mb: 4 }} onChange={handleChangeTab}>
@@ -267,64 +313,68 @@ export default function UserDashboard({ userPropsData }) {
         </Tabs>
         {/* Panel: Мои комнаты */}
         <TabPanel value={tabIndex} index={0}>
-          <Grid container spacing={2} mb={4}>
-            {userRooms.length <= 0 ? (
-              <Typography sx={{ mt: 2, color: "#999" }}>
-                У Вас нет комнат
-              </Typography>
-            ) : (
-              userRooms.map((room) => (
-                <Grid key={room.id}>
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    gap={1}
-                    mb={1}
-                    sx={{
-                      cursor: "pointer",
-                      backgroundColor: "#fff0f5",
-                      p: 2,
-                      borderRadius: 3,
-                      boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
-                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                      "&:hover": {
-                        transition: "translateY(-4px) scale(1.02)",
-                        boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
-                        backgroundColor: "#ffe4ec",
-                      },
-                    }}
-                  >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography fontWeight="bold">{room.name}</Typography>
-                      {room.isPrivate === true ? (
-                        <Typography variant="h6" color="text.secondary">
-                          🔒
-                          <Link
-                            component={NavLink}
-                            to={`/chatcards/${room.id}`}
-                            sx={{ textDecoration: "none" }}
-                          >
-                            {` ${room.nameroom}`}
-                          </Link>
-                        </Typography>
-                      ) : (
-                        <Typography variant="h6" color="primary">
-                          🌐
-                          <Link
-                            component={NavLink}
-                            to={`/chatcards/${room.id}`}
-                            sx={{ textDecoration: "none" }}
-                          >
-                            {` ${room.nameroom}`}
-                          </Link>
-                        </Typography>
-                      )}
+          <Box sx={commonPanelBoxSx}>
+            <Grid container spacing={2} mb={4}>
+              {userRooms.length <= 0 ? (
+                <Typography sx={{ mt: 2, color: "#999" }}>
+                  У Вас нет комнат
+                </Typography>
+              ) : (
+                userRooms.map((room) => (
+                  <Grid key={room.id} item xs={12}>
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      gap={1}
+                      mb={1}
+                      sx={{
+                        cursor: "pointer",
+                        backgroundColor: "#fff0f5",
+                        p: 2,
+                        borderRadius: 3,
+                        boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
+                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                        "&:hover": {
+                          transform: "translateY(-4px) scale(1.02)",
+                          boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
+                          backgroundColor: "#ffe4ec",
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography fontWeight="bold">{room.name}</Typography>
+                        {room.isPrivate === true ? (
+                          <Typography variant="h6" color="text.secondary">
+                            🔒
+                            <Link
+                              component={NavLink}
+                              to={`/chatcards/${room.id}`}
+                              sx={{ textDecoration: "none" }}
+                            >
+                              {` ${room.nameroom}`}
+                            </Link>
+                          </Typography>
+                        ) : (
+                          <Typography variant="h6" color="primary">
+                            🌐
+                            <Link
+                              component={NavLink}
+                              to={`/chatcards/${room.id}`}
+                              sx={{ textDecoration: "none" }}
+                            >
+                              {` ${room.nameroom}`}
+                            </Link>
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
-                  </Box>
-                </Grid>
-              ))
-            )}
-          </Grid>
+                  </Grid>
+                ))
+              )}
+            </Grid>
+          </Box>
         </TabPanel>
 
         {/* Panel: Запросы */}
@@ -334,6 +384,7 @@ export default function UserDashboard({ userPropsData }) {
             // Существует только  на вкладке “Запросы” (index=1), а его высота может меняться при переключении вкладок.
             // поэтому в useEffect(()) -> указываем зависимость tabIndex
             sx={{
+              ...commonPanelBoxSx,
               maxHeight: "60vh",
               overflowY: needsExpand ? "auto" : "hidden",
               pr: 1, // чтобы скроллбар не ел текст
@@ -500,19 +551,7 @@ export default function UserDashboard({ userPropsData }) {
         </TabPanel>
         {/* Panel: Ответы на комменатарии */}
         <TabPanel value={tabIndex} index={2}>
-          <Box
-            ref={repliesWrapRef}
-            sx={{
-              p: 2,
-              background:
-                "linear-gradient(135deg, rgba(248,187,208,0.25) 0%, rgba(255,240,245,0.45) 100%)",
-              borderRadius: 3,
-              border: "1px solid #f8bbd0",
-              maxHeight: "65vh",
-              overflowY: needsExpand ? "auto" : "hidden",
-              pr: 1, // чтобы скроллбар не ел текст
-            }}
-          >
+          <Box ref={repliesWrapRef} sx={commonPanelBoxSx}>
             {!items || items.length === 0 ? (
               <Box>
                 <Typography> Пока нет ответов</Typography>
@@ -524,14 +563,9 @@ export default function UserDashboard({ userPropsData }) {
             ) : (
               <List>
                 {items.map((comment) => {
-                  const isReplyToComment = Boolean(comment?.ParentComment);
-                  const replyTypeLabel = isReplyToComment
-                    ? " на ваш коммнетрий"
-                    : " на ваш пост";
                   const created = comment?.createdAt
                     ? new Date(comment?.createdAt).toLocaleString()
                     : "";
-
                   return (
                     <ListItem
                       key={comment.id}
@@ -554,38 +588,16 @@ export default function UserDashboard({ userPropsData }) {
 
                         // левый акцент
                         position: "relative",
-                        "&:before": {
-                          content: '""',
-                          position: "absolute",
-                          width: 4,
-                          left: 0,
-                          top: 8,
+                        "& .MuiListItemSecondaryAction-root": {
+                          top: "auto",
                           bottom: 8,
-                          borderRadius: "8px",
-                          background:
-                            "linear-gradient(180deg, #d81b60 0%, #f48fb1 100%)",
+                          right: 16,
+                          transform: "none",
                         },
                       }}
-                      secondaryAction={
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                          }}
-                        >
-                          <Chip
-                            label={replyTypeLabel}
-                            size="small"
-                            sx={{
-                              bgcolor: isReplyToComment ? "#f8bbd0" : "#fce4ec",
-                              color: "#880e4f",
-                              borderRadius: 2,
-                              fontWeight: 600,
-                            }}
-                          />
-                        </Box>
-                      }
+                      onClick={() => {
+                        navigate(`/chatcards/${comment?.Post?.room_id}`);
+                      }}
                     >
                       <ListItemAvatar>
                         {comment?.User?.avatar ? (

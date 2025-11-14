@@ -9,7 +9,6 @@ import {
 // структура состояния room, которую будет использовать редьюсер.
 const initialState = {
   nameroom: null, // имя создаваемой комнаты
-  description: null, // описание
   isPrivate: false, // приватность комнаты
   allRooms: [], // массив всех комнат
   userRooms: [], // массив всех комнат пользователя
@@ -28,7 +27,6 @@ export default function roomReducer(state = initialState, action) {
       return {
         ...state,
         nameroom: payload.nameroom,
-        description: payload.description,
         isPrivate: payload.isPrivate,
         allRooms: [...state.allRooms, payload], // добавляем новую
       };

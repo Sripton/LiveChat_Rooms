@@ -4,6 +4,7 @@ import {
   Button,
   Checkbox,
   Fade,
+  FormControlLabel,
   TextField,
   Typography,
 } from "@mui/material";
@@ -19,25 +20,52 @@ export default function ModalRoomCreate({
   setOpenModalRoomCreate, // сеттер состояния для модального окна
 }) {
   const dispatch = useDispatch();
-  const [roomCreate, setRoomCreate] = useState({
-    nameroom: "", // название комнаты
-    description: "", // описание
-    isPrivate: false, // приватность
-  });
+  const [nameroom, setNameroom] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
 
-  const roomInputsHandler = (e) => {
-    const { name, value, type, checked } = e.target;
-    setRoomCreate((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value, // обрабатываем чекбокс отдельно
-      // [e.target.name]: type === "checkbox" ? checked : value,
-    }));
+  // Во время ввода убираем повторные пробелы (не трогаем переносы)
+  const handleNameChange = (e) => {
+    const raw = e.target.value;
+    // запрещаем двойные пробелы, но даём печатать один
+    const cleaned = raw.replace(/[^\S\r\n]{2,}/g, " ");
+    setNameroom(cleaned);
   };
 
+  const normalizeSpaces = (str = "", { preserveNewlines = true } = {}) => {
+    if (typeof str !== "string") return str;
+
+    // ^\uFEFF символ только если он находится в самом начале строки
+    let out = str.replace(/^\uFEFF/, "").trim(); // в конце строки
+
+    if (preserveNewlines) {
+      // [^\S\r\n] отрицающий символьный класс
+      //  любой пробельный символ
+      // {2,} - два или более повторнений
+      out = out.replace(/[^\S\r\n]{2,}/gim, " ");
+
+      // убираем пробелы в конце каждой строки
+      // [ \t]+ - 1 или более пробелов или табов
+      out = out.replace(/[ \t]+\r?$/gim, "");
+    } else {
+      // Любая последовательность пробельных символов (включая переносы строк) заменяется на один обычный пробел.
+      out = out.replace(/\s+/g, " ");
+    }
+    return out.trim();
+  };
+
+  //  финальнуя нормализация (обрежем края, хвосты в строках и т.п.)
+  // handleNameBlur - функция выполняет финальную чистку значения когда пользователь закончил ввод
+  const handleNameBlur = () => setNameroom((value) => normalizeSpaces(value));
+
   const roomSubmitHandler = async (e) => {
-    e.preventDefault(); // предотвращаем перезагрузку страницы
-    await dispatch(createRoomsSubmit(roomCreate)); // отправляем данные через Redux action
-    setOpenModalRoomCreate(false); // закрываем модалку
+    e.preventDefault();
+    const payload = {
+      nameroom: normalizeSpaces(nameroom),
+      isPrivate: !!isPrivate,
+    };
+    await dispatch(createRoomsSubmit(payload));
+    setNameroom("");
+    setIsPrivate(false);
   };
 
   return ReactDOM.createPortal(
@@ -108,8 +136,9 @@ export default function ModalRoomCreate({
             {/* Поле "Название комнаты" */}
             <TextField
               name="nameroom"
-              value={roomCreate.nameroom}
-              onChange={roomInputsHandler}
+              value={nameroom}
+              onChange={handleNameChange}
+              onBlur={handleNameBlur} // срабатывает когда пользователь убирает фокус с элемента
               label="Название комнаты"
               variant="outlined"
               // fullWidth // Растягивает поле на 100% ширины родительского контейнера.
@@ -123,52 +152,25 @@ export default function ModalRoomCreate({
                 width: "95%",
               }}
             />
-            {/* Поле Описание комнаты */}
-            <TextField
-              name="description"
-              value={roomCreate.description}
-              onChange={roomInputsHandler}
-              label="Описание комнаты"
-              variant="outlined"
-              // fullWidth // Растягивает поле на 100% ширины родительского контейнера.
-              required // Добавляет звёздочку (*) к лейблу, указывая, что поле обязательно для заполнения.
-              multiline // Превращает TextField в многострочное поле ввода (<textarea> вместо <input>).
-              minRows={2} // Задаёт минимальное количество строк, которые будут видны изначально. Аналог CSS min-height.
-              maxRows={4} // Определяет максимальное количество строк перед появлением скролла. Аналог CSS max-height.
-              sx={{
-                background: "#fff",
-                borderRadius: 2,
-                input: { fontWeight: 500 },
-                label: { color: "#d81b60" },
-                width: "95%",
-              }}
-            />
+
             {/* Чекбокс приватности + подпись */}
             <Fade in timeout={450}>
               <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
-                <Checkbox
-                  name="isPrivate"
-                  checked={roomCreate.isPrivate}
-                  onChange={roomInputsHandler}
-                  icon={<MeetingRoomIcon />}
-                  checkedIcon={<LockIcon />}
-                  sx={{
-                    mr: 1,
-                    "&.Mui-checked": { color: "#d81b60" },
-                  }}
-                />
-                <Typography
-                  sx={{ color: "#d81b60", fontWeight: 500 }}
-                  // onClick={() => setIsPrivate(true)}
-                  onClick={() =>
-                    setRoomCreate((prev) => ({
-                      ...prev,
-                      isPrivate: !roomCreate.isPrivate,
-                    }))
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="isPrivate"
+                      checked={isPrivate}
+                      onChange={(e) => setIsPrivate(e.target.checked)}
+                      icon={<MeetingRoomIcon />}
+                      checkedIcon={<LockIcon />}
+                      sx={{
+                        mr: 1,
+                        "&.Mui-checked": { color: "#d81b60" },
+                      }}
+                    />
                   }
-                >
-                  Приватная комната
-                </Typography>
+                />
               </Box>
             </Fade>
             {/* Кнопка Создать */}

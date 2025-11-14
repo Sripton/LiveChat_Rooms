@@ -12,9 +12,6 @@ module.exports = {
       nameroom: {
         type: Sequelize.STRING,
       },
-      description: {
-        type: Sequelize.STRING,
-      },
       isPrivate: {
         type: Sequelize.BOOLEAN,
       },
