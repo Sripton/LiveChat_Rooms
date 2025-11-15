@@ -21,6 +21,9 @@ import { logoutUser } from "../../redux/actions/userActions";
 export default function Navbar({ userPropsData }) {
   // Компонент Navbar получает данные о пользователе через компонент App.jsx
   const { userID, userName, userAvatar } = userPropsData;
+  const menuItems = userID
+    ? ["Главная", "Мой профиль", "Выход"]
+    : ["Войти", "Главная"];
 
   const [openMenu, setOpenMenu] = useState(false); // Состояние бокового меню
   const dispatch = useDispatch();
@@ -168,7 +171,7 @@ export default function Navbar({ userPropsData }) {
           onClose={() => toggleDrawerMenu(false)}
         >
           <List>
-            {["Войти", "Главная", "Мой профиль", "Выход"].map((text) => (
+            {menuItems.map((text) => (
               <ListItem
                 key={text}
                 className="menu-list"

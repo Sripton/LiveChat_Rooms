@@ -53,7 +53,7 @@ export default function ModalRoomCreate({
     return out.trim();
   };
 
-  //  финальнуя нормализация (обрежем края, хвосты в строках и т.п.)
+  //  финальнaя нормализация (обрежем края, хвосты в строках и т.п.)
   // handleNameBlur - функция выполняет финальную чистку значения когда пользователь закончил ввод
   const handleNameBlur = () => setNameroom((value) => normalizeSpaces(value));
 
@@ -66,6 +66,7 @@ export default function ModalRoomCreate({
     await dispatch(createRoomsSubmit(payload));
     setNameroom("");
     setIsPrivate(false);
+    setOpenModalRoomCreate(false);
   };
 
   return ReactDOM.createPortal(

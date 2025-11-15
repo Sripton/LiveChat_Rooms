@@ -98,6 +98,7 @@ export default function UserDashboard({ userPropsData }) {
 
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("lg"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   // Забираем все комнаты пользователя  из  store
   const userRooms = useSelector((store) => store.room.userRooms);
 
@@ -131,6 +132,8 @@ export default function UserDashboard({ userPropsData }) {
 
   const [arrowRequest, setArrowRequest] = useState(false);
   const [needsExpand, setNeedsExpand] = useState(false); // показывать кнопку?
+
+  const roomWrapRef = useRef(null);
   const requestWrapRef = useRef(null);
   const repliesWrapRef = useRef(null);
 
@@ -160,18 +163,20 @@ export default function UserDashboard({ userPropsData }) {
     dispatch(fetchUserReplies({ limit: 20 }, userID));
   }, [userID, dispatch]); // ← зависим от userID
 
-  const hasMore = Boolean(nextBefore);
-  const loadMore = () => {
-    if (nextBefore) {
-      dispatch(fetchMoreUserReplies({ limit: 20, before: nextBefore }, userID));
-    }
-  };
+  // const hasMore = Boolean(nextBefore);
+  // const loadMore = () => {
+  //   if (nextBefore) {
+  //     dispatch(fetchMoreUserReplies({ limit: 20, before: nextBefore }, userID));
+  //   }
+  // };
 
   // Эффект, который вычисляет «переполнен ли список»
   useEffect(() => {
     // выбираем контейнер той панели, которая сейчас видна
     const element =
-      tabIndex === 1
+      tabIndex === 0
+        ? roomWrapRef.current
+        : tabIndex === 1
         ? requestWrapRef.current
         : tabIndex === 2
         ? repliesWrapRef.current
@@ -209,6 +214,7 @@ export default function UserDashboard({ userPropsData }) {
     overflowY: needsExpand ? "auto" : "hidden",
     pr: 1, // чтобы скроллбар не ел текст
   };
+
   return (
     <div
       style={{
@@ -306,14 +312,21 @@ export default function UserDashboard({ userPropsData }) {
           )}
         </Box>
         {/* Tabs */}
-        <Tabs value={tabIndex} sx={{ mb: 4 }} onChange={handleChangeTab}>
+        <Tabs
+          value={tabIndex}
+          sx={{ mb: 4 }}
+          onChange={handleChangeTab}
+          allowScrollButtonsMobile
+          scrollButtons={isMobile ? "auto" : false}
+          variant={isMobile ? "scrollable" : "standard"}
+        >
           <Tab sx={{ color: "#880e4f" }} label="Мои комнаты" />
           <Tab sx={{ color: "#880e4f" }} label="Запросы" />
           <Tab sx={{ color: "#880e4f" }} label="Ответы к комментариям" />
         </Tabs>
         {/* Panel: Мои комнаты */}
         <TabPanel value={tabIndex} index={0}>
-          <Box sx={commonPanelBoxSx}>
+          <Box ref={roomWrapRef} sx={commonPanelBoxSx}>
             <Grid container spacing={2} mb={4}>
               {userRooms.length <= 0 ? (
                 <Typography sx={{ mt: 2, color: "#999" }}>

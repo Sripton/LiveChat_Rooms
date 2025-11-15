@@ -72,6 +72,9 @@ export default function ModalRoomLists({
     [privateRooms, query]
   );
 
+  console.log("visibleOpen", visibleOpen);
+  console.log("visiblePrivate", visiblePrivate);
+
   const isOpenTab = tab === 0;
   const currentLists = isOpenTab ? visibleOpen : visiblePrivate;
 
@@ -81,12 +84,34 @@ export default function ModalRoomLists({
       setTab(roomsView === "private" ? 1 : 0); // если roomsView изменился, вызывает setTab(...)
     }
   }, [roomsView, openModalRoomsShow]);
-  console.log("openRooms", openRooms);
-  console.log("privateRooms", privateRooms);
+
+  // const handleEnterRoom = (room) => {
+  //   if (!room) return;
+  //   if (
+  //     (!userID && room.isPrivate === false) ||
+  //     (userID && room.isPrivate === false)
+  //   ) {
+  //     navigate(`/chatcards/${room.id}`);
+  //   }
+  // };
 
   const handleEnterRoom = (room) => {
     if (!room) return;
-    if (!userID && room.isPrivate === false) navigate(`/chatcards/${room.id}`);
+    // Открытая комната — можно всем (и гостям, и залогиненным)
+    if (!room.isPrivate) {
+      navigate(`/chatcards/${room.id}`);
+    } else if (!userID) {
+      // Приватная комната — гость → на страницу логина
+      navigate("/signin");
+    }
+
+    const isOwner = Number(room.ownerID) === Number(userID);
+    // Владелец или есть доступ (hasAccess = true) → пускаем в комнату
+    if (isOwner || room.hasAccess) {
+      navigate(`/chatcards/${room.id}`);
+    }
+    setSelectedRoomID(room.id);
+    setOpenRequestModal(true);
   };
 
   return (

@@ -43,5 +43,6 @@ module.exports = {
     indent: 0,
     // "no-restricted-syntax": 0,
     "no-continue": 0,
+    "no-useless-return": 0,
   },
 };
