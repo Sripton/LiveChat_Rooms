@@ -125,7 +125,7 @@ export default function ModalRoomRequest({
               </Typography>
             </Box>
 
-            {/* Текст-пояснение (можно убрать, если не нужно) */}
+            {/* Текст-пояснение  */}
             <Typography
               variant="body2"
               sx={{
