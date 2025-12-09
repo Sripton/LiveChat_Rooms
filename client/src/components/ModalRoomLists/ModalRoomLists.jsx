@@ -1,4 +1,4 @@
-import React, { useMemo, useState, forwardRef, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   AppBar,
   Box,
@@ -6,7 +6,6 @@ import {
   IconButton,
   Typography,
   Dialog,
-  Slide,
   useMediaQuery,
   List,
   ListItem,
@@ -24,7 +23,6 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import LockIcon from "@mui/icons-material/Lock";
 import PublicIcon from "@mui/icons-material/Public";
-import SortByAlphaIcon from "@mui/icons-material/SortByAlpha";
 import SearchIcon from "@mui/icons-material/Search";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
@@ -48,11 +46,15 @@ export default function ModalRoomLists({
   const privateRooms = allRooms.filter((room) => room.isPrivate === true);
 
   // локальные состояния
-  // инициализация  из пропсов (useState(roomsView === "private" ? 1 : 0)),
-  // дальнейшие изменения roomsView автоматически tab не обновляет
-  const [tab, setTab] = useState(roomsView === "private" ? 1 : 0); // локальный стейт компонента
-  const [sortAsc, setSortAsc] = useState(true);
+  const [tab, setTab] = useState(roomsView === "private" ? 1 : 0);
   const [query, setQuery] = useState("");
+
+  const mainColor = "#1d102f";
+  const mainColorLight = "#2a183d";
+  const cardBg = "#231433";
+  const accentColor = "#b794f4";
+  const accentSoft = "rgba(183,148,244,0.15)";
+  const textMuted = "#9ca3af";
 
   const filterAndSort = (rooms) => {
     const q = query.trim().toLocaleLowerCase();
@@ -63,6 +65,7 @@ export default function ModalRoomLists({
       : rooms;
     return base;
   };
+
   const visibleOpen = useMemo(
     () => filterAndSort(openRooms),
     [openRooms, query]
@@ -72,44 +75,38 @@ export default function ModalRoomLists({
     [privateRooms, query]
   );
 
-  console.log("visibleOpen", visibleOpen);
-  console.log("visiblePrivate", visiblePrivate);
-
   const isOpenTab = tab === 0;
   const currentLists = isOpenTab ? visibleOpen : visiblePrivate;
 
-  // проблема с парвильным отображением комнат
   useEffect(() => {
     if (openModalRoomsShow) {
-      setTab(roomsView === "private" ? 1 : 0); // если roomsView изменился, вызывает setTab(...)
+      setTab(roomsView === "private" ? 1 : 0);
     }
   }, [roomsView, openModalRoomsShow]);
 
-  // const handleEnterRoom = (room) => {
-  //   if (!room) return;
-  //   if (
-  //     (!userID && room.isPrivate === false) ||
-  //     (userID && room.isPrivate === false)
-  //   ) {
-  //     navigate(`/chatcards/${room.id}`);
-  //   }
-  // };
-
   const handleEnterRoom = (room) => {
     if (!room) return;
-    // Открытая комната — можно всем (и гостям, и залогиненным)
+
+    // Открытая комната — доступна всем
     if (!room.isPrivate) {
       navigate(`/chatcards/${room.id}`);
-    } else if (!userID) {
-      // Приватная комната — гость → на страницу логина
+      return;
+    }
+
+    // Приватная комната
+    if (!userID) {
       navigate("/signin");
+      return;
     }
 
     const isOwner = Number(room.ownerID) === Number(userID);
-    // Владелец или есть доступ (hasAccess = true) → пускаем в комнату
+
     if (isOwner || room.hasAccess) {
       navigate(`/chatcards/${room.id}`);
+      return;
     }
+
+    // Нужен запрос на доступ
     setSelectedRoomID(room.id);
     setOpenRequestModal(true);
   };
@@ -121,37 +118,64 @@ export default function ModalRoomLists({
       fullScreen={fullScreen}
       fullWidth
       maxWidth="sm"
-      PaperProps={{ sx: { borderRadius: fullScreen ? 0 : 3 } }}
+      PaperProps={{
+        sx: {
+          borderRadius: fullScreen ? 0 : 3,
+          bgcolor: mainColor,
+          color: "#e5e7eb",
+          boxShadow: "0 18px 40px rgba(0,0,0,0.9)",
+        },
+      }}
     >
       {/* Top AppBar */}
       <AppBar
-        sx={{ position: "sticky", top: 0, bgcolor: "#f06292" }}
+        sx={{
+          position: "sticky",
+          top: 0,
+          bgcolor: mainColorLight,
+          boxShadow: "0 4px 14px rgba(0,0,0,0.8)",
+        }}
         elevation={0}
       >
         <Toolbar>
           <IconButton
             edge="start"
-            color="inherit"
             aria-label="close"
             onClick={closeModalRoomsShow}
+            sx={{ color: "#e5e7eb" }}
           >
             <CloseIcon />
           </IconButton>
-          <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+          <Typography
+            sx={{
+              ml: 2,
+              flex: 1,
+              fontSize: "1rem",
+              fontWeight: 500,
+              fontFamily:
+                "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+            }}
+            component="div"
+          >
             {isOpenTab ? "Открытые комнаты" : "Приватные комнаты"}
           </Typography>
           <Chip
             label={currentLists.length}
-            color="secondary"
             size="small"
-            sx={{ bgcolor: "#ffebee", color: "#ad1457", fontWeight: 700 }}
+            sx={{
+              bgcolor: accentSoft,
+              color: accentColor,
+              fontWeight: 600,
+              fontSize: "0.75rem",
+            }}
           />
         </Toolbar>
 
-        {/* Контролы: поиск + сортировка */}
-        <Box sx={{ px: 2, pb: 2 }}>
+        {/* Контролы: поиск + табы */}
+        <Box sx={{ px: 2, pb: 1.5 }}>
           <Paper
             component="form"
+            onSubmit={(e) => e.preventDefault()}
             sx={{
               mt: 1,
               display: "flex",
@@ -159,24 +183,62 @@ export default function ModalRoomLists({
               gap: 1,
               px: 1,
               py: 0.5,
-              borderRadius: 2,
+              borderRadius: 999,
+              bgcolor: mainColor,
+              border: "1px solid rgba(255,255,255,0.08)",
             }}
           >
-            <SearchIcon />
-            {/* Надо доработать стили */}
+            <SearchIcon sx={{ color: textMuted, fontSize: 20 }} />
             <InputBase
-              placeholder="Поиск комнат"
+              placeholder="Поиск комнаты"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              sx={{ flex: 1, fontSize: { xs: "0.95rem", md: "1rem" } }}
+              sx={{
+                flex: 1,
+                fontSize: { xs: "0.9rem", md: "0.95rem" },
+                color: "#e5e7eb",
+                fontFamily:
+                  "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+              }}
             />
-            <Button sx={{ textTransform: "none" }}> Искать</Button>
+            <Button
+              sx={{
+                textTransform: "none",
+                fontSize: "0.8rem",
+                px: 2,
+                borderRadius: 999,
+                bgcolor: accentSoft,
+                color: accentColor,
+                "&:hover": {
+                  bgcolor: "rgba(183,148,244,0.25)",
+                },
+              }}
+            >
+              Искать
+            </Button>
           </Paper>
+
           <Tabs
             value={tab}
             onChange={(e, v) => setTab(v)}
             variant="fullWidth"
-            sx={{ mt: 1 }}
+            sx={{
+              mt: 1,
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontSize: "0.85rem",
+                fontFamily:
+                  "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                minHeight: 40,
+                color: textMuted,
+              },
+              "& .Mui-selected": {
+                color: accentColor,
+              },
+              "& .MuiTabs-indicator": {
+                backgroundColor: accentColor,
+              },
+            }}
           >
             <Tab
               label={
@@ -199,179 +261,98 @@ export default function ModalRoomLists({
       </AppBar>
 
       {/* Список */}
-      <Box sx={{ px: 2, py: 2 }}>
-        <List dense>
+      <Box
+        sx={{
+          px: 2,
+          py: 2,
+          maxHeight: isSmall ? "90vh" : "70vh",
+          overflowY: "auto",
+          bgcolor: mainColor,
+        }}
+      >
+        <List dense disablePadding>
           {currentLists.map((room) => (
-            <ListItem
-              key={room.id}
-              disablePadding
-              // secondaryAction={
-              //   room.isPrivate ? (
-              //     <Chip label="🔒" size="small" />
-              //   ) : (
-              //     <Chip label="🌐" size="small" />
-              //   )
-              // }
-            >
+            <ListItem key={room.id} disablePadding sx={{ mb: 1 }}>
               <ListItemButton
+                onClick={() => handleEnterRoom(room)}
                 sx={{
                   borderRadius: 2,
-                  mb: 1,
-                  bgcolor: "#fff0f5",
-                  boxShadow: "0 2px 6px rgba(216,27,96,0.15)",
-                  "&:hover": { bgcolor: "#ffe4ec" },
+                  bgcolor: cardBg,
+                  boxShadow: "0 8px 18px rgba(0,0,0,0.8)",
+                  border: "1px solid rgba(255,255,255,0.04)",
+                  "&:hover": {
+                    bgcolor: "#281a3c",
+                    borderColor: "rgba(183,148,244,0.6)",
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 12px 26px rgba(0,0,0,1)",
+                  },
+                  transition:
+                    "background-color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease",
                 }}
-                onClick={() => handleEnterRoom(room)}
               >
-                <ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 40 }}>
                   {room.isPrivate ? (
-                    <LockIcon sx={{ color: "red" }} />
+                    <LockIcon sx={{ color: accentColor, fontSize: 20 }} />
                   ) : (
-                    <PublicIcon sx={{ color: "green" }} />
+                    <PublicIcon sx={{ color: accentColor, fontSize: 20 }} />
                   )}
                 </ListItemIcon>
                 <ListItemText
                   primary={
                     <Typography
-                      sx={{ fontFamily: "monospace", fontWeight: 600 }}
+                      sx={{
+                        fontFamily:
+                          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                        fontWeight: 500,
+                        fontSize: "0.9rem",
+                        color: "#e5e7eb",
+                      }}
                     >
                       {room.nameroom}
                     </Typography>
+                  }
+                  secondary={
+                    room.isPrivate ? (
+                      <Typography
+                        sx={{
+                          fontSize: "0.75rem",
+                          color: textMuted,
+                          mt: 0.25,
+                        }}
+                      >
+                        Приватная комната
+                      </Typography>
+                    ) : (
+                      <Typography
+                        sx={{
+                          fontSize: "0.75rem",
+                          color: textMuted,
+                          mt: 0.25,
+                        }}
+                      >
+                        Открытая комната
+                      </Typography>
+                    )
                   }
                 />
               </ListItemButton>
             </ListItem>
           ))}
+
+          {currentLists.length === 0 && (
+            <Box
+              sx={{
+                py: 4,
+                textAlign: "center",
+                color: textMuted,
+                fontSize: "0.9rem",
+              }}
+            >
+              Комнаты не найдены.
+            </Box>
+          )}
         </List>
       </Box>
     </Dialog>
   );
 }
-
-// useMemo = запоминает "что получилось" (результат вычисления)
-// useCallback = запоминает "как делать" (саму функцию)
-// useMemo → для тяжелых вычислений, преобразований данных
-// useCallback → для функций, которые передаются в дочерние компоненты (чтобы избежать лишних ререндеров)
-// useMemo - запоминает РЕЗУЛЬТАТ вычисления:
-// useMemo запоминает  результат вычисления и пересчитывает его только когда зависимости изменяются.
-// const visibleRooms = useMemo(() => {
-//   if (roomsView === "open") {
-//     return allRooms.filter((room) => room.isPrivate === false);
-//   }
-//   if (roomsView === "private") {
-//     return allRooms.filter((room) => room.isPrivate === true);
-//   }
-// }, [allRooms, roomsView]);
-
-// const title =
-//   roomsView === "open"
-//     ? `Открытые комнаты (${visibleRooms.length})`
-//     : roomsView === "private"
-//     ? `Приватные комнаты (${visibleRooms.length})`
-//     : "";
-
-// <Dialog
-//   open={Boolean(openModalRoomsShow)} //  Управление видимостью диалога
-//   onClose={closeModalRoomsShow} // Функция, вызываемая при закрытии диалога (клик вне области или на ESC)
-//   fullWidth // Диалог занимает всю доступную ширину контейнера
-//   maxWidth="sm" // Максимальная ширина диалога - small (600px по умолчанию)
-//   fullScreen={fullScreen} // Адаптивный режим: на мобильных устройствах диалог будет занимать весь экран
-// >
-//   <AppBar
-//     position="relative"
-//     color="inherit"
-//     elevation={0} // Убирает тень у компонента (0 - нет тени)
-//     sx={{ borderBottom: 1, borderColor: "divider", background: "#fff0f5" }}
-//   >
-//     <Toolbar>
-//       <Typography
-//         variant="h6"
-//         sx={{ flexGrow: 1, color: "#d81b60", fontWeight: 700 }}
-//       >
-//         {`${title}`}
-//       </Typography>
-//       <IconButton edge="end" onClick={closeModalRoomsShow}>
-//         <CloseIcon />
-//       </IconButton>
-//     </Toolbar>
-//   </AppBar>
-//   {/* Прокручиваемая область со списком */}
-//   <Box
-//     sx={{
-//       maxHeight: isSmall ? "90vh" : "70%",
-//       backgroundColor: "#fff0f5",
-//       overflow: "auto",
-//     }}
-//   >
-//     <List disablePadding>
-//       {(visibleRooms || [])?.map((room) => (
-//         <ListItem
-//           key={room.id}
-//           sx={{
-//             px: 2,
-//             py: 1.25,
-//             mb: 1,
-//             cursor: "pointer",
-//             backgroundColor: "#fff0f5",
-//             p: 1,
-//             borderRadius: 3,
-//             boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
-//             transition: "transform 0.3s ease, box-shadow 0.3s ease",
-//             "&:hover": {
-//               transform: "translateY(-4px) scale(1.02)",
-//               boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
-//               backgroundColor: "#ffe4ec",
-//             },
-//           }}
-//         >
-//           <ListItemIcon>
-//             {room.isPrivate ? (
-//               <LockIcon sx={{ color: "#ad1457" }} />
-//             ) : (
-//               <PublicIcon sx={{ color: "#ad1457" }} />
-//             )}
-//           </ListItemIcon>
-//           <ListItemText>
-//             {room.isPrivate ? (
-//               <Typography
-//                 color="primary"
-//                 sx={{
-//                   fontFamily: "monospace",
-//                   cursor: "pointer",
-//                 }}
-//                 onClick={() => {
-//                   const currentRoom = room;
-//                   // если гость — отправляем на логин и выходим
-//                   if (!userID) {
-//                     navigate("/signin");
-//                   } else if (Number(currentRoom.ownerID) === userID) {
-//                     navigate(`/chatcards/${currentRoom.id}`);
-//                   } else if (currentRoom.hasAccess) {
-//                     // авторизован: используем флаг с бэка
-//                     navigate(`/chatcards/${currentRoom.id}`);
-//                   } else {
-//                     setSelectedRoomID(room.id);
-//                     setOpenRequestModal(true);
-//                   }
-//                 }}
-//               >
-//                 {room.nameroom}
-//               </Typography>
-//             ) : (
-//               <Typography
-//                 color="primary"
-//                 sx={{
-//                   fontFamily: "monospace",
-//                   cursor: "pointer",
-//                 }}
-//                 onClick={() => navigate(`/chatcards/${room.id}`)}
-//               >
-//                 {room.nameroom}
-//               </Typography>
-//             )}
-//           </ListItemText>
-//         </ListItem>
-//       ))}
-//     </List>
-//   </Box>
-// </Dialog>

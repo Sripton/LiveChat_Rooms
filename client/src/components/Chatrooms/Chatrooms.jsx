@@ -1,26 +1,22 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Paper,
   Grid,
-  styled,
   Button,
   Typography,
-  Link as MLink,
   IconButton,
   Divider,
   InputBase,
   Stack,
   useMediaQuery,
+  Fab,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { NavLink, useNavigate } from "react-router-dom";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import SearchIcon from "@mui/icons-material/Search";
-import CreateIcon from "@mui/icons-material/Create";
 import AddIcon from "@mui/icons-material/Add";
-import Fab from "@mui/material/Fab";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllRooms } from "../../redux/actions/roomActions";
 import ModalRoomCreate from "../ModalRoomCreate";
@@ -29,32 +25,30 @@ import ModalRoomLists from "../ModalRoomLists/ModalRoomLists";
 
 export default function Chatrooms() {
   // -------------------- Сортировка -----------------------
-  // Состояние для хранения информации о текущей сортировке
-  // key — по какому полю сортируем, direction — asc или desc
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   // -------------------- Модальные окна -------------------
-  const [openModalRoomCreate, setOpenModalRoomCreate] = useState(false); // Состояния модального окна для создания комнат
-  const [openRequestModal, setOpenRequestModal] = useState(false); // Состояния модального окна для создания запроса к приватным комнатам
-  const [openModalRoomsShow, setOpenModalRomsShow] = useState(false); // Состояния модального окна для отображения списка всех комнат
+  const [openModalRoomCreate, setOpenModalRoomCreate] = useState(false);
+  const [openRequestModal, setOpenRequestModal] = useState(false);
+  const [openModalRoomsShow, setOpenModalRomsShow] = useState(false);
   const [roomsView, setRoomsView] = useState("");
 
   // -------------------- Комнаты -------------------
-  const [selectedRoomID, setSelectedRoomID] = useState(null); // состояние для выбранной комнаты
+  const [selectedRoomID, setSelectedRoomID] = useState(null);
 
   // -------------------- Redux ----------------------------
-  const { userID } = useSelector((store) => store.user); // Получение ID пользователя  из Redux
-  const allRooms = useSelector((store) => store.room.allRooms); // Извлечение всех комнат из хранилища Redux.
+  const { userID } = useSelector((store) => store.user);
+  const allRooms = useSelector((store) => store.room.allRooms);
   const dispatch = useDispatch();
+
   useEffect(() => {
-    // Запрашиваем комнаты при монтировании
     dispatch(fetchAllRooms());
   }, [dispatch, userID]);
 
-  // -------------------- Хук для навгации -----------------------
+  // -------------------- Навигация -----------------------
   const navigate = useNavigate();
 
-  // -------------------- Разделение комнат по типу: открытые и приватные. -----------------------
+  // -------------------- Разделение по типу -----------------------
   const openRooms = allRooms.filter((rooms) => rooms.isPrivate === false);
   const privateRooms = allRooms.filter((rooms) => rooms.isPrivate === true);
 
@@ -64,14 +58,12 @@ export default function Chatrooms() {
       ? (a?.nameroom || "").localeCompare(b?.nameroom || "")
       : (b?.nameroom || "").localeCompare(a?.nameroom || "");
 
-  // Сортируем открытые комнаты
   const openRoomsSorted = useMemo(() => {
     if (sortConfig.key !== "open") return openRooms;
     const asc = sortConfig.direction === "asc";
     return [...openRooms].sort((a, b) => sortByName(a, b, asc));
   }, [openRooms, sortConfig]);
 
-  // Сортируем приватные комнаты
   const privateRoomsSorted = useMemo(() => {
     if (sortConfig.key !== "private") return privateRooms;
     const asc = sortConfig.direction === "asc";
@@ -80,13 +72,10 @@ export default function Chatrooms() {
 
   // -------------------- Поиск комнат ------------------------
   const [searchRooms, setSearchRooms] = useState("");
-  // useMemo  нельзя вызывать внутри функции (кроме как на верхнем уровне компонента).
-  // useMemo нужен, чтобы результат кэшировался между рендерами, пока зависимости (allRooms, searchRooms) не изменились.
+
   const filteredSearchRooms = useMemo(() => {
     const query = searchRooms.trim().toLowerCase();
-    if (!query) {
-      return [];
-    }
+    if (!query) return [];
     return [...allRooms]
       .filter((room) => (room?.nameroom || "").toLowerCase().includes(query))
       .sort((a, b) => (a?.nameroom || "").localeCompare(b?.nameroom || ""));
@@ -94,16 +83,39 @@ export default function Chatrooms() {
 
   // -------------------- UI: стили ------------------------
   const theme = useTheme();
-  const isSmall = useMediaQuery(theme.breakpoints.down("lg")); // lg = 1200px по умолчанию
+  const isSmall = useMediaQuery(theme.breakpoints.down("lg"));
+
+  const mainColor = "#1d102f";
+  const mainColorLight = "#2a183d";
+  const cardBg = "#231433";
+  const accentColor = "#b794f4";
+  const accentSoft = "rgba(183,148,244,0.15)";
+  const textMuted = "#9ca3af";
 
   return (
-    <Box sx={{ width: "100%", height: "100vh", bgcolor: "#fff0f5" }}>
+    <Box
+      sx={{
+        width: "100%",
+        height: "100vh",
+        bgcolor: mainColor,
+        color: "#e5e7eb",
+      }}
+    >
       <Grid container sx={{ width: "100%", height: "100%" }}>
-        {/* Левая колонка (на мобильных сверху) */}
-        <Grid item xs={12} md={4} sx={{ p: 2 }}>
+        {/* Левая колонка */}
+        <Grid
+          item
+          xs={12}
+          md={4}
+          sx={{
+            p: 2,
+            borderRight: { md: "1px solid rgba(255,255,255,0.06)" },
+            bgcolor: mainColor,
+          }}
+        >
           {isSmall ? (
             <Stack spacing={2}>
-              {/* Открытые */}
+              {/* Открытые комнаты (кнопка, мобильный) */}
               <Button
                 onClick={() => {
                   setRoomsView("open");
@@ -112,19 +124,29 @@ export default function Chatrooms() {
                 startIcon={<ListAltIcon />}
                 sx={{
                   justifyContent: "space-between",
-                  bgcolor: "#fce4ec",
-                  color: "#ad1457",
+                  bgcolor: mainColorLight,
+                  color: "#e5e7eb",
                   borderRadius: 2,
                   p: 2,
-                  boxShadow: 3,
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.4)",
+                  fontFamily:
+                    "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                  textTransform: "none",
+                  "&:hover": {
+                    bgcolor: "#352047",
+                    color: accentColor,
+                  },
                 }}
               >
                 <Typography sx={{ flexGrow: 1, textAlign: "left" }}>
-                  {`Открытые комнаты ${openRoomsSorted.length}`}
+                  Открытые комнаты
+                </Typography>
+                <Typography sx={{ opacity: 0.85 }}>
+                  {openRoomsSorted.length}
                 </Typography>
               </Button>
 
-              {/* Приватные */}
+              {/* Приватные комнаты (кнопка, мобильный) */}
               <Button
                 onClick={() => {
                   setRoomsView("private");
@@ -133,21 +155,31 @@ export default function Chatrooms() {
                 startIcon={<ListAltIcon />}
                 sx={{
                   justifyContent: "space-between",
-                  bgcolor: "#fce4ec",
-                  color: "#ad1457",
+                  bgcolor: mainColorLight,
+                  color: "#e5e7eb",
                   borderRadius: 2,
                   p: 2,
-                  boxShadow: 3,
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.4)",
+                  fontFamily:
+                    "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                  textTransform: "none",
+                  "&:hover": {
+                    bgcolor: "#352047",
+                    color: accentColor,
+                  },
                 }}
               >
                 <Typography sx={{ flexGrow: 1, textAlign: "left" }}>
-                  {`Приватные комнаты ${privateRoomsSorted.length}`}
+                  Приватные комнаты
+                </Typography>
+                <Typography sx={{ opacity: 0.85 }}>
+                  {privateRoomsSorted.length}
                 </Typography>
               </Button>
             </Stack>
           ) : (
-            <Stack>
-              {/* Открытые */}
+            <Stack spacing={3}>
+              {/* Открытые комнаты (desktop) */}
               <Box>
                 <Stack
                   direction="row"
@@ -157,34 +189,55 @@ export default function Chatrooms() {
                 >
                   <IconButton
                     size="small"
-                    sx={{ bgcolor: "rgba(194,24,91,0.1)" }}
+                    sx={{
+                      bgcolor: accentSoft,
+                      "&:hover": { bgcolor: accentSoft },
+                    }}
                   >
-                    <ListAltIcon sx={{ color: "#ad1457" }} />
+                    <ListAltIcon sx={{ color: accentColor, fontSize: 20 }} />
                   </IconButton>
                   <Typography
-                    variant="h6"
-                    sx={{ flexGrow: 1, color: "#777", fontFamily: "monospace" }}
+                    variant="subtitle1"
+                    sx={{
+                      flexGrow: 1,
+                      color: textMuted,
+                      fontFamily:
+                        "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                      letterSpacing: 0.5,
+                    }}
                   >
                     Открытые комнаты
                   </Typography>
-                  <Typography size="small">{openRoomsSorted.length}</Typography>
+                  <Typography
+                    sx={{ fontSize: 13, color: "#e5e7eb", opacity: 0.8 }}
+                  >
+                    {openRoomsSorted.length}
+                  </Typography>
                 </Stack>
-                <Divider sx={{ mb: 1 }} />
+                <Divider
+                  sx={{
+                    mb: 1.5,
+                    borderColor: "rgba(255,255,255,0.06)",
+                  }}
+                />
                 {openRoomsSorted.slice(0, 7).map((room) => (
                   <Box
                     key={room.id}
                     sx={{
                       cursor: "pointer",
-                      bgcolor: "#fff0f5",
+                      bgcolor: cardBg,
                       p: 1,
                       mb: 1,
-                      borderRadius: 3,
-                      boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
-                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      borderRadius: 2,
+                      border: "1px solid rgba(255,255,255,0.05)",
+                      boxShadow: "0 6px 14px rgba(0,0,0,0.6)",
+                      transition:
+                        "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease",
                       "&:hover": {
-                        transform: "translateY(-4px) scale(1.02)",
-                        boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
-                        bgcolor: "#ffe4ec",
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 10px 24px rgba(0,0,0,0.85)",
+                        borderColor: "rgba(183,148,244,0.6)",
+                        bgcolor: "#281a3c",
                       },
                     }}
                   >
@@ -195,13 +248,15 @@ export default function Chatrooms() {
                         display: "flex",
                         alignItems: "center",
                         gap: 1,
-                        fontFamily: "monospace",
+                        fontFamily:
+                          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                         fontSize: "0.9rem",
                         textDecoration: "none",
-                        color: "#60a5fa",
+                        color: accentColor,
+                        "&:hover": { color: "#ddd6fe" },
                       }}
                     >
-                      {` 🌐 ${room.nameroom}`}
+                      {`🌐 ${room.nameroom}`}
                     </Box>
                   </Box>
                 ))}
@@ -214,16 +269,21 @@ export default function Chatrooms() {
                       }}
                       sx={{
                         textTransform: "none",
-                        fontSize: "1rem",
+                        fontSize: "0.85rem",
+                        color: textMuted,
+                        "&:hover": {
+                          color: accentColor,
+                          bgcolor: "transparent",
+                        },
                       }}
                     >
-                      ...
+                      Показать все…
                     </Button>
                   </Box>
                 )}
               </Box>
 
-              {/* Приватные */}
+              {/* Приватные комнаты (desktop) */}
               <Box>
                 <Stack
                   direction="row"
@@ -233,33 +293,55 @@ export default function Chatrooms() {
                 >
                   <IconButton
                     size="small"
-                    sx={{ bgcolor: "rgba(194,24,91,0.1)" }}
+                    sx={{
+                      bgcolor: accentSoft,
+                      "&:hover": { bgcolor: accentSoft },
+                    }}
                   >
-                    <ListAltIcon sx={{ color: "#ad1457" }} />
+                    <ListAltIcon sx={{ color: accentColor, fontSize: 20 }} />
                   </IconButton>
-                  <Typography variant="h6" sx={{ flexGrow: 1, color: "#777" }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      flexGrow: 1,
+                      color: textMuted,
+                      fontFamily:
+                        "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                      letterSpacing: 0.5,
+                    }}
+                  >
                     Приватные комнаты
                   </Typography>
-                  <Typography size="small">
+                  <Typography
+                    sx={{ fontSize: 13, color: "#e5e7eb", opacity: 0.8 }}
+                  >
                     {privateRoomsSorted.length}
                   </Typography>
                 </Stack>
-                <Divider sx={{ mb: 1 }} />
+                <Divider
+                  sx={{
+                    mb: 1.5,
+                    borderColor: "rgba(255,255,255,0.06)",
+                  }}
+                />
                 {privateRoomsSorted.slice(0, 7).map((room) => (
                   <Box
                     key={room.id}
                     sx={{
                       cursor: "pointer",
-                      bgcolor: "#fff0f5",
+                      bgcolor: cardBg,
                       p: 1,
                       mb: 1,
-                      borderRadius: 3,
-                      boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
-                      transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                      borderRadius: 2,
+                      border: "1px solid rgba(255,255,255,0.05)",
+                      boxShadow: "0 6px 14px rgba(0,0,0,0.6)",
+                      transition:
+                        "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease",
                       "&:hover": {
-                        transform: "translateY(-4px) scale(1.02)",
-                        boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
-                        bgcolor: "#ffe4ec",
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 10px 24px rgba(0,0,0,0.85)",
+                        borderColor: "rgba(183,148,244,0.6)",
+                        bgcolor: "#281a3c",
                       },
                     }}
                   >
@@ -278,9 +360,11 @@ export default function Chatrooms() {
                         display: "flex",
                         alignItems: "center",
                         gap: 1,
-                        fontFamily: "monospace",
+                        fontFamily:
+                          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                         fontSize: "0.9rem",
-                        color: "#60a5fa",
+                        color: accentColor,
+                        "&:hover": { color: "#ddd6fe" },
                       }}
                     >
                       {`🔒 ${room.nameroom}`}
@@ -296,10 +380,15 @@ export default function Chatrooms() {
                       }}
                       sx={{
                         textTransform: "none",
-                        fontSize: "1rem",
+                        fontSize: "0.85rem",
+                        color: textMuted,
+                        "&:hover": {
+                          color: accentColor,
+                          bgcolor: "transparent",
+                        },
                       }}
                     >
-                      ...
+                      Показать все…
                     </Button>
                   </Box>
                 )}
@@ -313,7 +402,13 @@ export default function Chatrooms() {
           item
           xs={12}
           md={8}
-          sx={{ p: 2, display: "flex", flexDirection: "column", minHeight: 0 }}
+          sx={{
+            p: 2,
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
+            bgcolor: "#150b23",
+          }}
         >
           <Stack
             sx={{
@@ -324,6 +419,7 @@ export default function Chatrooms() {
               minHeight: 0,
             }}
           >
+            {/* Поисковая строка */}
             <Box>
               <Paper
                 component="form"
@@ -334,39 +430,56 @@ export default function Chatrooms() {
                   display: "flex",
                   alignItems: "center",
                   p: 1,
+                  bgcolor: mainColorLight,
+                  border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                <IconButton sx={{ ml: 0.5 }}>
+                <IconButton sx={{ ml: 0.5, color: textMuted }}>
                   <SearchIcon />
                 </IconButton>
                 <InputBase
                   value={searchRooms}
                   onChange={(e) => setSearchRooms(e.target.value)}
+                  placeholder="Поиск комнаты…"
                   sx={{
                     flex: 1,
                     px: 1,
-                    fontSize: { xs: "1rem", md: "1.125rem" },
+                    fontSize: { xs: "0.95rem", md: "1rem" },
+                    color: "#e5e7eb",
+                    fontFamily:
+                      "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                   }}
                 />
                 <Button
                   sx={{
-                    bgcolor: "#fff0f5",
+                    bgcolor: accentSoft,
                     mr: 0.5,
                     borderRadius: 999,
                     textTransform: "none",
                     px: 2.5,
-                    color: "#1976d2",
-                    fontFamily: "monospace",
-                    fontWeight: 600,
+                    color: accentColor,
+                    fontFamily:
+                      "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                    fontWeight: 500,
+                    "&:hover": {
+                      bgcolor: "rgba(183,148,244,0.25)",
+                    },
                   }}
                 >
-                  Поиск
+                  Найти
                 </Button>
               </Paper>
             </Box>
 
+            {/* Результаты поиска */}
             <Box
-              sx={{ flex: 1, minHeight: 0, overflowY: "auto", pr: 1, mt: 2 }}
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: "auto",
+                pr: 1,
+                mt: 2,
+              }}
             >
               <Grid container direction="column">
                 {filteredSearchRooms.slice(0, 12).map((room) => (
@@ -374,22 +487,30 @@ export default function Chatrooms() {
                     <Box
                       sx={{
                         cursor: "pointer",
-                        bgcolor: "#fff0f5",
+                        bgcolor: cardBg,
                         p: 1,
                         mb: 1,
-                        borderRadius: 3,
-                        boxShadow: "0 4px 10px rgba(255,182,193,0.2)",
-                        transition: "transform .3s ease, box-shadow .3s ease",
+                        borderRadius: 2,
+                        border: "1px solid rgba(255,255,255,0.05)",
+                        boxShadow: "0 6px 14px rgba(0,0,0,0.7)",
+                        transition:
+                          "transform .2s ease, box-shadow .2s ease, border-color .2s ease, background-color .2s ease",
                         "&:hover": {
-                          transform: "translateY(-4px) scale(1.02)",
-                          boxShadow: "0 6px 14px rgba(255,105,180,.35)",
-                          bgcolor: "#ffe4ec",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 10px 24px rgba(0,0,0,0.9)",
+                          borderColor: "rgba(183,148,244,0.6)",
+                          bgcolor: "#281a3c",
                         },
                       }}
                     >
                       <Typography
-                        sx={{ fontFamily: "monospace", fontSize: "0.9rem" }}
-                        color="primary"
+                        sx={{
+                          fontFamily:
+                            "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                          fontSize: "0.9rem",
+                          color: accentColor,
+                          "&:hover": { color: "#ddd6fe" },
+                        }}
                         onClick={() => {
                           const currentRoom = room;
                           if (!userID) return navigate("/signin");
@@ -410,62 +531,38 @@ export default function Chatrooms() {
             </Box>
           </Stack>
         </Grid>
-        {/* FAB на мобильных, кнопка на десктопе */}
-        {isSmall ? (
-          <Fab
-            color="primary"
-            sx={{
-              position: "fixed",
-              bottom: 24,
-              right: 32,
-              bgcolor: "#d81b60",
-              ":hover": { bgcolor: "#c2185b" },
-              animation: "pulse 1.5s infinite",
-              "@keyframes pulse": {
-                "0%": {
-                  boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
-                },
-                "50%": {
-                  boxShadow: "0 0 0 20px rgba(244,143,177, 0)",
-                },
-                "100%": {
-                  boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
-                },
+
+        {/* FAB — создание комнаты */}
+        <Fab
+          color="primary"
+          sx={{
+            position: "fixed",
+            bottom: 24,
+            right: 32,
+            bgcolor: accentColor,
+            color: "#1f2933",
+            "&:hover": { bgcolor: "#c4b5fd" },
+            boxShadow: "0 12px 30px rgba(0,0,0,0.7)",
+            animation: "pulse 1.5s infinite",
+            "@keyframes pulse": {
+              "0%": {
+                boxShadow: "0 0 0 0 rgba(183,148,244,0.65)",
               },
-            }}
-            onClick={() => setOpenModalRoomCreate(true)}
-          >
-            <AddIcon />
-          </Fab>
-        ) : (
-          <Fab
-            color="primary"
-            sx={{
-              position: "fixed",
-              bottom: 24,
-              right: 32,
-              bgcolor: "#d81b60",
-              ":hover": { bgcolor: "#c2185b" },
-              animation: "pulse 1.5s infinite",
-              //  backgroundColor: "transparent", // убрать фон
-              "@keyframes pulse": {
-                "0%": {
-                  boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
-                },
-                "50%": {
-                  boxShadow: "0 0 0 20px rgba(244,143,177, 0)",
-                },
-                "100%": {
-                  boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
-                },
+              "50%": {
+                boxShadow: "0 0 0 18px rgba(183,148,244,0)",
               },
-            }}
-            onClick={() => setOpenModalRoomCreate(true)}
-          >
-            <AddIcon />
-          </Fab>
-        )}
+              "100%": {
+                boxShadow: "0 0 0 0 rgba(183,148,244,0)",
+              },
+            },
+          }}
+          onClick={() => setOpenModalRoomCreate(true)}
+        >
+          <AddIcon />
+        </Fab>
       </Grid>
+
+      {/* Модалки */}
       <ModalRoomRequest
         openRequestModal={openRequestModal}
         closeModalRequest={() => setOpenRequestModal(false)}
@@ -477,7 +574,6 @@ export default function Chatrooms() {
         setOpenModalRoomCreate={setOpenModalRoomCreate}
       />
       <ModalRoomLists
-        // key={roomsView}  проблема с парвильным отображением комнат
         userID={userID}
         openModalRoomsShow={openModalRoomsShow}
         closeModalRoomsShow={() => setOpenModalRomsShow(false)}

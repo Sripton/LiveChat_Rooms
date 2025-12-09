@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Container,
@@ -18,38 +18,35 @@ import "./navbar.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/actions/userActions";
+
 export default function Navbar({ userPropsData }) {
-  // Компонент Navbar получает данные о пользователе через компонент App.jsx
   const { userID, userName, userAvatar } = userPropsData;
   const menuItems = userID
     ? ["Главная", "Мой профиль", "Выход"]
     : ["Войти", "Главная"];
 
-  const [openMenu, setOpenMenu] = useState(false); // Состояние бокового меню
+  const [openMenu, setOpenMenu] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Открытие/закрытие бокового меню
   const toggleDrawerMenu = () => {
     setOpenMenu(!openMenu);
   };
 
-  // Обработка кликов по пунктам меню
   const handleMenuClick = (text) => {
     if (text === "Войти") {
       navigate("/signin");
     } else if (text === "Выход") {
-      dispatch(logoutUser(navigate)); // Выход с вызовом action logoutUser
+      dispatch(logoutUser(navigate));
     } else if (text === "Мой профиль") {
       navigate("/userdashboard");
     } else {
       navigate("/");
     }
-    setOpenMenu(false); // Закрываем меню
+    setOpenMenu(false);
   };
 
-  // Вынесение логики определения иконки для меню
   const getStartIcon = (text) => {
     switch (text) {
       case "Войти":
@@ -63,17 +60,26 @@ export default function Navbar({ userPropsData }) {
     }
   };
 
+  const isActivePath = (text) => {
+    if (text === "Главная") return location.pathname === "/";
+    if (text === "Мой профиль") return location.pathname === "/userdashboard";
+    if (text === "Войти") return location.pathname === "/signin";
+    return false;
+  };
+
+  const mainColor = "#1d102f"; // тёмный фиолетовый
+  const mainColorLight = "#3a214f";
+  const accentColor = "#b794f4";
+
   return (
     <>
-      {/* Сброс стандартных стилей браузера */}
       <CssBaseline />
       <Container maxWidth={false} disableGutters>
         {/* Верхняя панель навигации */}
         <Box
           sx={{
             px: 3,
-            background:
-              "linear-gradient(0deg,rgba(232, 232, 232, 1) 0%,rgba(250, 230, 250, 1) 100%);",
+            backgroundColor: mainColor,
             height: "64px",
             width: "100%",
             zIndex: 1201,
@@ -81,10 +87,11 @@ export default function Navbar({ userPropsData }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          {/* Иконка-гамбургер для мобильного меню */}
+          {/* Иконка-гамбургер */}
           <div
             className={`menu-icon ${openMenu ? "iconActive" : ""}`}
             onClick={() => toggleDrawerMenu(true)}
@@ -105,97 +112,132 @@ export default function Navbar({ userPropsData }) {
             sx={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
-              widtH: "500px",
+              gap: 2,
+              ml: "auto",
             }}
           >
-            {/* Имя пользователя */}
             <Typography
-              // variant="h6"
               sx={{
-                color: "#000",
-                fontFamily: "monospace",
-                letterSpacing: 1,
-                fontSize: "1rem",
+                color: "#f5f5f5",
+                fontFamily:
+                  "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                fontSize: "0.95rem",
+                letterSpacing: 0.5,
+                textTransform: "none",
+                maxWidth: "220px",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                textAlign: "right",
               }}
             >
               {userName}
             </Typography>
 
-            {/* Кнопка-аватар  */}
             <Button
               sx={{
+                minWidth: "auto",
+                p: 0,
+                borderRadius: "999px",
                 "&:hover": {
-                  backgroundColor: "inherit", // Убираем цвет при наведении
-                  cursor: "pointer",
+                  backgroundColor: "transparent",
                 },
               }}
             >
-              {/* Аватар пользователя */}
               {userAvatar ? (
-                <>
+                <Box
+                  sx={{
+                    borderRadius: "999px",
+                    padding: "2px",
+                    background:
+                      "linear-gradient(135deg, #b794f4 0%, #7c3aed 50%, #4c1d95 100%)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <img
                     className="avatar"
                     src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
-                    alt=""
+                    alt="avatar"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      display: "block",
+                    }}
                   />
-                  <i className="fa-solid fa-circle-img" />
-                </>
+                </Box>
               ) : (
-                <Avatar />
+                <Avatar
+                  sx={{
+                    width: 38,
+                    height: 38,
+                    backgroundColor: mainColorLight,
+                    color: "#fff",
+                    fontSize: "0.9rem",
+                  }}
+                />
               )}
             </Button>
           </Box>
         </Box>
 
-        {/* Боковая панель Drawer */}
+        {/* Боковая панель меню */}
         <Drawer
           anchor="left"
           open={openMenu}
-          sx={{
-            background:
-              "linear-gradient(0deg,rgb(238, 216, 237) 0%,rgb(238, 201, 238) 100%);",
-            opacity: "1",
-          }}
+          onClose={() => toggleDrawerMenu(false)}
           PaperProps={{
             sx: {
-              background:
-                "linear-gradient(0deg,rgba(232, 232, 232, 1) 0%,rgba(250, 230, 250, 1) 100%);",
-              color: "#676565",
+              backgroundColor: mainColor,
+              color: "#e5e7eb",
               width: 280,
               pt: 8,
               px: 2,
-              opacity: "1",
+              borderRight: "1px solid rgba(255,255,255,0.06)",
             },
           }}
-          onClose={() => toggleDrawerMenu(false)}
         >
-          <List>
-            {menuItems.map((text) => (
-              <ListItem
-                key={text}
-                className="menu-list"
-                onClick={() => toggleDrawerMenu(false)}
-              >
-                {/* Кнопки "Войти", "Мои комнаты" и "Выход" */}
-                <Button
-                  onClick={() => handleMenuClick(text)}
-                  // startIcon - проп компонента Button из MUI, который добавляет иконку слева от текста кнопки.
-                  startIcon={getStartIcon(text)}
-                  sx={{
-                    fontSize: "1rem",
-                    fontFamily: "Tinos, serif",
-                    textTransform: "uppercase",
-                    justifyContent: "flex-start",
-                    width: "100%",
-                    color: "#676565",
-                    "&:hover": { color: "#60a5fa", background: "transparent" },
-                  }}
+          <List sx={{ mt: 1 }}>
+            {menuItems.map((text) => {
+              const active = isActivePath(text);
+              return (
+                <ListItem
+                  key={text}
+                  className="menu-list"
+                  disableGutters
+                  sx={{ mb: 0.5 }}
                 >
-                  {text}
-                </Button>
-              </ListItem>
-            ))}
+                  <Button
+                    onClick={() => handleMenuClick(text)}
+                    startIcon={getStartIcon(text)}
+                    sx={{
+                      fontSize: "0.95rem",
+                      fontFamily:
+                        "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                      textTransform: "none",
+                      justifyContent: "flex-start",
+                      width: "100%",
+                      borderRadius: "10px",
+                      px: 1.5,
+                      py: 1,
+                      color: active ? accentColor : "#e5e7eb",
+                      backgroundColor: active ? mainColorLight : "transparent",
+                      "& .MuiSvgIcon-root": {
+                        fontSize: "1.2rem",
+                      },
+                      "&:hover": {
+                        backgroundColor: mainColorLight,
+                        color: accentColor,
+                      },
+                    }}
+                  >
+                    {text}
+                  </Button>
+                </ListItem>
+              );
+            })}
           </List>
         </Drawer>
       </Container>
