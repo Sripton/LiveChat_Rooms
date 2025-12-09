@@ -14,10 +14,8 @@ import {
   ListItemText,
   CircularProgress,
   ListItemButton,
-  Chip,
   useMediaQuery,
   Fab,
-  Tooltip,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
@@ -26,7 +24,6 @@ import { useDispatch, useSelector } from "react-redux";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
-import CommentIcon from "@mui/icons-material/Comment";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
@@ -46,7 +43,6 @@ function TabPanel(props) {
   return <div role="tabpanel">{value === index && <Box>{children}</Box>}</div>;
 }
 
-// Функция для спинера
 function ActionSpinner({ intent }) {
   const isAccept = intent === "accepted";
   const Icon = isAccept ? CheckCircleIcon : CancelIcon;
@@ -88,6 +84,7 @@ function ActionSpinner({ intent }) {
     </Box>
   );
 }
+
 export default function UserDashboard({ userPropsData }) {
   const [tabIndex, setTabIndex] = useState(0);
   const { userAvatar, userName, userID } = userPropsData;
@@ -99,39 +96,34 @@ export default function UserDashboard({ userPropsData }) {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("lg"));
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  // Забираем все комнаты пользователя  из  store
+
   const userRooms = useSelector((store) => store.room.userRooms);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
   const handleChangeTab = (event, newValue) => {
-    // MUI Tabs  вызывает onChange с двумя аргументами
     setTabIndex(newValue);
   };
 
-  // Функция определения доступа
   const canEnterRoom = (request, user_id) => {
     const isOwner = request?.Room?.ownerID === user_id;
     const isAccepted = request?.status === "accepted";
     return Boolean(isOwner || isAccepted);
   };
 
-  // Слияние вех запросов в один массив
   const allRequests = [...outgoing, ...incoming];
+
   useEffect(() => {
     if (userID) {
       dispatch(fetchUserRooms(userID));
-    }
-  }, [userID, dispatch]);
-  useEffect(() => {
-    if (userID) {
       dispatch(fetchUserRequestsStatus(userID));
     }
   }, [userID, dispatch]);
 
   const [arrowRequest, setArrowRequest] = useState(false);
-  const [needsExpand, setNeedsExpand] = useState(false); // показывать кнопку?
+  const [needsExpand, setNeedsExpand] = useState(false);
 
   const roomWrapRef = useRef(null);
   const requestWrapRef = useRef(null);
@@ -139,21 +131,19 @@ export default function UserDashboard({ userPropsData }) {
 
   const handleArraowRequest = () => setArrowRequest((prev) => !prev);
 
-  // Функция для направления в компонент по редатированию профиля
   const goToProfileEditor = () => {
     navigate("/profileeditor", {
-      state: { from: location }, //  сохраняем текущий путь
+      state: { from: location },
     });
   };
 
   const items = useSelector(
-    (store) => store.comment.repliesByUserId[userID]?.items || [] // чтобы рендер не падал, когда данных ещё нет:
+    (store) => store.comment.repliesByUserId[userID]?.items || []
   );
   const nextBefore =
     useSelector((store) => store.comment.repliesByUserId[userID]?.nextBefore) ||
     null;
-  // первая загрузка
-  // очищаем и грузим заново при смене userID
+
   useEffect(() => {
     if (!userID) return;
     dispatch({
@@ -161,18 +151,9 @@ export default function UserDashboard({ userPropsData }) {
       payload: { userID, items: [], nextBefore: null, append: false },
     });
     dispatch(fetchUserReplies({ limit: 20 }, userID));
-  }, [userID, dispatch]); // ← зависим от userID
+  }, [userID, dispatch]);
 
-  // const hasMore = Boolean(nextBefore);
-  // const loadMore = () => {
-  //   if (nextBefore) {
-  //     dispatch(fetchMoreUserReplies({ limit: 20, before: nextBefore }, userID));
-  //   }
-  // };
-
-  // Эффект, который вычисляет «переполнен ли список»
   useEffect(() => {
-    // выбираем контейнер той панели, которая сейчас видна
     const element =
       tabIndex === 0
         ? roomWrapRef.current
@@ -184,35 +165,39 @@ export default function UserDashboard({ userPropsData }) {
     if (!element) return;
 
     const compute = () => {
-      // на 1px запас, чтобы избежать дрожания из-за округления
-      // scrollHeight - полная высота содержимого (включая скрытое)
-      // clientHeight - видимая высота контейнера
       setNeedsExpand(element.scrollHeight > element.clientHeight + 1);
     };
-    compute(); // первичный расчёт
+    compute();
 
     const res = new ResizeObserver(compute);
     res.observe(element);
 
     const onResize = () => compute();
-
     window.addEventListener("resize", onResize);
+
     return () => {
       res.disconnect();
       window.removeEventListener("resize", onResize);
     };
-    // зависим от длины данных и активной вкладки
-  }, [tabIndex, allRequests.length, items.length]); // Переключение tabIndex когда вкладка "Запросы" не активна
+  }, [tabIndex, allRequests.length, items.length]);
+
+  const mainColor = "#11071c";
+  const pageBg = "#1d102f";
+  const cardBg = "#231433";
+  const cardSoftBg = "#2b183c";
+  const accentColor = "#b794f4";
+  const accentColorStrong = "#c4b5fd";
+  const textMuted = "#9ca3af";
 
   const commonPanelBoxSx = {
     p: 2,
-    background:
-      "linear-gradient(135deg, rgba(248,187,208,0.25) 0%, rgba(255,240,245,0.45) 100%)",
+    backgroundColor: cardBg,
     borderRadius: 3,
-    border: "1px solid #f8bbd0",
+    border: "1px solid rgba(255,255,255,0.06)",
     maxHeight: "65vh",
     overflowY: needsExpand ? "auto" : "hidden",
-    pr: 1, // чтобы скроллбар не ел текст
+    pr: 1,
+    boxShadow: "0 14px 30px rgba(0,0,0,0.85)",
   };
 
   return (
@@ -220,7 +205,8 @@ export default function UserDashboard({ userPropsData }) {
       style={{
         width: "100%",
         height: "95vh",
-        backgroundColor: "#fff5f7",
+        background:
+          "radial-gradient(1200px 800px at 0% -20%, #3b1d5e 0%, transparent 60%), radial-gradient(1100px 700px at 110% 0%, #4c1d95 0%, transparent 55%), linear-gradient(135deg, #0b0615 0%, #1d102f 45%, #0f172a 100%)",
         overflow: arrowRequest ? "auto" : "hidden",
       }}
     >
@@ -229,47 +215,76 @@ export default function UserDashboard({ userPropsData }) {
           maxWidth: 1200,
           margin: "0 auto",
           p: 3,
+          color: "#e5e7eb",
         }}
       >
-        {/* Header */}
+        {/* Header: имя и кнопка редактирования */}
         <Box
           sx={{
-            position: "absolute",
-            right: 40,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", sm: "center" },
             mb: 3,
+            gap: 2,
           }}
         >
-          {/* <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {userAvatar ? (
-              <img
-                className="avatar"
-                src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
-                alt="user"
-                style={{
-                  width: "100px",
-                  height: "100px",
-                }}
-              />
-            ) : (
-              <AccountCircleIcon
-                alt="user"
+              <Box
                 sx={{
-                  width: 70,
-                  height: 70,
+                  width: 72,
+                  height: 72,
+                  borderRadius: "50%",
+                  p: 0.5,
+                  background:
+                    "linear-gradient(135deg, #b794f4 0%, #7c3aed 50%, #4c1d95 100%)",
                 }}
-              />
+              >
+                <img
+                  src={`${process.env.REACT_APP_BASEURL}${userAvatar}`}
+                  alt="user"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+              </Box>
+            ) : (
+              <Avatar
+                sx={{
+                  width: 72,
+                  height: 72,
+                  bgcolor: "#3b0764",
+                  color: "#e5e7eb",
+                }}
+              >
+                <AccountCircleIcon sx={{ fontSize: 40 }} />
+              </Avatar>
             )}
 
-            <Typography
-              variant="h6"
-              sx={{
-                fontFamily: "monospace",
-                color: "#880e4f",
-              }}
-            >
-              {userName}
-            </Typography>
-          </Box> */}
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily:
+                    "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                  color: accentColorStrong,
+                  letterSpacing: 0.4,
+                }}
+              >
+                {userName}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ color: textMuted, fontSize: "0.75rem" }}
+              >
+                Личный кабинет
+              </Typography>
+            </Box>
+          </Box>
 
           {isSmall ? (
             <Fab
@@ -278,18 +293,20 @@ export default function UserDashboard({ userPropsData }) {
                 position: "fixed",
                 bottom: 24,
                 right: 32,
-                bgcolor: "#d81b60",
-                ":hover": { bgcolor: "#c2185b" },
+                bgcolor: accentColor,
+                color: "#0b0615",
+                "&:hover": { bgcolor: accentColorStrong },
+                boxShadow: "0 14px 32px rgba(0,0,0,0.9)",
                 animation: "pulse 1.5s infinite",
                 "@keyframes pulse": {
                   "0%": {
-                    boxShadow: "0 0 0 0 rgba(244,143,177, 0.7)",
+                    boxShadow: "0 0 0 0 rgba(183,148,244, 0.7)",
                   },
                   "50%": {
-                    boxShadow: "0 0 0 20px rgba(244,143,177, 0)",
+                    boxShadow: "0 0 0 20px rgba(183,148,244, 0)",
                   },
                   "100%": {
-                    boxShadow: "0 0 0 0 rgba(244,143,177, 0)",
+                    boxShadow: "0 0 0 0 rgba(183,148,244, 0)",
                   },
                 },
               }}
@@ -299,38 +316,68 @@ export default function UserDashboard({ userPropsData }) {
             </Fab>
           ) : (
             <Button
-              sx={{
-                // background: "linear-gradient(90deg,#f8bbd0 10%,#ffe3e3 90%)",
-                bgcolor: "#d81b60",
-                color: "#fff",
-              }}
               variant="contained"
+              sx={{
+                background:
+                  "linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f97316 100%)",
+                color: "#0b0615",
+                fontWeight: 600,
+                borderRadius: 999,
+                px: 2.8,
+                height: 40,
+                textTransform: "none",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #c4b5fd 0%, #f472b6 50%, #fb923c 100%)",
+                  boxShadow: "0 14px 30px rgba(0,0,0,0.9)",
+                },
+              }}
               onClick={goToProfileEditor}
             >
-              Редактировать
+              Редактировать профиль
             </Button>
           )}
         </Box>
+
         {/* Tabs */}
         <Tabs
           value={tabIndex}
-          sx={{ mb: 4 }}
+          sx={{
+            mb: 3,
+            borderBottom: "1px solid rgba(148,163,184,0.35)",
+            "& .MuiTab-root": {
+              textTransform: "none",
+              fontSize: "0.9rem",
+              color: textMuted,
+              fontFamily:
+                "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+              minHeight: 40,
+            },
+            "& .Mui-selected": {
+              color: accentColor,
+            },
+            "& .MuiTabs-indicator": {
+              backgroundColor: accentColor,
+              height: 3,
+            },
+          }}
           onChange={handleChangeTab}
           allowScrollButtonsMobile
           scrollButtons={isMobile ? "auto" : false}
           variant={isMobile ? "scrollable" : "standard"}
         >
-          <Tab sx={{ color: "#880e4f" }} label="Мои комнаты" />
-          <Tab sx={{ color: "#880e4f" }} label="Запросы" />
-          <Tab sx={{ color: "#880e4f" }} label="Ответы к комментариям" />
+          <Tab label="Мои комнаты" />
+          <Tab label="Запросы" />
+          <Tab label="Ответы к комментариям" />
         </Tabs>
+
         {/* Panel: Мои комнаты */}
         <TabPanel value={tabIndex} index={0}>
           <Box ref={roomWrapRef} sx={commonPanelBoxSx}>
-            <Grid container spacing={2} mb={4}>
+            <Grid container spacing={2} mb={2}>
               {userRooms.length <= 0 ? (
-                <Typography sx={{ mt: 2, color: "#999" }}>
-                  У Вас нет комнат
+                <Typography sx={{ mt: 1, color: textMuted }}>
+                  У вас пока нет комнат.
                 </Typography>
               ) : (
                 userRooms.map((room) => (
@@ -342,42 +389,66 @@ export default function UserDashboard({ userPropsData }) {
                       mb={1}
                       sx={{
                         cursor: "pointer",
-                        backgroundColor: "#fff0f5",
+                        backgroundColor: cardSoftBg,
                         p: 2,
                         borderRadius: 3,
-                        boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
-                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                        boxShadow: "0 8px 20px rgba(0,0,0,0.7)",
+                        border: "1px solid rgba(148,163,184,0.35)",
+                        transition:
+                          "transform .2s ease, box-shadow .2s ease, border-color .2s ease, background-color .2s ease",
                         "&:hover": {
-                          transform: "translateY(-4px) scale(1.02)",
-                          boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
-                          backgroundColor: "#ffe4ec",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 14px 30px rgba(0,0,0,0.95)",
+                          borderColor: "rgba(183,148,244,0.7)",
+                          backgroundColor: "#311b43",
                         },
                       }}
                     >
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 1 }}
                       >
-                        <Typography fontWeight="bold">{room.name}</Typography>
+                        <Typography
+                          fontWeight="bold"
+                          sx={{ color: accentColorStrong, fontSize: "0.95rem" }}
+                        >
+                          {room.name}
+                        </Typography>
                         {room.isPrivate === true ? (
-                          <Typography variant="h6" color="text.secondary">
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#e5e7eb", ml: 1 }}
+                          >
                             🔒
                             <Link
                               component={NavLink}
                               to={`/chatcards/${room.id}`}
-                              sx={{ textDecoration: "none" }}
+                              sx={{
+                                textDecoration: "none",
+                                color: accentColor,
+                                ml: 0.5,
+                                "&:hover": { color: accentColorStrong },
+                              }}
                             >
-                              {` ${room.nameroom}`}
+                              {room.nameroom}
                             </Link>
                           </Typography>
                         ) : (
-                          <Typography variant="h6" color="primary">
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#e5e7eb", ml: 1 }}
+                          >
                             🌐
                             <Link
                               component={NavLink}
                               to={`/chatcards/${room.id}`}
-                              sx={{ textDecoration: "none" }}
+                              sx={{
+                                textDecoration: "none",
+                                color: accentColor,
+                                ml: 0.5,
+                                "&:hover": { color: accentColorStrong },
+                              }}
                             >
-                              {` ${room.nameroom}`}
+                              {room.nameroom}
                             </Link>
                           </Typography>
                         )}
@@ -394,24 +465,17 @@ export default function UserDashboard({ userPropsData }) {
         <TabPanel value={tabIndex} index={1}>
           <Box
             ref={requestWrapRef}
-            // Существует только  на вкладке “Запросы” (index=1), а его высота может меняться при переключении вкладок.
-            // поэтому в useEffect(()) -> указываем зависимость tabIndex
             sx={{
               ...commonPanelBoxSx,
               maxHeight: "60vh",
               overflowY: needsExpand ? "auto" : "hidden",
-              pr: 1, // чтобы скроллбар не ел текст
             }}
           >
             <List sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {(allRequests || []).map((request) => {
-                // Если запрос отправил сам пользователь
                 const isOutgoing = request.user_id === userID;
-                // Для спинера в момент когда статус обновляется
-                /* const isUpdating = updatingIds.includes(request.id); */
                 const rid = String(request.id);
                 const isUpdating = Boolean(updatingById?.[rid]);
-                // Когда запрос в статусе оюидания
                 const isPending = request.status === "pending";
 
                 let avatarSrc;
@@ -426,25 +490,28 @@ export default function UserDashboard({ userPropsData }) {
                 }
 
                 const altText = isOutgoing
-                  ? "Вы отправили запрос "
+                  ? "Вы отправили запрос"
                   : `${request?.requester?.name}` || "Пользователь";
 
                 const primaryText = isOutgoing
                   ? `${request?.Room?.nameroom}`
-                  : `${request?.requester?.name} отправил Вам запрос, ${request?.Room?.nameroom}`;
+                  : `${request?.requester?.name} отправил вам запрос, ${request?.Room?.nameroom}`;
 
                 return (
                   <ListItem
                     key={request.id}
                     sx={{
-                      backgroundColor: "#fff0f5",
+                      backgroundColor: cardSoftBg,
                       cursor: "pointer",
-                      boxShadow: "0 4px 10px rgba(255, 182, 193, 0.2)",
+                      boxShadow: "0 10px 24px rgba(0,0,0,0.85)",
                       borderRadius: 3,
+                      border: "1px solid rgba(148,163,184,0.35)",
                       "&:hover": {
-                        boxShadow: "0 6px 14px rgba(255, 105, 180, 0.35)",
+                        boxShadow: "0 16px 34px rgba(0,0,0,1)",
                         transform: "translateY(-2px)",
-                        transition: "0.3s",
+                        transition: "0.2s",
+                        borderColor: "rgba(183,148,244,0.7)",
+                        backgroundColor: "#331c47",
                       },
                     }}
                     secondaryAction={
@@ -452,24 +519,22 @@ export default function UserDashboard({ userPropsData }) {
                         <ActionSpinner intent={updatingById[rid]} />
                       ) : isOutgoing ? (
                         request?.status === "accepted" ? (
-                          <CheckCircleIcon sx={{ color: "green" }} />
+                          <CheckCircleIcon sx={{ color: "#22c55e" }} />
                         ) : request?.status === "rejected" ? (
-                          <CancelIcon sx={{ color: "red" }} />
+                          <CancelIcon sx={{ color: "#f97373" }} />
                         ) : (
-                          <HourglassEmptyIcon sx={{ color: "orange" }} />
+                          <HourglassEmptyIcon sx={{ color: "#eab308" }} />
                         )
                       ) : isPending ? (
                         <Box sx={{ display: "flex", gap: 1 }}>
                           <Button
                             variant="contained"
                             sx={{
-                              background:
-                                "linear-gradient(90deg, #f8bbd0, #f48fb1)",
-                              color: "#fff",
+                              backgroundColor: "#22c55e",
+                              color: "#0f172a",
+                              textTransform: "none",
                               "&:hover": {
-                                background:
-                                  "linear-gradient(90deg,rgb(209, 243, 173),rgb(200, 239, 166))",
-                                color: "gray",
+                                backgroundColor: "#4ade80",
                               },
                             }}
                             onClick={() =>
@@ -483,11 +548,12 @@ export default function UserDashboard({ userPropsData }) {
                           <Button
                             variant="outlined"
                             sx={{
-                              color: "#d81b60",
-                              borderColor: "#f48fb1",
+                              color: "#f97373",
+                              borderColor: "#f97373",
+                              textTransform: "none",
                               "&:hover": {
-                                borderColor: "#d81b60",
-                                backgroundColor: "#fff0f6",
+                                borderColor: "#fca5a5",
+                                backgroundColor: "rgba(248,113,113,0.08)",
                               },
                             }}
                             onClick={() => {
@@ -500,11 +566,11 @@ export default function UserDashboard({ userPropsData }) {
                           </Button>
                         </Box>
                       ) : request.status === "accepted" ? (
-                        <CheckCircleIcon sx={{ color: "green" }} />
+                        <CheckCircleIcon sx={{ color: "#22c55e" }} />
                       ) : request.status === "rejected" ? (
-                        <CancelIcon sx={{ color: "red" }} />
+                        <CancelIcon sx={{ color: "#f97373" }} />
                       ) : (
-                        <HourglassEmptyIcon sx={{ color: "orange" }} />
+                        <HourglassEmptyIcon sx={{ color: "#eab308" }} />
                       )
                     }
                   >
@@ -512,7 +578,6 @@ export default function UserDashboard({ userPropsData }) {
                       const enterAllowed = canEnterRoom(request, userID);
                       return (
                         <ListItemButton
-                          // disabled={!enterAllowed}
                           disableRipple
                           disableTouchRipple
                           sx={{
@@ -521,7 +586,6 @@ export default function UserDashboard({ userPropsData }) {
                             "&.Mui-focusVisible": { bgcolor: "transparent" },
                             "&.Mui-selected": { bgcolor: "transparent" },
                             "&.Mui-selected:hover": { bgcolor: "transparent" },
-                            // убираем анимации, отступы и курсор
                             transition: "none",
                             p: 0,
                             cursor: enterAllowed ? "pointer" : "default",
@@ -532,22 +596,28 @@ export default function UserDashboard({ userPropsData }) {
                           }}
                         >
                           <ListItemAvatar>
-                            <Avatar src={avatarSrc} alt={`${altText}`} />
+                            <Avatar src={avatarSrc} alt={altText} />
                           </ListItemAvatar>
                           <ListItemText
                             primary={altText}
                             primaryTypographyProps={{
                               sx: {
-                                color: " #1976d2",
-                                fontSize: "1.2rem",
-                                fontFamily: "monospace",
+                                color: accentColorStrong,
+                                fontSize: "0.95rem",
+                                fontFamily:
+                                  "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                               },
                             }}
                             secondary={
                               <Typography
                                 component="span"
                                 variant="body2"
-                                sx={{ fontFamily: "monospace" }}
+                                sx={{
+                                  fontFamily:
+                                    "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                                  color: textMuted,
+                                  fontSize: "0.85rem",
+                                }}
                               >
                                 {primaryText}
                               </Typography>
@@ -562,15 +632,19 @@ export default function UserDashboard({ userPropsData }) {
             </List>
           </Box>
         </TabPanel>
-        {/* Panel: Ответы на комменатарии */}
+
+        {/* Panel: Ответы на комментарии */}
         <TabPanel value={tabIndex} index={2}>
           <Box ref={repliesWrapRef} sx={commonPanelBoxSx}>
             {!items || items.length === 0 ? (
               <Box>
-                <Typography> Пока нет ответов</Typography>
-                <Typography>
-                  {" "}
-                  Здесь появятся ответы на ваши посты и комментарии
+                <Typography sx={{ color: textMuted }}>
+                  Пока нет ответов.
+                </Typography>
+                <Typography
+                  sx={{ color: textMuted, fontSize: "0.85rem", mt: 0.5 }}
+                >
+                  Здесь будут появляться ответы на ваши посты и комментарии.
                 </Typography>
               </Box>
             ) : (
@@ -584,29 +658,22 @@ export default function UserDashboard({ userPropsData }) {
                       key={comment.id}
                       alignItems="flex-start"
                       sx={{
-                        border: "1px solid #f8bbd0",
+                        border: "1px solid rgba(148,163,184,0.35)",
                         py: 1.5,
                         px: 2,
                         cursor: "pointer",
                         borderRadius: 3,
-                        bgcolor: "#fff0f5",
-                        boxShadow: "0 6px 14px rgba(216,27,96,0.08)",
+                        bgcolor: cardSoftBg,
+                        boxShadow: "0 10px 24px rgba(0,0,0,0.85)",
                         transition:
-                          "transform .2s ease, box-shadow .2s ease, background-color .2s ease",
+                          "transform .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease",
                         "&:hover": {
                           transform: "translateY(-3px)",
-                          boxShadow: "0 10px 20px rgba(216,27,96,0.16)",
-                          bgcolor: "#ffe6ee",
+                          boxShadow: "0 16px 36px rgba(0,0,0,1)",
+                          bgcolor: "#341d49",
+                          borderColor: "rgba(183,148,244,0.7)",
                         },
-
-                        // левый акцент
                         position: "relative",
-                        "& .MuiListItemSecondaryAction-root": {
-                          top: "auto",
-                          bottom: 8,
-                          right: 16,
-                          transform: "none",
-                        },
                       }}
                       onClick={() => {
                         navigate(`/chatcards/${comment?.Post?.room_id}`);
@@ -617,20 +684,23 @@ export default function UserDashboard({ userPropsData }) {
                           <Avatar
                             src={`${process.env.REACT_APP_BASEURL}${comment?.User?.avatar}`}
                             sx={{
-                              width: "48px",
-                              height: "48px",
-                              border: "2px solid  #f8bbd0",
+                              width: 48,
+                              height: 48,
+                              border: "2px solid rgba(183,148,244,0.7)",
                             }}
                           />
                         ) : (
                           <Avatar
-                            sx={{ bgcolor: "#f8bbd0", color: "#880e4f" }}
+                            sx={{
+                              bgcolor: "#4c1d95",
+                              color: "#e5e7eb",
+                              width: 48,
+                              height: 48,
+                            }}
                           />
                         )}
                       </ListItemAvatar>
                       <ListItemText
-                        // UserDashboard.jsx:596 In HTML, <p> cannot be a descendant of <p>.
-                        // This will cause a hydration error.
                         primaryTypographyProps={{ component: "div" }}
                         secondaryTypographyProps={{ component: "div" }}
                         primary={
@@ -644,9 +714,10 @@ export default function UserDashboard({ userPropsData }) {
                             <Typography
                               variant="subtitle1"
                               sx={{
-                                color: "#ad1457",
-                                fontWeight: 700,
-                                fontFamily: "monospace",
+                                color: accentColorStrong,
+                                fontWeight: 600,
+                                fontFamily:
+                                  "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                               }}
                             >
                               {comment?.User?.name}
@@ -657,13 +728,17 @@ export default function UserDashboard({ userPropsData }) {
                           <Box sx={{ mt: 0.5 }}>
                             <Typography
                               variant="body2"
-                              sx={{ color: "#5e2750" }}
+                              sx={{
+                                color: "#e5e7eb",
+                                fontSize: "0.88rem",
+                                mb: 0.3,
+                              }}
                             >
                               {comment?.commentTitle}
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: "#8e245f", opacity: 0.7 }}
+                              sx={{ color: textMuted, opacity: 0.8 }}
                             >
                               {created}
                             </Typography>

@@ -60,72 +60,63 @@ const itemVariants = {
 };
 
 export default function ChatCards() {
-  const dispatch = useDispatch(); // useDispatch — отправка действий
-  const navigate = useNavigate(); // переход по маршрутам
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const location = useLocation();
-  const { id } = useParams(); //  извлекает id комнаты из URL
-  //  Извлечение данных пользователя из Redux
-  const { userID, userAvatar, userName } = useSelector((store) => store.user);
-  //  Извлечение данных комнаты из Redux
-  const currentRoom = useSelector((store) => store.room.currentRoom); // useSelector - доступ к состоянию Redux-хранилища
-  //  Извлечение всех постов из Reduxs
+  const { id } = useParams();
+
+  const { userID } = useSelector((store) => store.user);
+  const currentRoom = useSelector((store) => store.room.currentRoom);
   const allPosts = useSelector((store) => store.post.allPosts);
 
-  //  Состояние для управления отображением модального окна для создания поста
   const [openModalPost, setOpenModalPost] = useState(false);
-  // Состояние для создания или изменения поста
   const [editPost, setEditPost] = useState(null);
-
-  // Состояние для открытия формы для создания комменатрия
   const [openReplyPostId, setOpenReplyPostId] = useState(null);
-
-  // Состояние для отображения полного текста поста
   const [expanded, setExpanded] = useState(() => new Set());
-
-  // Состояние для открытия  комментариев
   const [showReplyPostId, setShowReplyPostId] = useState(null);
-
-  // Забираем комментарии из store
-  const commentsByPostId = useSelector((store) => store.comment.byPostId);
-
   const [focusedPostID, setFocusedPostID] = useState(null);
-  // Забираем счетчики коммнетриев  из store
+
+  const commentsByPostId = useSelector((store) => store.comment.byPostId);
   const countsByPostId = useSelector((store) => store.comment.countsByPostId);
+  const allReactionPosts = useSelector(
+    (store) => store.reactionsPosts.allReactionPosts
+  );
+
+  const mainColor = "#11071c";
+  const pageBg = "#1d102f";
+  const cardBg = "#231433";
+  const cardSoftBg = "#2b183c";
+  const accentColor = "#b794f4";
+  const accentColorStrong = "#c4b5fd";
+  const dangerColor = "#f97373";
+  const textMuted = "#9ca3af";
 
   // -------------------- Создание комментария ----------------------
-  // Функция которая следит за состоянием showReplyPostId при нажатии открывается форма для добалвения комментария
   const toggleReplyForPost = (postID) => {
     setOpenReplyPostId((prev) => (prev === postID ? null : postID));
-    setShowReplyPostId(null); // Закрывать комментарии если открыта форма для создания комментария
+    setShowReplyPostId(null);
     setOpenModalPost(false);
   };
-  // ------------------- Создание и изменение поста -------------------------------------
 
-  //  Если пользователь не авторизован, редирект на /signin
-  //  Иначе переключение отображения модального окна
+  // ------------------- Создание и изменение поста -----------------
   const handleAddPostClick = () => {
     if (!userID) {
-      navigate("/signin", {
-        state: { from: location },
-      });
+      navigate("/signin", { state: { from: location } });
       return;
     }
-    setEditPost(null); // Если добаялем пост то редактирвание закрываем
-    setOpenReplyPostId(null); // Если добаялем пост то форму создания комментария  закрываем
-    setOpenModalPost(true); // Если добаялем пост, открываем PostEditor для создания поста
+    setEditPost(null);
+    setOpenReplyPostId(null);
+    setOpenModalPost(true);
   };
 
-  // Функция которая следжит за состоянием измнения поста
   const handleEditPostClick = (post) => {
     if (!userID || userID !== post.user_id) return;
-    setEditPost(post); //  Если изменяем пост то редактируем конкретный пост
-    setOpenReplyPostId(null); // Если изменяем пост то форму создания комментария  закрываем
-    setOpenModalPost(true); // Если изменяем пост, открываем PostEditor для изменения поста
+    setEditPost(post);
+    setOpenReplyPostId(null);
+    setOpenModalPost(true);
   };
 
-  // ------------------- Отображение полного поста ---------------------
-
-  // Функция которая следит за отображением полного текста (поста/кооментария)
+  // ------------------- Отображение полного поста -----------------
   const toggleExpand = (postID) => {
     setExpanded((prev) => {
       const next = new Set(prev);
@@ -138,21 +129,14 @@ export default function ChatCards() {
     });
   };
 
-  // Загрузка данных. При монтировании компонента (или изменении id)
-  // Загружается информация о комнате
+  // ------------------- Загрузка данных ---------------------------
   useEffect(() => {
     dispatch(getRoomById(id));
   }, [dispatch, id]);
 
-  // Загружаются все посты, относящиеся к комнате
   useEffect(() => {
     dispatch(fetchAllPosts(id));
   }, [dispatch, id]);
-
-  // Забираем все реакции на посты из store
-  const allReactionPosts = useSelector(
-    (store) => store.reactionsPosts.allReactionPosts
-  );
 
   useEffect(() => {
     if (Array.isArray(allPosts) && allPosts.length) {
@@ -160,19 +144,16 @@ export default function ChatCards() {
     }
   }, [dispatch, allPosts]);
 
-  // -------------------- Отображение всех коммнетриев для определенного поста ----------------------
-  // Функция которая следит за состоянием отображения комментариев
+  // -------------------- Отображение комментариев -----------------
   const toggleShowCommentToPost = (postID) => {
     setShowReplyPostId((prev) => {
       const next = prev === postID ? null : postID;
       setFocusedPostID(next ? postID : null);
       return next;
     });
-    // берём массив комментариев для postID, либо получаем undefined, если их ещё нет в сторе.
-    // Грузим комментарии только тогда, когда необходимо их показать
+
     if (!commentsByPostId?.[postID]) {
-      // если массива нет (то есть undefined/null/falsey)
-      dispatch(fetchComments(postID)); // делаем загрузку: dispatch(fetchComments(postID))
+      dispatch(fetchComments(postID));
     }
   };
 
@@ -182,16 +163,13 @@ export default function ChatCards() {
       : allPosts
     : [];
 
-  // async
   useEffect(() => {
     if (!Array.isArray(allPosts) || allPosts.length === 0) return;
     (async () => {
       try {
-        // 1) грузим комментарии для всех постов параллельно
         await Promise.all(allPosts.map((p) => dispatch(fetchComments(p.id))));
-        // 2) одним запросом получаем счётчики
         const ids = allPosts.map((p) => p.id);
-        await dispatch(fetchCommentCounts(ids)).unwrap(); // можно ловить ошибки детальнее
+        await dispatch(fetchCommentCounts(ids)).unwrap();
       } catch (error) {
         console.log(error);
       }
@@ -199,7 +177,6 @@ export default function ChatCards() {
   }, [dispatch, allPosts]);
 
   return (
-    // Основной макет
     <Box
       sx={{
         minHeight: "100dvh",
@@ -208,24 +185,24 @@ export default function ChatCards() {
         justifyContent: "center",
         px: { xs: 1.5, sm: 2, md: 3 },
         py: { xs: 1.5, sm: 2 },
-        background: `radial-gradient(1200px 800px at 10% -10%, #fff0f4 10%, rgba(255,240,244,0) 60%),
-                     radial-gradient(1200px 800px at 110% 10%, #fde4ec 10%, rgba(253,228,236,0) 60%),
-                     linear-gradient(120deg, #fde4ec 0%, #fff0f5 45%, #f9e1ea 100%)`,
+        background: `
+          radial-gradient(1200px 800px at 0% -20%, #3b1d5e 0%, transparent 60%),
+          radial-gradient(1100px 700px at 110% 0%, #4c1d95 0%, transparent 55%),
+          linear-gradient(135deg, #0b0615 0%, #1d102f 45%, #0f172a 100%)
+        `,
       }}
     >
       <Paper
-        elevation={0} // интенсивность тени
+        elevation={0}
         sx={{
           width: "100%",
           maxWidth: 1200,
           borderRadius: 5,
           mt: { xs: 1, sm: 2 },
           p: { xs: 2, sm: 3, md: 4 },
-          background: "rgba(255, 238, 244, 0.65)",
-          backdropFilter: "saturate(1.1) blur(8px)",
-          border: "1px solid rgba(194, 24, 91, 0.12)",
-          boxShadow:
-            "0 10px 30px rgba(194, 24, 91, 0.12), inset 0 1px 0 rgba(255,255,255,0.6)",
+          background: cardBg,
+          border: "1px solid rgba(255,255,255,0.06)",
+          boxShadow: "0 18px 40px rgba(0,0,0,0.9)",
         }}
       >
         {/* Header */}
@@ -239,40 +216,64 @@ export default function ChatCards() {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {/* Для аватара */}
             {currentRoom?.owner?.avatar ? (
-              <img
-                src={`${process.env.REACT_APP_BASEURL}${currentRoom?.owner?.avatar}`}
-                alt="user"
-                style={{
-                  width: "70px",
-                  height: "70px",
+              <Box
+                sx={{
+                  width: 70,
+                  height: 70,
                   borderRadius: "50%",
-                  objectFit: "cover",
+                  p: 0.5,
+                  background:
+                    "linear-gradient(135deg, #b794f4 0%, #7c3aed 50%, #4c1d95 100%)",
                 }}
-              />
+              >
+                <img
+                  src={`${process.env.REACT_APP_BASEURL}${currentRoom?.owner?.avatar}`}
+                  alt="user"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+              </Box>
             ) : (
               <Avatar
                 alt="user"
-                style={{
-                  width: "70px",
-                  height: "70px",
+                sx={{
+                  width: 70,
+                  height: 70,
+                  bgcolor: "#3b0764",
+                  color: "#e5e7eb",
                 }}
               />
             )}
-            <Typography
-              variant="body1"
-              sx={{
-                color: "#6a1b9a",
-                fontSize: { xs: "1.05rem", sm: "1.15rem" },
-                fontFamily:
-                  "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
-                opacity: 0.9,
-              }}
-            >
-              {currentRoom?.nameroom}
-            </Typography>
-            <Box />
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: accentColor,
+                  fontSize: { xs: "1.05rem", sm: "1.15rem" },
+                  fontFamily:
+                    "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+                  letterSpacing: 0.4,
+                }}
+              >
+                {currentRoom?.nameroom}
+              </Typography>
+              {currentRoom?.owner?.name && (
+                <Typography
+                  variant="caption"
+                  sx={{ color: textMuted, fontSize: "0.75rem" }}
+                >
+                  Владелец:
+                  {currentRoom.owner.name}
+                </Typography>
+              )}
+            </Box>
           </Box>
 
           {!openModalPost && (
@@ -281,26 +282,31 @@ export default function ChatCards() {
               variant="contained"
               sx={{
                 alignSelf: { xs: "stretch", sm: "initial" },
-                background: "linear-gradient(180deg, #f48fb1, #ec407a)",
-                color: "#fff",
+                background:
+                  "linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f97316 100%)",
+                color: "#0b0615",
                 fontWeight: 700,
-                borderRadius: 3,
-                px: 2.5,
+                borderRadius: 999,
+                px: 2.8,
                 height: 44,
-                boxShadow: "0 6px 16px rgba(236,64,122,0.35)",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.7)",
+                textTransform: "none",
+                fontSize: "0.9rem",
                 "&:hover": {
-                  background: "linear-gradient(180deg, #f06292, #d81b60)",
-                  boxShadow: "0 10px 22px rgba(216,27,96,0.35)",
+                  background:
+                    "linear-gradient(135deg, #c4b5fd 0%, #f472b6 50%, #fb923c 100%)",
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.9)",
                   transform: "translateY(-1px)",
                 },
-                transition: "all .25s ease",
+                transition: "all .2s ease",
               }}
             >
               Добавить пост
             </Button>
           )}
         </Box>
-        {/* Модальное окно для создания поста */}
+
+        {/* Модальное окно для создания/редактирования поста */}
         {openModalPost && (
           <Box sx={{ mt: 2 }}>
             <PostEditor
@@ -313,8 +319,15 @@ export default function ChatCards() {
             />
           </Box>
         )}
-        <Divider sx={{ my: 3, borderColor: "rgba(194,24,91,0.15)" }} />
-        {/* Плоский список постов */}
+
+        <Divider
+          sx={{
+            my: 3,
+            borderColor: "rgba(148,163,184,0.35)",
+          }}
+        />
+
+        {/* Список постов */}
         {Array.isArray(postRender) && postRender.length > 0 ? (
           <Box
             component={motion.div}
@@ -325,20 +338,19 @@ export default function ChatCards() {
             <AnimatePresence>
               <Stack spacing={1.5}>
                 {postRender.map((post) => {
-                  // Фильтрируем ко-во лайков для данного поста
                   const likePost = allReactionPosts.filter(
                     (like) =>
                       like.post_id === post.id && like.reaction_type === "like"
                   ).length;
-                  // Фильтрируем ко-во дизлайков для данного поста
+
                   const dislikePost = allReactionPosts.filter(
                     (dislike) =>
                       dislike.post_id === post.id &&
                       dislike.reaction_type === "dislike"
                   ).length;
 
-                  // Массив всех комментариев по postID
                   const comments = commentsByPostId?.[post.id] || [];
+
                   return (
                     <Paper
                       key={post.id}
@@ -346,26 +358,28 @@ export default function ChatCards() {
                       variants={itemVariants}
                       elevation={0}
                       sx={{
-                        display: { xs: "block", sm: "grid" }, // на мобиле — одна колонка, на sm+ — grid
+                        display: { xs: "block", sm: "grid" },
                         cursor: "pointer",
-                        gridTemplateColumns: showReplyPostId // gridTemplateColumns  без grid он не работает
+                        gridTemplateColumns: showReplyPostId
                           ? "1fr"
                           : { xs: "128px 1fr", sm: "168px 1fr" },
                         gap: 1.5,
                         p: 1.5,
                         borderRadius: 3,
-                        bgcolor: "rgba(255, 238, 244, 0.80)", // нежно-розовые карточки на твоём фоне
-                        border: "1px solid rgba(161,19,74,0.08)",
+                        bgcolor: cardSoftBg,
+                        border: "1px solid rgba(148,163,184,0.25)",
+                        boxShadow: "0 10px 26px rgba(0,0,0,0.85)",
                         transition:
-                          "transform .18s ease, box-shadow .18s ease, background .18s ease",
+                          "transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease",
                         "&:hover": {
                           transform: "translateY(-2px)",
-                          boxShadow: "0 10px 22px rgba(161,19,74,0.12)",
-                          bgcolor: "rgba(255, 238, 244, 0.92)",
+                          boxShadow: "0 16px 40px rgba(0,0,0,1)",
+                          borderColor: "rgba(183,148,244,0.7)",
+                          bgcolor: "#2f1943",
                         },
                       }}
                     >
-                      {/* превью 16:9 слева (как у YouTube) */}
+                      {/* Левая колонка с аватаром / превью (desktop) */}
                       {!showReplyPostId && (
                         <Box
                           sx={{
@@ -373,48 +387,68 @@ export default function ChatCards() {
                             borderRadius: 2,
                             overflow: "hidden",
                             background:
-                              "linear-gradient(135deg, #fde4ec 0%, #fff0f5 100%)",
-                            // трюк для соотношения сторон 16:9
+                              "radial-gradient(circle at 0% 0%, #4c1d95 0%, transparent 60%), radial-gradient(circle at 100% 0%, #7c3aed 0%, transparent 55%), #111827",
                             "&::before": {
                               content: '""',
                               display: "block",
                               paddingTop: "56.25%", // 16:9
                             },
-                            // display: "flex",
                             display: { xs: "none", sm: "flex" },
                             alignItems: "center",
                             justifyContent: "center",
                           }}
                         >
-                          {post?.User?.avatar ? (
-                            <Box
-                              component="img"
-                              src={`${process.env.REACT_APP_BASEURL}${post?.User?.avatar}`}
-                              alt="user"
-                              sx={{
-                                width: 50,
-                                height: 50,
-                                borderRadius: "50%",
-                                flex: "0 0 auto",
-                                objectFit: "cover",
-                              }}
-                            />
-                          ) : (
-                            <Avatar sx={{ width: 50, height: 50 }} />
-                          )}
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              inset: 0,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {post?.User?.avatar ? (
+                              <Box
+                                component="img"
+                                src={`${process.env.REACT_APP_BASEURL}${post?.User?.avatar}`}
+                                alt="user"
+                                sx={{
+                                  width: 56,
+                                  height: 56,
+                                  borderRadius: "50%",
+                                  objectFit: "cover",
+                                  boxShadow:
+                                    "0 8px 22px rgba(0,0,0,0.85), 0 0 0 2px rgba(249,250,251,0.4)",
+                                }}
+                              />
+                            ) : (
+                              <Avatar
+                                sx={{
+                                  width: 56,
+                                  height: 56,
+                                  bgcolor: "#4b5563",
+                                  color: "#e5e7eb",
+                                }}
+                              />
+                            )}
+                          </Box>
                         </Box>
                       )}
 
-                      {/* контент справа */}
+                      {/* Правая колонка — контент поста */}
                       <Box sx={{ minWidth: 0, display: "grid", gap: 0.5 }}>
-                        {/* шапка: аватар + автор + дата */}
+                        {/* Автор + дата */}
                         <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
                         >
                           <Typography
                             variant="body2"
                             sx={{
-                              color: "rgba(122,26,80,0.9)",
+                              color: accentColorStrong,
                               fontWeight: 600,
                               letterSpacing: 0.2,
                               whiteSpace: "nowrap",
@@ -429,7 +463,11 @@ export default function ChatCards() {
 
                           <Typography
                             variant="caption"
-                            sx={{ color: "rgba(122,26,80,0.65)", ml: "auto" }}
+                            sx={{
+                              color: textMuted,
+                              ml: "auto",
+                              fontSize: "0.72rem",
+                            }}
                           >
                             {new Date(
                               Date.parse(post.createdAt)
@@ -437,20 +475,18 @@ export default function ChatCards() {
                           </Typography>
                         </Box>
 
-                        {/* заголовок  */}
+                        {/* Заголовок поста */}
                         <Typography
                           className="yt-title"
                           sx={{
                             mt: 0.25,
-                            color: "#7a1a50",
+                            color: "#e5e7eb",
                             fontSize: { xs: "0.98rem", sm: "1.05rem" },
-                            fontWeight: 700,
+                            fontWeight: 600,
                             fontFamily:
                               "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
                             lineHeight: 1.25,
-                            cursor: "pointer",
-                            transition: "color .2s ease",
-                            "&:hover": { color: "#a1134a" },
+                            cursor: "default",
                           }}
                         >
                           {(() => {
@@ -474,26 +510,31 @@ export default function ChatCards() {
                                   variant="text"
                                   onClick={() => toggleExpand(post.id)}
                                   sx={{
-                                    minWidth: "unset", // убирает минимальную ширину MUI-кнопки
-                                    p: 0, // убирает внутренние отступы
+                                    minWidth: "unset",
+                                    p: 0,
                                     ml: 0.6,
                                     lineHeight: 1,
                                     fontWeight: "bold",
-                                    fontSize: "1rem", // можно увеличить/уменьшить размер точек
-                                    color: "#a1134a", // цвет точек
+                                    fontSize: "0.9rem",
+                                    color: accentColor,
+                                    textTransform: "none",
                                     "&:hover": {
-                                      backgroundColor: "transparent", // чтобы при ховере не было серого фона
-                                      color: "#7a1a50", // можно добавить эффект смены цвета
+                                      backgroundColor: "transparent",
+                                      color: accentColorStrong,
                                     },
                                   }}
                                 >
                                   {isOpen ? (
-                                    <Typography sx={{ color: "#999" }}>
-                                      {" "}
+                                    <Typography
+                                      sx={{
+                                        color: textMuted,
+                                        fontSize: "0.8rem",
+                                      }}
+                                    >
                                       Свернуть
                                     </Typography>
                                   ) : (
-                                    " ..."
+                                    "..."
                                   )}
                                 </Button>
                               </>
@@ -501,15 +542,15 @@ export default function ChatCards() {
                           })()}
                         </Typography>
 
+                        {/* Панель действий */}
                         <Box
-                          // className="post-actions"
                           sx={{
                             display:
-                              openReplyPostId === post.id ? "none" : "flex", // Убираем действия к посту если пишем коммeнтарий
+                              openReplyPostId === post.id ? "none" : "flex",
                             alignItems: "center",
                             gap: 0.5,
                             mt: 0.5,
-                            opacity: 0.75,
+                            opacity: 0.85,
                             transition: "opacity .2s ease",
                             "& .MuiButton-startIcon": { mr: 0.5 },
                             "&:hover": { opacity: 1 },
@@ -519,54 +560,63 @@ export default function ChatCards() {
                             <Button
                               size="small"
                               sx={{
-                                color: "#d81b60",
+                                color: accentColorStrong,
                                 fontWeight: 700,
                                 minWidth: 0,
                                 px: 1,
+                                fontSize: "0.8rem",
                               }}
-                              startIcon={<ThumbUpIcon />}
+                              startIcon={
+                                <ThumbUpIcon sx={{ fontSize: "1rem" }} />
+                              }
                               onClick={() =>
                                 dispatch(
                                   createReactionPostSubmit(post.id, "like")
                                 )
                               }
                             >
-                              {`${likePost}`}
+                              {likePost}
                             </Button>
                           </Tooltip>
                           <Tooltip title="Не нравится">
                             <Button
                               size="small"
                               sx={{
-                                color: "#d81b60",
+                                color: dangerColor,
                                 fontWeight: 700,
                                 minWidth: 0,
                                 px: 1,
+                                fontSize: "0.8rem",
                               }}
-                              startIcon={<ThumbDownIcon />}
+                              startIcon={
+                                <ThumbDownIcon sx={{ fontSize: "1rem" }} />
+                              }
                               onClick={() =>
                                 dispatch(
                                   createReactionPostSubmit(post.id, "dislike")
                                 )
                               }
                             >
-                              {`${dislikePost}`}
+                              {dislikePost}
                             </Button>
                           </Tooltip>
                           <Tooltip title="Комментарии">
                             <Button
                               size="small"
                               sx={{
-                                color: "#d81b60",
+                                color: textMuted,
                                 fontWeight: 700,
                                 minWidth: 0,
                                 px: 1,
+                                fontSize: "0.8rem",
                               }}
                               startIcon={
-                                focusedPostID ? (
-                                  <VisibilityIcon />
+                                focusedPostID === post.id ? (
+                                  <VisibilityIcon sx={{ fontSize: "1rem" }} />
                                 ) : (
-                                  <VisibilityOffIcon />
+                                  <VisibilityOffIcon
+                                    sx={{ fontSize: "1rem" }}
+                                  />
                                 )
                               }
                               onClick={() => {
@@ -576,7 +626,8 @@ export default function ChatCards() {
                               {countsByPostId[post.id] ?? 0}
                             </Button>
                           </Tooltip>
-                          {/* Если пользователь не яв-ся автором поста показываем кнопку "Ответить" */}
+
+                          {/* Справа — действия автора / ответ */}
                           {userID !== post?.user_id ? (
                             <Box
                               sx={{
@@ -589,7 +640,7 @@ export default function ChatCards() {
                               <Tooltip title="Ответить">
                                 <IconButton
                                   size="small"
-                                  sx={{ color: "#7a1a50" }}
+                                  sx={{ color: accentColor }}
                                   onClick={() => toggleReplyForPost(post.id)}
                                 >
                                   <SendIcon sx={{ fontSize: "1.1rem" }} />
@@ -605,14 +656,12 @@ export default function ChatCards() {
                                 gap: 0.5,
                               }}
                             >
-                              {/* Если пользователь  яв-ся автором поста показываем все  кнопки */}
                               <Tooltip title="Редактировать">
                                 <IconButton
                                   size="small"
-                                  sx={{ color: "#7a1a50" }}
+                                  sx={{ color: accentColorStrong }}
                                   onClick={() => {
                                     handleEditPostClick(post);
-                                    // Scroll к верху
                                     window.scrollTo({
                                       top: 0,
                                       behavior: "smooth",
@@ -625,7 +674,7 @@ export default function ChatCards() {
                               <Tooltip title="Удалить">
                                 <IconButton
                                   size="small"
-                                  sx={{ color: "#7a1a50" }}
+                                  sx={{ color: dangerColor }}
                                   onClick={() =>
                                     dispatch(deletePostHandler(post.id))
                                   }
@@ -636,7 +685,7 @@ export default function ChatCards() {
                               <Tooltip title="Ответить">
                                 <IconButton
                                   size="small"
-                                  sx={{ color: "#7a1a50" }}
+                                  sx={{ color: accentColor }}
                                   onClick={() => toggleReplyForPost(post.id)}
                                 >
                                   <SendIcon sx={{ fontSize: "1.1rem" }} />
@@ -645,7 +694,8 @@ export default function ChatCards() {
                             </Box>
                           )}
                         </Box>
-                        {/* Страховка  */}
+
+                        {/* Форма комментария */}
                         {!openModalPost && openReplyPostId === post.id && (
                           <CommentEditor
                             postID={post.id}
@@ -653,6 +703,8 @@ export default function ChatCards() {
                             parentID={null}
                           />
                         )}
+
+                        {/* Список комментариев */}
                         {showReplyPostId === post.id && (
                           <CommentsCard
                             comments={comments}
@@ -662,7 +714,7 @@ export default function ChatCards() {
                             toggleExpand={toggleExpand}
                             userID={userID}
                             openReplyPostId={openReplyPostId}
-                            setOpenModalPost={setOpenModalPost} // Функция состояния при  открытии PostEditor для создания поста
+                            setOpenModalPost={setOpenModalPost}
                             openModalPost={openModalPost}
                           />
                         )}
@@ -673,9 +725,7 @@ export default function ChatCards() {
               </Stack>
             </AnimatePresence>
           </Box>
-        ) : (
-          ""
-        )}
+        ) : null}
       </Paper>
     </Box>
   );

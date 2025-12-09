@@ -24,19 +24,15 @@ import ModalRoomRequest from "../ModalRoomRequest";
 import ModalRoomLists from "../ModalRoomLists/ModalRoomLists";
 
 export default function Chatrooms() {
-  // -------------------- Сортировка -----------------------
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
-  // -------------------- Модальные окна -------------------
   const [openModalRoomCreate, setOpenModalRoomCreate] = useState(false);
   const [openRequestModal, setOpenRequestModal] = useState(false);
   const [openModalRoomsShow, setOpenModalRomsShow] = useState(false);
   const [roomsView, setRoomsView] = useState("");
 
-  // -------------------- Комнаты -------------------
   const [selectedRoomID, setSelectedRoomID] = useState(null);
 
-  // -------------------- Redux ----------------------------
   const { userID } = useSelector((store) => store.user);
   const allRooms = useSelector((store) => store.room.allRooms);
   const dispatch = useDispatch();
@@ -45,14 +41,11 @@ export default function Chatrooms() {
     dispatch(fetchAllRooms());
   }, [dispatch, userID]);
 
-  // -------------------- Навигация -----------------------
   const navigate = useNavigate();
 
-  // -------------------- Разделение по типу -----------------------
   const openRooms = allRooms.filter((rooms) => rooms.isPrivate === false);
   const privateRooms = allRooms.filter((rooms) => rooms.isPrivate === true);
 
-  // -------------------- Сортировка комнат -----------------------
   const sortByName = (a, b, asc) =>
     asc
       ? (a?.nameroom || "").localeCompare(b?.nameroom || "")
@@ -70,7 +63,6 @@ export default function Chatrooms() {
     return [...privateRooms].sort((a, b) => sortByName(a, b, asc));
   }, [privateRooms, sortConfig]);
 
-  // -------------------- Поиск комнат ------------------------
   const [searchRooms, setSearchRooms] = useState("");
 
   const filteredSearchRooms = useMemo(() => {
@@ -81,7 +73,6 @@ export default function Chatrooms() {
       .sort((a, b) => (a?.nameroom || "").localeCompare(b?.nameroom || ""));
   }, [allRooms, searchRooms]);
 
-  // -------------------- UI: стили ------------------------
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("lg"));
 
@@ -108,14 +99,16 @@ export default function Chatrooms() {
           xs={12}
           md={4}
           sx={{
-            p: 2,
+            pt: 2,
+            pr: 2,
+            pb: { xs: 0, md: 2 }, // на мобиле убираем нижний паддинг
+            pl: 2,
             borderRight: { md: "1px solid rgba(255,255,255,0.06)" },
             bgcolor: mainColor,
           }}
         >
           {isSmall ? (
             <Stack spacing={2}>
-              {/* Открытые комнаты (кнопка, мобильный) */}
               <Button
                 onClick={() => {
                   setRoomsView("open");
@@ -146,7 +139,6 @@ export default function Chatrooms() {
                 </Typography>
               </Button>
 
-              {/* Приватные комнаты (кнопка, мобильный) */}
               <Button
                 onClick={() => {
                   setRoomsView("private");
@@ -179,7 +171,7 @@ export default function Chatrooms() {
             </Stack>
           ) : (
             <Stack spacing={3}>
-              {/* Открытые комнаты (desktop) */}
+              {/* Открытые (desktop) */}
               <Box>
                 <Stack
                   direction="row"
@@ -283,7 +275,7 @@ export default function Chatrooms() {
                 )}
               </Box>
 
-              {/* Приватные комнаты (desktop) */}
+              {/* Приватные (desktop) */}
               <Box>
                 <Stack
                   direction="row"
@@ -397,17 +389,20 @@ export default function Chatrooms() {
           )}
         </Grid>
 
-        {/* Правая колонка */}
+        {/* Правая колонка — убираем отдельный тёмный фон и прижимаем к верху на мобиле */}
         <Grid
           item
           xs={12}
           md={8}
           sx={{
-            p: 2,
+            pt: { xs: 0, md: 2 }, // на мобиле без верхнего паддинга
+            pr: 2,
+            pb: 2,
+            pl: 2,
             display: "flex",
             flexDirection: "column",
             minHeight: 0,
-            bgcolor: "#150b23",
+            bgcolor: { xs: "transparent", md: "transparent" }, // убрали тёмную “полосу”
           }}
         >
           <Stack
@@ -430,8 +425,8 @@ export default function Chatrooms() {
                   display: "flex",
                   alignItems: "center",
                   p: 1,
-                  bgcolor: mainColorLight,
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  bgcolor: "transparent", // фона у самого поиска нет
+                  border: "1px solid rgba(255,255,255,0.18)",
                 }}
               >
                 <IconButton sx={{ ml: 0.5, color: textMuted }}>
@@ -562,7 +557,6 @@ export default function Chatrooms() {
         </Fab>
       </Grid>
 
-      {/* Модалки */}
       <ModalRoomRequest
         openRequestModal={openRequestModal}
         closeModalRequest={() => setOpenRequestModal(false)}
