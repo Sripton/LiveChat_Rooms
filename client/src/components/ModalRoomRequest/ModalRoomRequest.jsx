@@ -5,125 +5,200 @@ import { Box, Button, Typography, Snackbar, Alert } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import sendRoomRequest from "../../redux/actions/roomRequestActions";
 import { CLEAR_ROOM_REQUEST_STATE } from "../../redux/types/types";
+
 export default function ModalRoomRequest({
-  openRequestModal, // флаг открытия модалки
-  closeModalRequest, // функция закрытия модалки
-  selectedRoomID, // id комнаты для запроса
+  openRequestModal,
+  closeModalRequest,
+  selectedRoomID,
 }) {
-  const [openSnackbar, setOpenSnackbar] = useState(false); //  показ уведомлений (Snackbar)
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const dispatch = useDispatch();
 
-  // получаем данные из Redux стора
   const { status, error, request } = useSelector((store) => store.roomRequest);
 
-  // обработчик отправки запроса
-  const handleSubmitRequest = () => {
-    if (!selectedRoomID) return; // если нет id комнаты, ничего не делаем
-    dispatch(sendRoomRequest(selectedRoomID)); // диспатчим action отправки запроса
-    closeModalRequest(); // закрываем модалку
+  // Отправка запроса
+  const handleSubmitRequest = (e) => {
+    e.preventDefault();
+    if (!selectedRoomID) return;
+    dispatch(sendRoomRequest(selectedRoomID));
+    closeModalRequest();
   };
 
-  // при каждом открытии модалки — сбрасываем состояние запроса в Redux
+  // Сброс состояния запроса при открытии модалки
   useEffect(() => {
     if (openRequestModal) {
       dispatch({ type: CLEAR_ROOM_REQUEST_STATE });
     }
   }, [openRequestModal, dispatch]);
 
-  // если запрос успешно отправлен — показываем Snackbar
+  // Показ Snackbar при успехе
   useEffect(() => {
     if (request) {
       setOpenSnackbar(true);
     }
   }, [request]);
 
-  // если при запросе возникла ошибка — показываем Snackbar
+  // Показ Snackbar при ошибке
   useEffect(() => {
     if (error) {
       setOpenSnackbar(true);
     }
   }, [error]);
 
-  // при закрытии модалки — сразу скрываем Snackbar
+  // Закрытие Snackbar при закрытии модалки
   useEffect(() => {
     if (!openRequestModal) {
       setOpenSnackbar(false);
     }
   }, [openRequestModal]);
 
-  // обработчик закрытия модалки ?
-  const handleCloseModalRequest = () => {
-    closeModalRequest();
-  };
+  const cardBg = "#231433";
+  const cardSoftBg = "#2b183c";
+  const accentColor = "#b794f4";
+  const accentColorStrong = "#c4b5fd";
 
   return ReactDOM.createPortal(
     <>
-      <Box>
-        {openRequestModal && (
-          // фон и контейнер модалки
+      {openRequestModal && (
+        <Box
+          sx={{
+            width: "100vw",
+            height: "100vh",
+            zIndex: 10030,
+            position: "fixed",
+            inset: 0,
+            bgcolor: "rgba(3,1,14,0.75)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            px: 2,
+          }}
+        >
+          {/* Карточка модалки */}
           <Box
             sx={{
-              width: "100vw",
-              height: "100vh",
-              bgcolor: "rgba(207, 128, 163, 0.5)",
-              zIndex: 10030,
-              position: "fixed",
-              top: 0,
-              left: 0,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center ",
+              backgroundColor: cardBg,
+              p: { xs: 3, sm: 4 },
+              borderRadius: 4,
+              maxWidth: 420,
+              width: "100%",
+              position: "relative",
+              boxShadow: "0 22px 50px rgba(0,0,0,0.95)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              color: "#e5e7eb",
             }}
           >
-            {/* сама модалка */}
+            {/* Header */}
             <Box
               sx={{
-                background: "rgb(252, 240, 245)",
-                p: 6,
-                borderRadius: 4,
-                maxWidth: "90%",
-                minWidth: 300,
-                position: "relative",
-                boxShadow: 6,
+                display: "flex",
+                alignItems: "center",
+                mb: 2.5,
+                gap: 1.5,
               }}
             >
-              {/* заголовок модалки */}
               <Box
                 sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 999,
+                  backgroundColor: cardSoftBg,
                   display: "flex",
                   alignItems: "center",
-                  mb: 2,
+                  justifyContent: "center",
+                  boxShadow: "0 8px 20px rgba(0,0,0,0.9)",
                 }}
               >
-                <KeyIcon sx={{ mr: 1, color: "red" }} />
-                <Typography
-                  variant="h6"
-                  sx={{ fontFamily: "monospace", fontWeight: "bold" }}
-                >
-                  Запрос на доступ
-                </Typography>
+                <KeyIcon sx={{ color: accentColorStrong, fontSize: 22 }} />
               </Box>
-              {/* форма с кнопками */}
-              <form onSubmit={handleSubmitRequest}>
-                <Button
-                  variant="contained"
-                  sx={{ backgroundColor: "#d81b60", mr: 2 }}
-                  type="submit"
-                >
-                  Отправить
-                </Button>
-                <Button
-                  variant="outlined"
-                  sx={{ backgroundColor: "#d81b60", color: "#fff" }}
-                  onClick={handleCloseModalRequest}
-                >
-                  Отмена
-                </Button>
-              </form>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 600,
+                  letterSpacing: 0.4,
+                  fontFamily:
+                    "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                }}
+              >
+                Запрос на доступ к комнате
+              </Typography>
+            </Box>
+
+            {/* Текст-пояснение (можно убрать, если не нужно) */}
+            <Typography
+              variant="body2"
+              sx={{
+                mb: 3,
+                color: "#9ca3af",
+                fontFamily:
+                  "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+              }}
+            >
+              Мы отправим владельцу комнаты запрос на доступ. После одобрения вы
+              сможете войти в приватную комнату.
+            </Typography>
+
+            {/* Форма с кнопками */}
+            <Box
+              component="form"
+              onSubmit={handleSubmitRequest}
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 1.5,
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={closeModalRequest}
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 999,
+                  px: 2.5,
+                  py: 0.9,
+                  borderColor: "rgba(148,163,184,0.7)",
+                  color: "#e5e7eb",
+                  fontSize: "0.9rem",
+                  "&:hover": {
+                    borderColor: accentColorStrong,
+                    backgroundColor: "rgba(148,163,184,0.12)",
+                  },
+                }}
+              >
+                Отмена
+              </Button>
+              <Button
+                variant="contained"
+                type="submit"
+                sx={{
+                  textTransform: "none",
+                  borderRadius: 999,
+                  px: 3,
+                  py: 0.9,
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  background:
+                    "linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f97316 100%)",
+                  color: "#0b0615",
+                  boxShadow: "0 10px 26px rgba(0,0,0,0.9)",
+                  "&:hover": {
+                    background:
+                      "linear-gradient(135deg, #c4b5fd 0%, #f472b6 50%, #fb923c 100%)",
+                    boxShadow: "0 14px 32px rgba(0,0,0,1)",
+                    transform: "translateY(-1px)",
+                  },
+                  transition:
+                    "all .2s cubic-bezier(0.3, 1.4, 0.3, 1), transform .2s ease",
+                }}
+              >
+                Отправить запрос
+              </Button>
             </Box>
           </Box>
-        )}
-      </Box>
+        </Box>
+      )}
+
       {/* Snackbar при успешном запросе */}
       {request && (
         <Snackbar
@@ -136,12 +211,16 @@ export default function ModalRoomRequest({
             onClose={() => setOpenSnackbar(false)}
             severity="success"
             variant="filled"
-            sx={{ fontFamily: "monospace", fontWeight: 500 }}
+            sx={{
+              fontFamily: "system-ui, -apple-system, BlinkMacSystemFont",
+              fontWeight: 500,
+            }}
           >
             {`${status}`}
           </Alert>
         </Snackbar>
       )}
+
       {/* Snackbar при ошибке */}
       {error && (
         <Snackbar
@@ -154,7 +233,10 @@ export default function ModalRoomRequest({
             onClose={() => setOpenSnackbar(false)}
             severity="error"
             variant="filled"
-            sx={{ fontFamily: "monospace", fontWeight: 500 }}
+            sx={{
+              fontFamily: "system-ui, -apple-system, BlinkMacSystemFont",
+              fontWeight: 500,
+            }}
           >
             {`${error}`}
           </Alert>

@@ -389,20 +389,20 @@ export default function Chatrooms() {
           )}
         </Grid>
 
-        {/* Правая колонка — убираем отдельный тёмный фон и прижимаем к верху на мобиле */}
+        {/* Правая колонка поиск */}
         <Grid
           item
           xs={12}
           md={8}
           sx={{
-            pt: { xs: 0, md: 2 }, // на мобиле без верхнего паддинга
+            pt: { xs: 0, md: 2 },
             pr: 2,
             pb: 2,
             pl: 2,
             display: "flex",
             flexDirection: "column",
             minHeight: 0,
-            bgcolor: { xs: "transparent", md: "transparent" }, // убрали тёмную “полосу”
+            bgcolor: { xs: "transparent", md: "transparent" },
           }}
         >
           <Stack
@@ -425,7 +425,7 @@ export default function Chatrooms() {
                   display: "flex",
                   alignItems: "center",
                   p: 1,
-                  bgcolor: "transparent", // фона у самого поиска нет
+                  bgcolor: "transparent",
                   border: "1px solid rgba(255,255,255,0.18)",
                 }}
               >
