@@ -134,7 +134,7 @@ export default function Navbar({ userPropsData }) {
               {userName}
             </Typography>
 
-            <Button
+            <Avatar
               sx={{
                 minWidth: "auto",
                 p: 0,
@@ -179,7 +179,7 @@ export default function Navbar({ userPropsData }) {
                   }}
                 />
               )}
-            </Button>
+            </Avatar>
           </Box>
         </Box>
 
