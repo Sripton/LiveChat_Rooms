@@ -1,7 +1,7 @@
 import axios from "axios";
 import {
   SET_REGISTER_USER,
-  SET_LOGIN_USER,
+  SET_AUTH_USER,
   SET_EDIT_USER,
   SET_REGISTER_ERROR,
   LOGOUT_USER,
@@ -15,7 +15,7 @@ export const checkUserSession = () => async (dispatch) => {
     // Если сессия активна, диспатчим данные пользователя в Redux
     if (response.status === 200) {
       const { data } = response;
-      dispatch({ type: SET_LOGIN_USER, payload: data }); // записываем пользователя в state
+      dispatch({ type: SET_AUTH_USER, payload: data }); // записываем пользователя в state
     }
   } catch (error) {
     console.log(error);
@@ -54,7 +54,7 @@ export const loginUser = (inputs, navigate) => async (dispatch) => {
     if (response.status === 200) {
       const { data } = response;
       // Записываем пользователя в Redux
-      dispatch({ type: SET_LOGIN_USER, payload: data });
+      dispatch({ type: SET_AUTH_USER, payload: data });
       // Перенаправляем на главную страницу
       navigate("/");
     }

@@ -33,10 +33,8 @@ export default function Signup({ userPropsData }) {
     };
   }, [inputs.login, dispatch, errorMessage]);
 
-  const mainColor = "#11071c";
   const cardBg = "#231433";
   const accentColor = "#b794f4";
-  const accentSoft = "rgba(183,148,244,0.15)";
   const textMuted = "#9ca3af";
 
   return (

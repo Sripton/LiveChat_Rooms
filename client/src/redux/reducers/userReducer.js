@@ -2,7 +2,7 @@
 import {
   SET_REGISTER_USER,
   SET_REGISTER_ERROR,
-  SET_LOGIN_USER,
+  SET_AUTH_USER,
   SET_EDIT_USER,
   LOGOUT_USER,
 } from "../types/types";
@@ -25,12 +25,12 @@ export default function userReducer(state = initialState, action) {
   switch (type) {
     // Обрабатываем как регистрацию, так и вход — логика одинаковая: устанавливаем данные пользователя
     case SET_REGISTER_USER:
-    case SET_LOGIN_USER:
+    case SET_AUTH_USER:
       return {
         ...state, // Сохраняем остальную часть состояния (если добавятся поля)
         userID: payload.userID, // Устанавливаем userID из action.payload
         userName: payload.userName, // Устанавливаем userName из action.payload
-        userAvatar: payload.userAvatar || null, // можно получить сразу после логина
+        userAvatar: payload.userAvatar ?? null, // можно получить сразу после логина
         isAuthenticated: true, // Отмечаем, что пользователь авторизован
       };
 

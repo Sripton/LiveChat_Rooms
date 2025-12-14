@@ -3,7 +3,7 @@
 export const SET_REGISTER_USER = "SET_REGISTER_USER";
 
 // Тип экшена для установки данных пользователя после входа в систему
-export const SET_LOGIN_USER = "SET_LOGIN_USER";
+export const SET_AUTH_USER = "SET_AUTH_USER";
 
 // Тип экшена для установки данных пользователя после изменения профиля
 export const SET_EDIT_USER = "SET_EDIT_USER";
