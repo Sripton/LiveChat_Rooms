@@ -76,6 +76,14 @@ export default function Chatrooms() {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("lg"));
 
+  // функция для обработки создания комнаты
+  const handleCreateRoomClick = () => {
+    if (!userID) {
+      navigate("/signin");
+    }
+    return setOpenModalRoomCreate(true);
+  };
+
   const mainColor = "#1d102f";
   const mainColorLight = "#2a183d";
   const cardBg = "#231433";
@@ -528,6 +536,7 @@ export default function Chatrooms() {
         </Grid>
 
         {/* FAB — создание комнаты */}
+
         <Fab
           color="primary"
           sx={{
@@ -551,7 +560,7 @@ export default function Chatrooms() {
               },
             },
           }}
-          onClick={() => setOpenModalRoomCreate(true)}
+          onClick={handleCreateRoomClick}
         >
           <AddIcon />
         </Fab>

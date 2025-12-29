@@ -37,6 +37,8 @@ export default function Signup({ userPropsData }) {
   const accentColor = "#b794f4";
   const textMuted = "#9ca3af";
 
+  console.log("errorMessage", errorMessage);
+
   return (
     <Box
       sx={{

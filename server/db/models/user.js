@@ -19,7 +19,9 @@ module.exports = (sequelize, DataTypes) => {
       this.hasMany(Room, { foreignKey: "ownerID", as: "ownedRooms" });
       this.belongsToMany(Room, {
         through: RoomAdmission, // имя промежуточной таблицы
-        as: "privateRooms", // название доступа к комнатам от user
+        // Какая комната у кого есть доступ?
+        // Кто имеет доступ к какой комнате?
+        as: "joinedRooms", // название доступа к комнатам от user
         foreignKey: "user_id", // поле, указывающее на User
         otherKey: "room_id", // поле, указывающее на Room
       });

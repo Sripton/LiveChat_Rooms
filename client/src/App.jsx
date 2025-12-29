@@ -43,7 +43,7 @@ function App() {
   useEffect(() => {
     const verifySession = async () => {
       await dispatch(checkUserSession());
-      setLoadings(false); // завершили проверку, отключаем спиннер
+      setLoadings(false); //  отключаем спиннер
     };
     verifySession();
   }, [userID, userName]); // будет повторно вызываться, если данные пользователя изменятся
@@ -79,6 +79,7 @@ function App() {
   // --------------------------------------------------------------------------------------
   // Пропсы, передаваемые в дочерние компоненты (Signup, Signin, Navbar)
   // Обёрнуты в useMemo, чтобы избежать лишнего рендера, если зависимости не изменились
+  // чтобы userPropsData не менялся “из-за того что функции новые”, стабилизация функций через useCallback.
   const userPropsData = useMemo(
     () => ({
       inputs,

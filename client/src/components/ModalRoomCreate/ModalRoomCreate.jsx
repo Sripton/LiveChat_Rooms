@@ -25,19 +25,24 @@ export default function ModalRoomCreate({
   const [isPrivate, setIsPrivate] = useState(false);
 
   const handleNameChange = (e) => {
-    const raw = e.target.value;
-    const cleaned = raw.replace(/[^\S\r\n]{2,}/g, " ");
+    const raw = e.target.value; // одно текстовое поле
+    const cleaned = raw.replace(/[^\S\r\n]{2,}/g, " "); // Любой пробельный символ, кроме \r и \n"
     setNameroom(cleaned);
   };
 
   const normalizeSpaces = (str = "", { preserveNewlines = true } = {}) => {
+    // защита от нестроковых значений
     if (typeof str !== "string") return str;
+    // удаление BOM и тримминг
     let out = str.replace(/^\uFEFF/, "").trim();
 
     if (preserveNewlines) {
+      // Любой пробельный символ, кроме \r и \n"
       out = out.replace(/[^\S\r\n]{2,}/gim, " ");
+      // Удаляет пробелы/табы в конце КАЖДОЙ строки
       out = out.replace(/[ \t]+\r?$/gim, "");
     } else {
+      // замена любой последовательности пробельных символов на один пробел
       out = out.replace(/\s+/g, " ");
     }
     return out.trim();
@@ -204,7 +209,7 @@ export default function ModalRoomCreate({
                     <Checkbox
                       name="isPrivate"
                       checked={isPrivate}
-                      onChange={(e) => setIsPrivate(e.target.checked)}
+                      onChange={(e) => setIsPrivate(e.target.checked)} // // Прямой обработчик
                       icon={
                         <MeetingRoomIcon
                           sx={{ color: textMuted, fontSize: 22 }}
