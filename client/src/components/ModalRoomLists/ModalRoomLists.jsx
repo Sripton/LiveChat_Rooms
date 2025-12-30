@@ -56,23 +56,14 @@ export default function ModalRoomLists({
   const privateRooms = allRooms.filter((room) => room.isPrivate === true);
 
   // Сортировка комнат
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [sortDirection, setSortDirection] = useState({
+    open: null, // null | "asc" | "desc"
+    private: null, // null | "asc" | "desc"
+  });
   const sortByName = (a, b, asc) =>
     asc
       ? (a?.nameroom || "").localeCompare(b?.nameroom || "")
       : (b?.nameroom || "").localeCompare(a?.nameroom || "");
-
-  // const openRoomsSorted = useMemo(() => {
-  //   if (sortConfig.key !== "open") return openRooms;
-  //   const asc = sortConfig.direction === "asc";
-  //   return [...openRooms].sort((a, b) => sortByName(a, b, asc));
-  // }, [openRooms, sortConfig]);
-
-  // const privateRoomsSorted = useMemo(() => {
-  //   if (sortConfig.key !== "private") return privateRooms;
-  //   const asc = sortConfig.direction === "asc";
-  //   return [...privateRooms].sort((a, b) => sortByName(a, b, asc));
-  // }, [privateRooms, sortConfig]);
 
   // локальные состояния для переключения комнат по статусу
   const [tab, setTab] = useState(roomsView === "private" ? 1 : 0);
@@ -89,37 +80,35 @@ export default function ModalRoomLists({
   };
 
   // функция сортировки  комнат
-  const sortRooms = (rooms, sortKey) => {
-    // sortKey: "open" или "private"
-    if (sortConfig.key !== sortKey) return rooms;
-    const asc = sortConfig.direction === "asc";
+  const sortRooms = (rooms, key) => {
+    const dir = sortDirection[key];
+    if (!dir) return rooms;
+    const asc = dir === "asc";
     return [...rooms].sort((a, b) => sortByName(a, b, asc));
   };
 
   const visibleOpen = useMemo(() => {
     const filtered = searchRooms(openRooms);
     return sortRooms(filtered, "open");
-  }, [openRooms, query]);
+  }, [openRooms, query, sortDirection]);
 
   const visiblePrivate = useMemo(() => {
     const filtered = searchRooms(privateRooms);
     return sortRooms(filtered, "private");
-  }, [privateRooms, query]);
+  }, [privateRooms, query, sortDirection]);
 
   // если tab !== 0 -> false
   const isOpenTab = tab === 0;
   // isOpenTab = false, поэтому currentLists = visiblePrivate
   const currentLists = isOpenTab ? visibleOpen : visiblePrivate;
 
-  // Функция обработчик для сортировки комнат
   const toggleSort = () => {
-    const key = isOpenTab ? "open" : "private";
-    setSortConfig((prev) => {
-      // если впервые сортируем этот таб — ставим asc
-      if (sortConfig.key !== key) return { key, direction: "asc" };
-
-      // если уже сортируем этот таб — переключаем направление
-      return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+    const key = tab === 0 ? "open" : "private";
+    setSortDirection((prev) => {
+      const next =
+        prev[key] === null ? "desc" : prev[key] === "desc" ? "asc" : "desc";
+      console.log("SORT", key, "->", next);
+      return { ...prev, [key]: next };
     });
   };
 
