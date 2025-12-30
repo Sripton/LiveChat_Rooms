@@ -107,7 +107,6 @@ export default function ModalRoomLists({
     setSortDirection((prev) => {
       const next =
         prev[key] === null ? "desc" : prev[key] === "desc" ? "asc" : "desc";
-      console.log("SORT", key, "->", next);
       return { ...prev, [key]: next };
     });
   };

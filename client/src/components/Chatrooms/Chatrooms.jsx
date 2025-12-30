@@ -201,7 +201,7 @@ export default function Chatrooms() {
                     borderColor: "rgba(255,255,255,0.06)",
                   }}
                 />
-                {privateRooms.slice(0, 7).map((room) => (
+                {openRooms.slice(0, 7).map((room) => (
                   <Box
                     key={room.id}
                     sx={{
@@ -224,6 +224,7 @@ export default function Chatrooms() {
                   >
                     <Box
                       component={NavLink}
+                      // поведение  открытых комнат
                       to={`/chatcards/${room.id}`}
                       sx={{
                         display: "flex",
