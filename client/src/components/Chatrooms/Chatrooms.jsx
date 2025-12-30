@@ -24,8 +24,6 @@ import ModalRoomRequest from "../ModalRoomRequest";
 import ModalRoomLists from "../ModalRoomLists/ModalRoomLists";
 
 export default function Chatrooms() {
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-
   const [openModalRoomCreate, setOpenModalRoomCreate] = useState(false);
   const [openRequestModal, setOpenRequestModal] = useState(false);
   const [openModalRoomsShow, setOpenModalRomsShow] = useState(false);
@@ -45,23 +43,6 @@ export default function Chatrooms() {
 
   const openRooms = allRooms.filter((rooms) => rooms.isPrivate === false);
   const privateRooms = allRooms.filter((rooms) => rooms.isPrivate === true);
-
-  const sortByName = (a, b, asc) =>
-    asc
-      ? (a?.nameroom || "").localeCompare(b?.nameroom || "")
-      : (b?.nameroom || "").localeCompare(a?.nameroom || "");
-
-  const openRoomsSorted = useMemo(() => {
-    if (sortConfig.key !== "open") return openRooms;
-    const asc = sortConfig.direction === "asc";
-    return [...openRooms].sort((a, b) => sortByName(a, b, asc));
-  }, [openRooms, sortConfig]);
-
-  const privateRoomsSorted = useMemo(() => {
-    if (sortConfig.key !== "private") return privateRooms;
-    const asc = sortConfig.direction === "asc";
-    return [...privateRooms].sort((a, b) => sortByName(a, b, asc));
-  }, [privateRooms, sortConfig]);
 
   const [searchRooms, setSearchRooms] = useState("");
 
@@ -143,7 +124,7 @@ export default function Chatrooms() {
                   Открытые комнаты
                 </Typography>
                 <Typography sx={{ opacity: 0.85 }}>
-                  {openRoomsSorted.length}
+                  {openRooms.length}
                 </Typography>
               </Button>
 
@@ -173,7 +154,7 @@ export default function Chatrooms() {
                   Приватные комнаты
                 </Typography>
                 <Typography sx={{ opacity: 0.85 }}>
-                  {privateRoomsSorted.length}
+                  {privateRooms.length}
                 </Typography>
               </Button>
             </Stack>
@@ -211,7 +192,7 @@ export default function Chatrooms() {
                   <Typography
                     sx={{ fontSize: 13, color: "#e5e7eb", opacity: 0.8 }}
                   >
-                    {openRoomsSorted.length}
+                    {openRooms.length}
                   </Typography>
                 </Stack>
                 <Divider
@@ -220,7 +201,7 @@ export default function Chatrooms() {
                     borderColor: "rgba(255,255,255,0.06)",
                   }}
                 />
-                {openRoomsSorted.slice(0, 7).map((room) => (
+                {privateRooms.slice(0, 7).map((room) => (
                   <Box
                     key={room.id}
                     sx={{
@@ -260,7 +241,7 @@ export default function Chatrooms() {
                     </Box>
                   </Box>
                 ))}
-                {openRoomsSorted.length > 8 && (
+                {openRooms.length > 8 && (
                   <Box textAlign="right" mt={1}>
                     <Button
                       onClick={() => {
@@ -315,7 +296,7 @@ export default function Chatrooms() {
                   <Typography
                     sx={{ fontSize: 13, color: "#e5e7eb", opacity: 0.8 }}
                   >
-                    {privateRoomsSorted.length}
+                    {privateRooms.length}
                   </Typography>
                 </Stack>
                 <Divider
@@ -324,7 +305,7 @@ export default function Chatrooms() {
                     borderColor: "rgba(255,255,255,0.06)",
                   }}
                 />
-                {privateRoomsSorted.slice(0, 7).map((room) => (
+                {privateRooms.slice(0, 7).map((room) => (
                   <Box
                     key={room.id}
                     sx={{
@@ -371,7 +352,7 @@ export default function Chatrooms() {
                     </Box>
                   </Box>
                 ))}
-                {privateRoomsSorted.length > 8 && (
+                {privateRooms.length > 8 && (
                   <Box textAlign="right" mt={1}>
                     <Button
                       onClick={() => {

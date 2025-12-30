@@ -24,16 +24,26 @@ import CloseIcon from "@mui/icons-material/Close";
 import LockIcon from "@mui/icons-material/Lock";
 import PublicIcon from "@mui/icons-material/Public";
 import SearchIcon from "@mui/icons-material/Search";
+import SwapVertIcon from "@mui/icons-material/SwapVert";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+
+const COLORS = {
+  mainColor: "#1d102f",
+  mainColorLight: "#2a183d",
+  cardBg: "#231433",
+  accentColor: "#b794f4",
+  accentSoft: "rgba(183,148,244,0.15)",
+  textMuted: "#9ca3af",
+};
 
 export default function ModalRoomLists({
   userID,
   openModalRoomsShow,
   closeModalRoomsShow,
   isSmall,
-  roomsView,
+  roomsView, // private
   setOpenRequestModal,
   setSelectedRoomID,
 }) {
@@ -45,45 +55,89 @@ export default function ModalRoomLists({
   const openRooms = allRooms.filter((room) => room.isPrivate !== true);
   const privateRooms = allRooms.filter((room) => room.isPrivate === true);
 
-  // локальные состояния
+  // Сортировка комнат
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const sortByName = (a, b, asc) =>
+    asc
+      ? (a?.nameroom || "").localeCompare(b?.nameroom || "")
+      : (b?.nameroom || "").localeCompare(a?.nameroom || "");
+
+  // const openRoomsSorted = useMemo(() => {
+  //   if (sortConfig.key !== "open") return openRooms;
+  //   const asc = sortConfig.direction === "asc";
+  //   return [...openRooms].sort((a, b) => sortByName(a, b, asc));
+  // }, [openRooms, sortConfig]);
+
+  // const privateRoomsSorted = useMemo(() => {
+  //   if (sortConfig.key !== "private") return privateRooms;
+  //   const asc = sortConfig.direction === "asc";
+  //   return [...privateRooms].sort((a, b) => sortByName(a, b, asc));
+  // }, [privateRooms, sortConfig]);
+
+  // локальные состояния для переключения комнат по статусу
   const [tab, setTab] = useState(roomsView === "private" ? 1 : 0);
+  // данные для поисковой строки
   const [query, setQuery] = useState("");
 
-  const mainColor = "#1d102f";
-  const mainColorLight = "#2a183d";
-  const cardBg = "#231433";
-  const accentColor = "#b794f4";
-  const accentSoft = "rgba(183,148,244,0.15)";
-  const textMuted = "#9ca3af";
-
-  const filterAndSort = (rooms) => {
-    const q = query.trim().toLocaleLowerCase();
+  //  фукнция поиска комнат
+  const searchRooms = (rooms) => {
+    const q = query.trim().toLowerCase();
     const base = q
-      ? rooms.filter((room) =>
-          (room?.nameroom || "").toLocaleLowerCase().includes(q)
-        )
-      : rooms;
+      ? rooms.filter((room) => (room?.nameroom || "").toLowerCase().includes(q))
+      : rooms; // копия для безопасности
     return base;
   };
 
-  const visibleOpen = useMemo(
-    () => filterAndSort(openRooms),
-    [openRooms, query]
-  );
-  const visiblePrivate = useMemo(
-    () => filterAndSort(privateRooms),
-    [privateRooms, query]
-  );
+  // функция сортировки  комнат
+  const sortRooms = (rooms, sortKey) => {
+    // sortKey: "open" или "private"
+    if (sortConfig.key !== sortKey) return rooms;
+    const asc = sortConfig.direction === "asc";
+    return [...rooms].sort((a, b) => sortByName(a, b, asc));
+  };
 
+  const visibleOpen = useMemo(() => {
+    const filtered = searchRooms(openRooms);
+    return sortRooms(filtered, "open");
+  }, [openRooms, query]);
+
+  const visiblePrivate = useMemo(() => {
+    const filtered = searchRooms(privateRooms);
+    return sortRooms(filtered, "private");
+  }, [privateRooms, query]);
+
+  // если tab !== 0 -> false
   const isOpenTab = tab === 0;
+  // isOpenTab = false, поэтому currentLists = visiblePrivate
   const currentLists = isOpenTab ? visibleOpen : visiblePrivate;
 
+  // Функция обработчик для сортировки комнат
+  const toggleSort = () => {
+    const key = isOpenTab ? "open" : "private";
+    setSortConfig((prev) => {
+      // если впервые сортируем этот таб — ставим asc
+      if (sortConfig.key !== key) return { key, direction: "asc" };
+
+      // если уже сортируем этот таб — переключаем направление
+      return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+    });
+  };
+
+  // При каждом открытии модального окна сбрасываем таб в соответствии с roomsView
   useEffect(() => {
     if (openModalRoomsShow) {
-      setTab(roomsView === "private" ? 1 : 0);
+      const newTab = roomsView === "private" ? 1 : 0;
+      setTab(newTab);
     }
   }, [roomsView, openModalRoomsShow]);
 
+  // reset при закрытии
+  useEffect(() => {
+    if (!openModalRoomsShow) {
+      // Сбрасываем поиск при закрытии
+      setQuery("");
+    }
+  }, [openModalRoomsShow]);
   const handleEnterRoom = (room) => {
     if (!room) return;
 
@@ -121,7 +175,7 @@ export default function ModalRoomLists({
       PaperProps={{
         sx: {
           borderRadius: fullScreen ? 0 : 3,
-          bgcolor: mainColor,
+          bgcolor: COLORS.mainColor,
           color: "#e5e7eb",
           boxShadow: "0 18px 40px rgba(0,0,0,0.9)",
         },
@@ -132,7 +186,7 @@ export default function ModalRoomLists({
         sx={{
           position: "sticky",
           top: 0,
-          bgcolor: mainColorLight,
+          bgcolor: COLORS.mainColorLight,
           boxShadow: "0 4px 14px rgba(0,0,0,0.8)",
         }}
         elevation={0}
@@ -159,12 +213,18 @@ export default function ModalRoomLists({
           >
             {isOpenTab ? "Открытые комнаты" : "Приватные комнаты"}
           </Typography>
+          {/* Сортировка комнат */}
+          <SwapVertIcon
+            onClick={toggleSort}
+            size="small"
+            sx={{ fontSize: "1.4em", cursor: "pointer", mr: 1 }}
+          />
           <Chip
             label={currentLists.length}
             size="small"
             sx={{
-              bgcolor: accentSoft,
-              color: accentColor,
+              bgcolor: COLORS.accentSoft,
+              color: COLORS.accentColor,
               fontWeight: 600,
               fontSize: "0.75rem",
             }}
@@ -184,11 +244,11 @@ export default function ModalRoomLists({
               px: 1,
               py: 0.5,
               borderRadius: 999,
-              bgcolor: mainColor,
+              bgcolor: COLORS.mainColor,
               border: "1px solid rgba(255,255,255,0.08)",
             }}
           >
-            <SearchIcon sx={{ color: textMuted, fontSize: 20 }} />
+            <SearchIcon sx={{ color: COLORS.textMuted, fontSize: 20 }} />
             <InputBase
               placeholder="Поиск комнаты"
               value={query}
@@ -207,8 +267,8 @@ export default function ModalRoomLists({
                 fontSize: "0.8rem",
                 px: 2,
                 borderRadius: 999,
-                bgcolor: accentSoft,
-                color: accentColor,
+                bgcolor: COLORS.accentSoft,
+                color: COLORS.accentColor,
                 "&:hover": {
                   bgcolor: "rgba(183,148,244,0.25)",
                 },
@@ -230,13 +290,13 @@ export default function ModalRoomLists({
                 fontFamily:
                   "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                 minHeight: 40,
-                color: textMuted,
+                color: COLORS.textMuted,
               },
               "& .Mui-selected": {
-                color: accentColor,
+                color: COLORS.accentColor,
               },
               "& .MuiTabs-indicator": {
-                backgroundColor: accentColor,
+                backgroundColor: COLORS.accentColor,
               },
             }}
           >
@@ -267,7 +327,7 @@ export default function ModalRoomLists({
           py: 2,
           maxHeight: isSmall ? "90vh" : "70vh",
           overflowY: "auto",
-          bgcolor: mainColor,
+          bgcolor: COLORS.mainColor,
         }}
       >
         <List dense disablePadding>
@@ -277,7 +337,7 @@ export default function ModalRoomLists({
                 onClick={() => handleEnterRoom(room)}
                 sx={{
                   borderRadius: 2,
-                  bgcolor: cardBg,
+                  bgcolor: COLORS.cardBg,
                   boxShadow: "0 8px 18px rgba(0,0,0,0.8)",
                   border: "1px solid rgba(255,255,255,0.04)",
                   "&:hover": {
@@ -292,9 +352,13 @@ export default function ModalRoomLists({
               >
                 <ListItemIcon sx={{ minWidth: 40 }}>
                   {room.isPrivate ? (
-                    <LockIcon sx={{ color: accentColor, fontSize: 20 }} />
+                    <LockIcon
+                      sx={{ color: COLORS.accentColor, fontSize: 20 }}
+                    />
                   ) : (
-                    <PublicIcon sx={{ color: accentColor, fontSize: 20 }} />
+                    <PublicIcon
+                      sx={{ color: COLORS.accentColor, fontSize: 20 }}
+                    />
                   )}
                 </ListItemIcon>
                 <ListItemText
@@ -316,7 +380,7 @@ export default function ModalRoomLists({
                       <Typography
                         sx={{
                           fontSize: "0.75rem",
-                          color: textMuted,
+                          color: COLORS.textMuted,
                           mt: 0.25,
                         }}
                       >
@@ -326,7 +390,7 @@ export default function ModalRoomLists({
                       <Typography
                         sx={{
                           fontSize: "0.75rem",
-                          color: textMuted,
+                          color: COLORS.textMuted,
                           mt: 0.25,
                         }}
                       >
@@ -344,7 +408,7 @@ export default function ModalRoomLists({
               sx={{
                 py: 4,
                 textAlign: "center",
-                color: textMuted,
+                color: COLORS.textMuted,
                 fontSize: "0.9rem",
               }}
             >

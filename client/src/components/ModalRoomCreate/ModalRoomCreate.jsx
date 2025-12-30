@@ -30,6 +30,7 @@ export default function ModalRoomCreate({
     setNameroom(cleaned);
   };
 
+  // убираем лишние пробелы, оставляя только один пробел между словами
   const normalizeSpaces = (str = "", { preserveNewlines = true } = {}) => {
     // защита от нестроковых значений
     if (typeof str !== "string") return str;
