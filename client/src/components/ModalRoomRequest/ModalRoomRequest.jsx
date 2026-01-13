@@ -57,6 +57,8 @@ export default function ModalRoomRequest({
   const accentColor = "#b794f4";
   const accentColorStrong = "#c4b5fd";
 
+  console.log("error", error);
+
   return ReactDOM.createPortal(
     <>
       {openRequestModal && (
@@ -99,6 +101,7 @@ export default function ModalRoomRequest({
               }}
             >
               <Box
+                // круглый контейнер для иконки KeyIcon с красивым фоном и тенью
                 sx={{
                   width: 40,
                   height: 40,
@@ -203,6 +206,7 @@ export default function ModalRoomRequest({
       {request && (
         <Snackbar
           open={openSnackbar}
+          // Закрытыие snakbara через 4 милисекунды
           autoHideDuration={4000}
           onClose={() => setOpenSnackbar(false)}
           anchorOrigin={{ vertical: "center", horizontal: "center" }}
@@ -225,6 +229,7 @@ export default function ModalRoomRequest({
       {error && (
         <Snackbar
           open={openSnackbar}
+          // Закрытыие snakbara через 4 милисекунды
           autoHideDuration={4000}
           onClose={() => setOpenSnackbar(false)}
           anchorOrigin={{ vertical: "center", horizontal: "center" }}

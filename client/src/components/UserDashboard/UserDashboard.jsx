@@ -129,7 +129,7 @@ export default function UserDashboard({ userPropsData }) {
   const requestWrapRef = useRef(null);
   const repliesWrapRef = useRef(null);
 
-  const handleArraowRequest = () => setArrowRequest((prev) => !prev);
+  // const handleArraowRequest = () => setArrowRequest((prev) => !prev);
 
   const goToProfileEditor = () => {
     navigate("/profileeditor", {
@@ -140,9 +140,9 @@ export default function UserDashboard({ userPropsData }) {
   const items = useSelector(
     (store) => store.comment.repliesByUserId[userID]?.items || []
   );
-  const nextBefore =
-    useSelector((store) => store.comment.repliesByUserId[userID]?.nextBefore) ||
-    null;
+  // const nextBefore =
+  //   useSelector((store) => store.comment.repliesByUserId[userID]?.nextBefore) ||
+  //   null;
 
   useEffect(() => {
     if (!userID) return;
@@ -164,6 +164,7 @@ export default function UserDashboard({ userPropsData }) {
         : null;
     if (!element) return;
 
+    // для скролинга если элементов много
     const compute = () => {
       setNeedsExpand(element.scrollHeight > element.clientHeight + 1);
     };
@@ -468,7 +469,7 @@ export default function UserDashboard({ userPropsData }) {
             sx={{
               ...commonPanelBoxSx,
               maxHeight: "60vh",
-              overflowY: needsExpand ? "auto" : "hidden",
+              overflowY: needsExpand ? "auto" : "hidden", // нужен ли этот код ???????
             }}
           >
             <List sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -478,12 +479,15 @@ export default function UserDashboard({ userPropsData }) {
                 const isUpdating = Boolean(updatingById?.[rid]);
                 const isPending = request.status === "pending";
 
+                // логика для отображения аватар
                 let avatarSrc;
+                // если запрос исходящий от самого пользователя (свой аватар)
                 if (isOutgoing) {
                   avatarSrc = userAvatar
                     ? `${process.env.REACT_APP_BASEURL}${userAvatar}`
                     : undefined;
                 } else {
+                  // если запрос входящий от другого пользователя (аватар пользователя который отправил запрос)
                   avatarSrc = request?.requester?.avatar
                     ? `${process.env.REACT_APP_BASEURL}${request?.requester?.avatar}`
                     : undefined;
@@ -595,6 +599,7 @@ export default function UserDashboard({ userPropsData }) {
                             navigate(`/chatcards/${request?.Room?.id}`);
                           }}
                         >
+                          {/* Аватар пользовтаеля */}
                           <ListItemAvatar>
                             <Avatar src={avatarSrc} alt={altText} />
                           </ListItemAvatar>

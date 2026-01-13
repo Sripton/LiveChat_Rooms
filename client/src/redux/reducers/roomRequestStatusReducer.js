@@ -76,7 +76,7 @@ export default function roomRequestStatus(state = initialState, action) {
           : [...state.updatingIds, idStr],
         updatingById: { ...state.updatingById, [idStr]: nextStatus },
         error: null,
-      }; //  добавляем id текущего запроса в списокч
+      }; //  добавляем id текущего запроса в список
     }
 
     case ROOM_REQUEST_UPDATE_SUCCESS: {

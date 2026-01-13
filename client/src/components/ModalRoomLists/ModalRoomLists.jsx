@@ -126,6 +126,7 @@ export default function ModalRoomLists({
       setQuery("");
     }
   }, [openModalRoomsShow]);
+
   const handleEnterRoom = (room) => {
     if (!room) return;
 

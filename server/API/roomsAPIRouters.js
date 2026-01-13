@@ -23,22 +23,6 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // // 3. Собираем payload так же, как в GET /api/rooms
-    // const json = newRoom.get({ plain: true });
-    // const isOwner = true;
-    // const isMember = !!isPrivate;
-    // const myRequestStatus = null;
-    // const hasAccess = isPrivate ? isOwner || isMember : true;
-
-    // 4. Возвращаем клиенту созданную комнату
-    // res.status(200).json({
-    //   ...json,
-    //   isOwner,
-    //   isMember,
-    //   myRequestStatus,
-    //   hasAccess,
-    // });
-
     res.status(200).json(newRoom);
   } catch (error) {
     console.log(error);
@@ -51,8 +35,12 @@ router.post("/", async (req, res) => {
 // Тогда фронт поймёт, открывать модалку или сразу пускать в комнату.
 router.get("/", async (req, res) => {
   try {
-    const userID = req.session.userID || null;
+    // Забираем id из сессии
+    const userID = req.session.userID;
+
+    // ищем все комнаты
     const findAllRoom = await Room.findAll({
+      // отдаем нужные аттрибуты
       attributes: ["id", "nameroom", "isPrivate", "ownerID"],
       // Мой запрос к комнатам (0..1)
       include: [
@@ -62,11 +50,15 @@ router.get("/", async (req, res) => {
           where: userID ? { user_id: userID } : { user_id: null },
           attributes: ["id", "user_id", "room_id", "status"],
         },
-        // Я как участник этой комнаты (0..1) — через связку many-to-many
+        // В каких комнатах я являюсь участником
+        // вычисляем isMember для каждой комнаты в одном запросе, без дополнительных обращений к базе данных.
         {
+          // ассоциация с моделью User
           association: "members",
           attributes: ["id"],
           through: { attributes: [] },
+          // required: true = INNER JOIN (только комнаты, где есть подходящий пользователь)
+          // required: false = LEFT JOIN (все комнаты, даже если пользователя в них нет)
           required: false, // LEFT JOIN.
           where: userID ? { id: userID } : { id: null },
         },
@@ -77,7 +69,12 @@ router.get("/", async (req, res) => {
     const payload = findAllRoom.map((room) => {
       const json = room.get({ plain: true }); // room.toJSON();
       const isOwner = userID ? json.ownerID === Number(userID) : false;
-      const isMember = Array.isArray(json.members) && json.members.length > 0;
+
+      // проверка: нашелся ли текущий пользователь в массиве members?
+      // isMember = false для комнат, где пользователь НЕ участник
+      // isMember = true для комнат, где пользователь участник
+      const isMember =
+        (Array.isArray(json.members) && json.members.length > 0) || isOwner;
       const myRequestStatus =
         Array.isArray(json.RoomRequests) && json.RoomRequests.length > 0
           ? json.RoomRequests[0].status
@@ -90,6 +87,7 @@ router.get("/", async (req, res) => {
         hasAccess = true; // открытая комната
       }
 
+      // не тащим мусор на клиент
       delete json.members;
       delete json.RoomRequests;
 
@@ -112,6 +110,11 @@ router.get("/userRooms/:id", async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Ошибка при получении доступных комнат" });
   }
+});
+
+router.get("/private", async (req, res) => {
+  const room = await Room.findAll({ where: { isPrivate: true } });
+  res.json(room);
 });
 
 // Маршрут для получения конкретной комнаты по её ID

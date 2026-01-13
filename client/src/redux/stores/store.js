@@ -21,7 +21,7 @@ import reactionPostReducer from "../reducers/reactionPostReducer";
 // Импорт редьюсера, который обрабатывает действия, связанные с реакциями на посты
 import commentReducer from "../reducers/commentReducer";
 
-// Импорт редьюсера, который обрабатывает действия, связанные с реакциями на комментарии
+// Импорт редьюсера, который обрабатывает действия, связ анные с реакциями на комментарии
 import reactionCommentReducer from "../reducers/reactionCommentReducer";
 
 // Экспорт конфигурированного хранилища (store)

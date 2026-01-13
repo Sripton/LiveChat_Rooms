@@ -24,9 +24,14 @@ import ModalRoomRequest from "../ModalRoomRequest";
 import ModalRoomLists from "../ModalRoomLists/ModalRoomLists";
 
 export default function Chatrooms() {
+  // состояния для создания комнаты
   const [openModalRoomCreate, setOpenModalRoomCreate] = useState(false);
+  // состояния для создания запроса
   const [openRequestModal, setOpenRequestModal] = useState(false);
+  // состояния для отображения всех комнат
   const [openModalRoomsShow, setOpenModalRomsShow] = useState(false);
+
+  // состояния для переключения отображения open/private комнат
   const [roomsView, setRoomsView] = useState("");
 
   const [selectedRoomID, setSelectedRoomID] = useState(null);
@@ -46,6 +51,7 @@ export default function Chatrooms() {
 
   const [searchRooms, setSearchRooms] = useState("");
 
+  // useMemo кадется излишним
   const filteredSearchRooms = useMemo(() => {
     const query = searchRooms.trim().toLowerCase();
     if (!query) return [];
@@ -71,6 +77,8 @@ export default function Chatrooms() {
   const accentColor = "#b794f4";
   const accentSoft = "rgba(183,148,244,0.15)";
   const textMuted = "#9ca3af";
+
+  console.log("privateRooms", privateRooms);
 
   return (
     <Box
@@ -238,7 +246,10 @@ export default function Chatrooms() {
                         "&:hover": { color: "#ddd6fe" },
                       }}
                     >
-                      {`🌐 ${room.nameroom}`}
+                      <span style={{ fontSize: "1.6rem", marginRight: 6 }}>
+                        🌐
+                      </span>
+                      {`${room.nameroom}`}
                     </Box>
                   </Box>
                 ))}
@@ -331,6 +342,7 @@ export default function Chatrooms() {
                       onClick={() => {
                         const currentRoom = room;
                         if (!userID) return navigate("/signin");
+
                         if (currentRoom?.hasAccess) {
                           navigate(`/chatcards/${currentRoom.id}`);
                         } else {
@@ -349,7 +361,22 @@ export default function Chatrooms() {
                         "&:hover": { color: "#ddd6fe" },
                       }}
                     >
-                      {`🔒 ${room.nameroom}`}
+                      {room.myRequestStatus === "accepted" ? (
+                        <span
+                          style={{
+                            fontSize: "1.6rem",
+                            color: "#22c55e", // зелёный = доступ открыт
+                            filter: "drop-shadow(0 0 9px rgba(34,197,94,1))",
+                          }}
+                        >
+                          🔓
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: "1.6rem", marginRight: 6 }}>
+                          🔒
+                        </span>
+                      )}
+                      {` ${room.nameroom}`}
                     </Box>
                   </Box>
                 ))}
@@ -457,6 +484,7 @@ export default function Chatrooms() {
             </Box>
 
             {/* Результаты поиска */}
+
             <Box
               sx={{
                 flex: 1,
@@ -518,7 +546,6 @@ export default function Chatrooms() {
         </Grid>
 
         {/* FAB — создание комнаты */}
-
         <Fab
           color="primary"
           sx={{
@@ -565,6 +592,7 @@ export default function Chatrooms() {
         roomsView={roomsView}
         setOpenRequestModal={setOpenRequestModal}
         setSelectedRoomID={setSelectedRoomID}
+        isSmall={isSmall}
       />
     </Box>
   );

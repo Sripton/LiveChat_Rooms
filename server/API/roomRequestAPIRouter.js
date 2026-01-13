@@ -27,28 +27,25 @@ router.post("/", async (req, res) => {
         .json({ message: "Комната не найдена или не приватная" });
     }
 
-    // 3. Проверка: уже существует такой запрос?
-    // const existingRequest = await RoomRequest.findOne({
-    //   where: {
-    //     user_id: userID,
-    //     room_id: roomID,
-    //     owner_id: room.ownerID,
-    //     status: "pending",
-    //   },
-    // });
-    // if (existingRequest) {
-    //   return res.status(400).json({ message: "Запрос уже отправлен." });
-    // }
-
-    const lastRequest = await RoomRequest.findOne({
+    // проверка на существавание запроса 
+    const existing = await RoomRequest.findOne({
       where: { user_id: userID, room_id: roomID },
     });
-    if (lastRequest) {
-      if (lastRequest.status === "pending") {
+    if (existing) {
+      if (existing.status === "pending") {
         return res.status(400).json({ message: "Запрос уже отправлен" });
       }
-      if (lastRequest.status === "rejected") {
-        return res.status(403).json({ message: "Доступ отклонён." });
+      if (existing.status === "rejected") {
+        return res
+          .status(403)
+          .json({ message: "Доступ отклонён. Повторный запрос невозможен." });
+      }
+      if (existing.status === "accepted") {
+        return res.status(200).json({
+          message: "Доступ уже есть",
+          request: existing,
+          hasAccess: true,
+        });
       }
     }
 

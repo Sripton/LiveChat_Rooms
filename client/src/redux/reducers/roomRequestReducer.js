@@ -7,6 +7,7 @@ import {
 const initialState = {
   status: null, // сообщение об успехе (например: "Запрос отправлен")
   error: null, // сообщение об ошибке
+
   request: null,
 };
 
@@ -22,7 +23,12 @@ export default function roomRequestReducer(state = initialState, action) {
       };
 
     case ROOM_REQUEST_ERROR:
-      return { ...state, status: null, request: null, error: payload }; // "Запрос уже отправлен."
+      return {
+        ...state,
+        status: null,
+        request: null,
+        error: payload,
+      }; // "Запрос уже отправлен."
 
     case CLEAR_ROOM_REQUEST_STATE:
       return {
