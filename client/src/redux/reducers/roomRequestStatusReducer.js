@@ -16,7 +16,7 @@ const initialState = {
   // массив, в котором храним id запросов, которые прямо сейчас обновляются (меняется их статус на сервере).
   // Чтобы при нажатии, например, "Одобрить" или "Отклонить", показать спиннер только на этой кнопке, а не блокировать всё.
   // Чтобы не перезагружать весь список запросов и при этом дать пользователю чёткий визуальный отклик: “именно этот запрос сейчас в обработке”.
-  updatingIds: [], // спиннер только на одной кнопки
+  // updatingIds: [], // спиннер только на одной кнопки
   updatingById: {}, //  НОВОЕ: id -> 'accepted' | 'rejected'
   error: null, // ошибка при загрузке
   counters: {
@@ -24,6 +24,7 @@ const initialState = {
     outgoingPending: 0, // количество исходящих запросов в статусе "pending"
   },
 };
+
 
 // Редьюсер для работы с запросами в комнаты
 export default function roomRequestStatus(state = initialState, action) {
@@ -71,9 +72,9 @@ export default function roomRequestStatus(state = initialState, action) {
         ...state,
         // updatingIds: [...state.updatingIds, numericId],
         // updatingById: { ...state.updatingById, [id]: nextStatus },
-        updatingIds: state.updatingIds.includes(idStr)
-          ? state.updatingIds
-          : [...state.updatingIds, idStr],
+        // updatingIds: state.updatingIds.includes(idStr)
+        //   ? state.updatingIds
+        //   : [...state.updatingIds, idStr],
         updatingById: { ...state.updatingById, [idStr]: nextStatus },
         error: null,
       }; //  добавляем id текущего запроса в список
@@ -107,7 +108,7 @@ export default function roomRequestStatus(state = initialState, action) {
         outgoing,
         counters,
         // Нужно удалить  id из массива, потому что этот запрос больше не обновляется.
-        updatingIds: state.updatingIds.filter((reqID) => reqID !== idStr), // новый список активных обновлений без текущего.
+        // updatingIds: state.updatingIds.filter((reqID) => reqID !== idStr), // новый список активных обновлений без текущего.
         updatingById: restUpdatingById,
       };
     }
@@ -119,7 +120,7 @@ export default function roomRequestStatus(state = initialState, action) {
       delete restUpdatingById[idStr];
       return {
         ...state,
-        updatingIds: state.updatingIds.filter((reqID) => reqID !== idStr),
+        // updatingIds: state.updatingIds.filter((reqID) => reqID !== idStr),
         updatingById: restUpdatingById,
         error,
       };

@@ -209,7 +209,7 @@ export default function Chatrooms() {
                     borderColor: "rgba(255,255,255,0.06)",
                   }}
                 />
-                {openRooms.slice(0, 7).map((room) => (
+                {openRooms.slice(0, 5).map((room) => (
                   <Box
                     key={room.id}
                     sx={{
@@ -253,7 +253,7 @@ export default function Chatrooms() {
                     </Box>
                   </Box>
                 ))}
-                {openRooms.length > 8 && (
+                {openRooms.length > 5 && (
                   <Box textAlign="right" mt={1}>
                     <Button
                       onClick={() => {
@@ -317,7 +317,7 @@ export default function Chatrooms() {
                     borderColor: "rgba(255,255,255,0.06)",
                   }}
                 />
-                {privateRooms.slice(0, 7).map((room) => (
+                {privateRooms.slice(0, 5).map((room) => (
                   <Box
                     key={room.id}
                     sx={{
@@ -380,7 +380,7 @@ export default function Chatrooms() {
                     </Box>
                   </Box>
                 ))}
-                {privateRooms.length > 8 && (
+                {privateRooms.length > 5 && (
                   <Box textAlign="right" mt={1}>
                     <Button
                       onClick={() => {

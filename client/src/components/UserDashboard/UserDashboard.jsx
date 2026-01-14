@@ -89,7 +89,7 @@ export default function UserDashboard({ userPropsData }) {
   const [tabIndex, setTabIndex] = useState(0);
   const { userAvatar, userName, userID } = userPropsData;
 
-  const { incoming, outgoing, updatingIds, updatingById } = useSelector(
+  const { incoming, outgoing, updatingById } = useSelector(
     (store) => store.roomRequestStatus
   );
 
