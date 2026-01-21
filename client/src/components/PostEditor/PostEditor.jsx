@@ -9,28 +9,27 @@ import {
 
 import BaseEditor from "../BaseEditor/BaseEditor";
 export default function PostEditor({
-  openModalPost,
-  setOpenModalPost,
-  closeModalPost,
+  setIsPostModalOpen,
+  onCancel,
   roomID, // roomId
   mode, // "create" | "edit"
-  editPost, // объект поста при редактировании
+  postToEdit, // объект поста при редактировании
 }) {
   const dispatch = useDispatch();
 
   return (
     <BaseEditor
       variant="post"
-      initialValues={mode === "edit" ? editPost?.postTitle ?? "" : ""}
+      initialValues={mode === "edit" ? (postToEdit?.postTitle ?? "") : ""}
       onSubmit={async (value) => {
         if (mode === "create") {
           dispatch(createPostSubmit(roomID, { postTitle: value }));
         } else {
-          dispatch(editPostSubmit(editPost.id, { postTitle: value }));
+          dispatch(editPostSubmit(postToEdit.id, { postTitle: value }));
         }
-        setOpenModalPost(false);
+        setIsPostModalOpen(false);
       }}
-      onCancel={closeModalPost}
+      onCancel={onCancel}
     />
   );
 }

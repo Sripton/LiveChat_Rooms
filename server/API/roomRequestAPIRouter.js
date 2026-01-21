@@ -27,7 +27,7 @@ router.post("/", async (req, res) => {
         .json({ message: "Комната не найдена или не приватная" });
     }
 
-    // проверка на существавание запроса 
+    // проверка на существавание запроса
     const existing = await RoomRequest.findOne({
       where: { user_id: userID, room_id: roomID },
     });

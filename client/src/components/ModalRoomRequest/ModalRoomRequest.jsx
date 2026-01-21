@@ -57,7 +57,7 @@ export default function ModalRoomRequest({
   const accentColor = "#b794f4";
   const accentColorStrong = "#c4b5fd";
 
-  console.log("error", error);
+ 
 
   return ReactDOM.createPortal(
     <>

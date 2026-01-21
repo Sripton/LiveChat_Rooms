@@ -58,6 +58,7 @@ function ActionSpinner({ intent }) {
         height: 32,
       }}
     >
+      {/* Крутящийся loader в момент изменения статуса */}
       <CircularProgress
         size={32}
         thickness={4}
@@ -73,6 +74,7 @@ function ActionSpinner({ intent }) {
           justifyContent: "center",
         }}
       >
+        {/* Иконка которая появляется в момент прокрутки показывая статус запроса */}
         <Icon
           sx={{
             fontSize: 20,
@@ -89,7 +91,7 @@ export default function UserDashboard({ userPropsData }) {
   const [tabIndex, setTabIndex] = useState(0);
   const { userAvatar, userName, userID } = userPropsData;
 
-  const { incoming, outgoing, updatingById } = useSelector(
+  const { incoming, outgoing, updatingById, error } = useSelector(
     (store) => store.roomRequestStatus
   );
 
@@ -474,7 +476,7 @@ export default function UserDashboard({ userPropsData }) {
           >
             <List sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {(allRequests || []).map((request) => {
-                const isOutgoing = request.user_id === userID;
+                const isOutgoing = request.user_id === userID; // запрос, который я отправил
                 const rid = String(request.id);
                 const isUpdating = Boolean(updatingById?.[rid]);
                 const isPending = request.status === "pending";
@@ -519,9 +521,13 @@ export default function UserDashboard({ userPropsData }) {
                       },
                     }}
                     secondaryAction={
+                      // Проверяем, идёт ли обновление этого конкретного запроса isUpdating
                       isUpdating ? (
+                        // Если да - показываем спиннер с индикатором принятого решения
                         <ActionSpinner intent={updatingById[rid]} />
-                      ) : isOutgoing ? (
+                      ) : // для пользотвателя который отправил запрос
+                      // Если нет обновления и это исходящий запрос - показываем статичную иконку
+                      isOutgoing ? (
                         request?.status === "accepted" ? (
                           <CheckCircleIcon sx={{ color: "#22c55e" }} />
                         ) : request?.status === "rejected" ? (
@@ -529,7 +535,9 @@ export default function UserDashboard({ userPropsData }) {
                         ) : (
                           <HourglassEmptyIcon sx={{ color: "#eab308" }} />
                         )
-                      ) : isPending ? (
+                      ) : // Если нет обновления, это входящий запрос И он ещё в pending
+                      // ПОКАЗЫВАЕМ КНОПКИ (это начальное состояние)
+                      isPending ? (
                         <Box sx={{ display: "flex", gap: 1 }}>
                           <Button
                             variant="contained"

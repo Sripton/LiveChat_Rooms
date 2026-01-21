@@ -112,19 +112,16 @@ router.get("/userRooms/:id", async (req, res) => {
   }
 });
 
-router.get("/private", async (req, res) => {
-  const room = await Room.findAll({ where: { isPrivate: true } });
-  res.json(room);
-});
-
 // Маршрут для получения конкретной комнаты по её ID
 router.get("/:id", async (req, res) => {
   const { id } = req.params; // Получаем ID из параметров URL
   try {
+    // Ищем комнату по ID
     const findRoomID = await Room.findOne({
       where: { id },
       include: [{ model: User, as: "owner", attributes: ["avatar"] }],
-    }); // Ищем комнату по ID
+    });
+    // вычисляем ко-во участников в данной комнате
     const acceptedCount = await RoomRequest.count({
       where: { room_id: id, status: "accepted" },
     });

@@ -25,7 +25,6 @@ const initialState = {
   },
 };
 
-
 // Редьюсер для работы с запросами в комнаты
 export default function roomRequestStatus(state = initialState, action) {
   const { type, payload } = action;

@@ -78,8 +78,6 @@ export default function Chatrooms() {
   const accentSoft = "rgba(183,148,244,0.15)";
   const textMuted = "#9ca3af";
 
-  console.log("privateRooms", privateRooms);
-
   return (
     <Box
       sx={{

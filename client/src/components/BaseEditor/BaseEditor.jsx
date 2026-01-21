@@ -7,7 +7,6 @@ export default function BaseEditor({
   initialValues = "",
   onSubmit,
   onCancel,
-  closeOnOutsideClick = true, // можно отключить при необходимости
 }) {
   const [value, setValue] = useState(initialValues);
   const rootRef = useRef(null);
@@ -37,9 +36,6 @@ export default function BaseEditor({
 
   // закрытие по клику/тачу вне компонента
   useEffect(() => {
-    // Эффект работает только если closeOnOutsideClick = true
-    if (!closeOnOutsideClick) return;
-
     const handlePointer = (e) => {
       const element = rootRef.current;
       // если контейнер ещё не смонтирован — ничего не делаем
@@ -63,6 +59,8 @@ export default function BaseEditor({
       window.removeEventListener("touchstart", handlePointer, true);
     };
   }, [onCancel]);
+
+  console.log("rootRef", rootRef);
 
   const hasWord = /\S/.test(value); // есть непустой текст (не только пробелы)
 
