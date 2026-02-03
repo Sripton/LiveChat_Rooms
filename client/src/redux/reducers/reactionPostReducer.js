@@ -9,7 +9,7 @@ const initialState = {
   user_id: null,
   post_id: null,
   reaction_type: null,
-  allReactionPosts: [],
+  allReactionPosts: [], // реакции для всех постов
 };
 
 // Редьюсер, отвечающий за изменения состояния, связанные с созданием реакций на посты
@@ -20,7 +20,7 @@ export default function reactionPostReducer(state = initialState, action) {
       const reaction = payload;
       // Проверяем существует ли такая реакция
       const existingReaction = state.allReactionPosts.some(
-        (req) => req.id === reaction.id
+        (req) => req.id === reaction.id,
       );
       return {
         ...state,
@@ -39,20 +39,25 @@ export default function reactionPostReducer(state = initialState, action) {
               // подменяем его новым объектом reaction.
               // Если id не совпадает,
               //  оставляем req как есть.
-              req.id === reaction.id ? reaction : req
+              req.id === reaction.id ? reaction : req,
             )
           : [...state.allReactionPosts, reaction],
       };
     }
 
     case GET_REACTION_POST_LIST: {
-      const { postID, reactions } = payload;
+      const {
+        postID, // для какого поста  получаем реакции с сервера
+        reactions, // полный список реакций этого поста
+      } = payload;
       return {
         ...state,
         allReactionPosts: [
           ...state.allReactionPosts.filter(
-            (reaction) => reaction.post_id !== postID
+            // удалить старые реакции этого postID из store (потому что они могли измениться)
+            (reaction) => reaction.post_id !== postID,
           ),
+          // добавить свежие реакции этого postID, которые пришли с сервера
           ...reactions,
         ],
       };

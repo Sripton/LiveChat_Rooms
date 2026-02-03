@@ -26,8 +26,8 @@ export default function CommentsCard({
   comments,
   postID,
   post,
-  expanded,
-  toggleExpand, // функция для отображения полного текста коммнетрия
+  expandedComment,
+  toggleExpanded, // функция для отображения полного текста коммнетрия
   userID,
   setOpenModalPost, // Функция состояния при  открытии PostEditor для создания поста
   openModalPost,
@@ -74,13 +74,13 @@ export default function CommentsCard({
 
   // Забираем все реакции на комментарии из store
   const allReactionComments = useSelector(
-    (store) => store?.reactionsComments?.allReactionComments
+    (store) => store?.reactionsComments?.allReactionComments,
   );
 
   useEffect(() => {
     if (Array.isArray(comments) && comments.length) {
       comments.forEach((comment) =>
-        dispatch(fetchAllCommentReactions(comment.id))
+        dispatch(fetchAllCommentReactions(comment.id)),
       );
     }
   }, [dispatch, comments]);
@@ -131,12 +131,12 @@ export default function CommentsCard({
 
             const likeComments = allReactionComments.filter(
               (like) =>
-                like.comment_id === comment.id && like.reaction_type === "like"
+                like.comment_id === comment.id && like.reaction_type === "like",
             ).length;
             const disLikeComments = allReactionComments.filter(
               (dislike) =>
                 dislike.comment_id === comment.id &&
-                dislike.reaction_type === "dislike"
+                dislike.reaction_type === "dislike",
             ).length;
             return (
               <Box
@@ -223,7 +223,7 @@ export default function CommentsCard({
                     {(() => {
                       const full = comment?.commentTitle;
                       const isLong = full?.length > 150;
-                      const isOpen = expanded.has(comment.id);
+                      const isOpen = expandedComment.has(comment.id);
                       if (!isLong) {
                         return <span className="line-clamp-2">{full}</span>;
                       }
@@ -249,7 +249,9 @@ export default function CommentsCard({
                                 color: "#7a1a50", // можно добавить эффект смены цвета
                               },
                             }}
-                            onClick={() => toggleExpand(comment.id)}
+                            onClick={() =>
+                              toggleExpanded("comment", comment.id)
+                            }
                           >
                             {isOpen ? (
                               <Typography sx={{ color: "#999" }}>
@@ -290,7 +292,7 @@ export default function CommentsCard({
                           startIcon={<ThumbUpIcon />}
                           onClick={() =>
                             dispatch(
-                              createReactionCommentSubmit(comment.id, "like")
+                              createReactionCommentSubmit(comment.id, "like"),
                             )
                           }
                         >
@@ -309,7 +311,10 @@ export default function CommentsCard({
                           startIcon={<ThumbDownIcon />}
                           onClick={() =>
                             dispatch(
-                              createReactionCommentSubmit(comment.id, "dislike")
+                              createReactionCommentSubmit(
+                                comment.id,
+                                "dislike",
+                              ),
                             )
                           }
                         >
@@ -349,7 +354,7 @@ export default function CommentsCard({
                               sx={{ color: "#7a1a50" }}
                               onClick={() => {
                                 setReplyForID(
-                                  replyForID === comment.id ? null : comment.id
+                                  replyForID === comment.id ? null : comment.id,
                                 );
                                 setEditComment(null); // Если форма для редактирования поста закрыта, закрываем ее
                                 setOpenModalPost(false); // Если форма для создания поста открыта, закрываем ее
@@ -403,7 +408,7 @@ export default function CommentsCard({
                                 setReplyForID(
                                   replyForID === comment?.id
                                     ? null
-                                    : comment?.id
+                                    : comment?.id,
                                 );
                                 setEditComment(null);
                                 setOpenModalPost(false);

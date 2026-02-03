@@ -1,8 +1,9 @@
 const express = require("express");
 const { Post, Comment, User } = require("../db/models");
 const { fn, col, Op } = require("sequelize");
-const router = express.Router();
 const { checkUserForComment } = require("../MiddleWares/checkUser");
+const router = express.Router();
+
 
 router.post("/counts", async (req, res) => {
   try {
@@ -163,7 +164,7 @@ router.get("/notifications/replies", async (req, res) => {
         (comment.user_id !== userID &&
           comment.ParentComment === null &&
           comment?.Post?.user_id === userID) ||
-        comment.ParentComment?.user_id === userID
+        comment.ParentComment?.user_id === userID,
     );
 
     res.json({

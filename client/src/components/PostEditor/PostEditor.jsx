@@ -9,9 +9,9 @@ import {
 
 import BaseEditor from "../BaseEditor/BaseEditor";
 export default function PostEditor({
-  setIsPostModalOpen,
-  onCancel,
-  roomID, // roomId
+  setIsPostModalOpen, // открытие формы
+  onCancel, // закрытие формы
+  roomId, // roomId
   mode, // "create" | "edit"
   postToEdit, // объект поста при редактировании
 }) {
@@ -19,11 +19,11 @@ export default function PostEditor({
 
   return (
     <BaseEditor
-      variant="post"
+      variant="post" // кл-во строк для поста/комментария
       initialValues={mode === "edit" ? (postToEdit?.postTitle ?? "") : ""}
       onSubmit={async (value) => {
         if (mode === "create") {
-          dispatch(createPostSubmit(roomID, { postTitle: value }));
+          dispatch(createPostSubmit(roomId, { postTitle: value }));
         } else {
           dispatch(editPostSubmit(postToEdit.id, { postTitle: value }));
         }
