@@ -34,33 +34,32 @@ export default function BaseEditor({
     }
   };
 
-  // закрытие по клику/тачу вне компонента
+  // закрыть редактор по клику/тачу вне компонента
   useEffect(() => {
-    const handlePointer = (e) => {
-      const element = rootRef.current;
-      // если контейнер ещё не смонтирован — ничего не делаем
-      if (!element) return;
+    const handlePointerDown = (e) => {
+      // слушаем pointerdown:
+      // - срабатывает раньше, чем click
+      // - работает для мыши + тача
+      // - даёт возможность закрыть редактор до фокуса на других элементах
+      const el = rootRef.current; // Получаем DOM-узел редактора
+      if (!el) return; // Если компонент ещё не смонтирован — просто выходим.
 
-      // если клик пришёл изнутри — игнорируем
-      if (element.contains(e.target)) return;
+      // клик внутри редактора — поле ввода, по кнопке «Отправить»,  по любой части редактора
+      if (el.contains(e.target)) return;
 
-      // Если клик был взыван вне формы - закрываем
-      onCancel?.();
+      //  Клик по "разрешённым зонам"
+      if (e.target.closest?.("button, a, input, textarea")) return;
+
+      onCancel?.(); // все клики что снаружи закрываем
     };
 
-    // mousedown/touchstart — чтобы сработало раньше фокуса на других элементах
-    // Третий параметр true означает, что обработчик сработает на фазе перехвата
-    window.addEventListener("mousedown", handlePointer, true); // true важно, чтобы клик обработался ДО того, как сработают другие обработчики
-    window.addEventListener("touchstart", handlePointer, true); // true важно, чтобы клик обработался ДО того, как сработают другие обработчики
+    // pointerdown -> работает и для мыши, и для тача
+    window.addEventListener("pointerdown", handlePointerDown, true);
 
     return () => {
-      // Удаляем обработчики при размонтировании компонента, предотвращая утечки памяти.
-      window.removeEventListener("mousedown", handlePointer, true);
-      window.removeEventListener("touchstart", handlePointer, true);
+      window.removeEventListener("pointerdown", handlePointerDown, true);
     };
   }, [onCancel]);
-
-  console.log("rootRef", rootRef);
 
   const hasWord = /\S/.test(value); // есть непустой текст (не только пробелы)
 

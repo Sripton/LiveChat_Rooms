@@ -68,12 +68,35 @@ export default function ChatCards() {
   const location = useLocation();
   const { id } = useParams();
 
+  // ------------------ redux store -----------------
+  // Забираем id пользовтаеля из store
   const { userID } = useSelector((store) => store.user);
+
+  // Забираем текущую комнату из store
   const currentRoom = useSelector((store) => store.room.currentRoom);
+
+  // Забираем все посты из store
   const allPosts = useSelector((store) => store.post.allPosts);
 
+  // Забираем комментарии по ключу postId  из store
+  const {
+    commentsByPostId, // Забираем комментарии по ключу postId  из store
+    countsByPostId, // Забираем  ко-во комментариев по ключу postId  из store
+  } = useSelector((store) => store.comment);
+
+  // Забираем все реакции к данному посту из store
+  const allReactionPosts = useSelector(
+    (store) => store.reactionsPosts.allReactionPosts,
+  );
+
+  // -------------- useState -------------------------
+  // состояние для открытия формы cоздания поста
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+
+  // состояние  ввода данных для  cоздания поста
   const [postToEdit, setPostToEdit] = useState(null);
+
+  // состояние   для cоздания ответа на  постыa
   const [postForReply, setPostForReply] = useState(null);
 
   // состояние для свернуть/развернуть  текст поста
@@ -82,14 +105,11 @@ export default function ChatCards() {
   // состояние для свернуть/развернуть  текст комментария
   const [expandedComment, setExpandedComment] = useState(() => new Set());
 
+  // состояние для отображения всех коммнетриев
   const [postWithVisibleComments, setPostWithVisibleComments] = useState(null);
-  const [focusedPostID, setFocusedPostID] = useState(null);
 
-  const commentsByPostId = useSelector((store) => store.comment.byPostId);
-  const countsByPostId = useSelector((store) => store.comment.countsByPostId);
-  const allReactionPosts = useSelector(
-    (store) => store.reactionsPosts.allReactionPosts,
-  );
+  // состояние для отображения коммнетриев  одного только поста и скрытия других постов
+  const [focusedPostID, setFocusedPostID] = useState(null);
 
   // Цветовая палитра (упрощенная)
   const accentColor = "#7c3aed";
@@ -108,23 +128,35 @@ export default function ChatCards() {
       return;
     }
     setPostToEdit(post);
-    setPostForReply(null);
-    setIsPostModalOpen(true);
+    setIsPostModalOpen(true); // открываем форму создания поста
+    setPostForReply(null); // закрываем форму ответа на пост
   };
 
   const handleClosePostModal = () => {
-    setIsPostModalOpen(false);
-    setPostToEdit(null);
+    setIsPostModalOpen(false); // закрываем форму создания поста
+    setPostToEdit(null); // сбрасыввем postEditor
   };
 
+  // функция создания ответа на пост
   const handleReplyToPost = (postID) => {
     if (!userID) {
       navigate("/signin", { state: { from: location } });
       return;
     }
+    // Явно закрываем создание/редактирование поста
+    setIsPostModalOpen(false); // закрываем форму создания поста
+    setPostToEdit(null); // сбрасыввем postEditor
+
+    // Открываем/закрываем форму ответа
     setPostForReply((prev) => (prev === postID ? null : postID));
+
+    // скрыть блок комментариев
     setPostWithVisibleComments(null);
   };
+
+  // useEffect(() => {
+  //   console.log("postForReply =", postForReply);
+  // }, [postForReply]);
 
   const handleToggleComments = (postID) => {
     setPostWithVisibleComments((prev) => {
@@ -132,6 +164,8 @@ export default function ChatCards() {
       setFocusedPostID(next ? postID : null);
       return next;
     });
+
+    console.log("TOGGLE COMMENTS -> setPostForReply(null)", postID);
     setPostForReply(null);
   };
 
@@ -183,6 +217,8 @@ export default function ChatCards() {
       }
     })();
   }, [allPosts, dispatch]);
+
+  // console.log("currentRoom", currentRoom);
 
   return (
     <Box
@@ -249,8 +285,7 @@ export default function ChatCards() {
                   variant="body2"
                   sx={{ color: textSecondary, fontSize: "0.875rem" }}
                 >
-                  Владелец:
-                  {currentRoom.owner.name}
+                  {` Владелец: ${currentRoom.owner.name}`}
                 </Typography>
               )}
             </Box>
@@ -286,7 +321,7 @@ export default function ChatCards() {
             <PostEditor
               onCancel={handleClosePostModal}
               setIsPostModalOpen={setIsPostModalOpen}
-              roomID={id}
+              roomId={id}
               mode={postToEdit ? "edit" : "create"}
               postToEdit={postToEdit}
             />
@@ -389,29 +424,39 @@ export default function ChatCards() {
                             fontSize: "0.95rem",
                             whiteSpace: "pre-wrap",
                             wordBreak: "break-word",
+                            fontFamily: "'Inter', sans-serif",
                           }}
                         >
-                          {post.postTitle &&
-                          post.postTitle.length > 200 &&
-                          !isExpandedPost
-                            ? `${post.postTitle.substring(0, 200)}...`
-                            : post.postTitle}
-                          {post.postTitle && post.postTitle.length > 200 && (
-                            <Button
-                              size="small"
-                              onClick={() => toggleExpanded("post", post.id)}
-                              sx={{
-                                ml: 0.5,
-                                minWidth: "auto",
-                                p: 0,
-                                color: accentLight,
-                                fontSize: "0.85rem",
-                                fontWeight: 500,
-                                textTransform: "none",
-                              }}
-                            >
-                              {isExpandedPost ? "Свернуть" : "Читать далее"}
-                            </Button>
+                          {/* Более понятное условие для отображения длинного поста  */}
+                          {post.postTitle ? (
+                            post.postTitle.length > 200 ? (
+                              <>
+                                {isExpandedPost
+                                  ? post.postTitle
+                                  : `${post.postTitle.substring(0, 200)}...`}
+                                <Button
+                                  size="small"
+                                  onClick={() =>
+                                    toggleExpanded("post", post.id)
+                                  }
+                                  sx={{
+                                    ml: 0.5,
+                                    minWidth: "auto",
+                                    p: 0,
+                                    color: accentLight,
+                                    fontSize: "0.85rem",
+                                    fontWeight: 500,
+                                    textTransform: "none",
+                                  }}
+                                >
+                                  {isExpandedPost ? "Свернуть" : "Читать далее"}
+                                </Button>
+                              </>
+                            ) : (
+                              post.postTitle
+                            )
+                          ) : (
+                            ""
                           )}
                         </Typography>
                       </Box>
@@ -484,7 +529,9 @@ export default function ChatCards() {
                         <Button
                           size="small"
                           startIcon={<ReplyIcon />}
-                          onClick={() => handleReplyToPost(post.id)}
+                          onClick={() => {
+                            handleReplyToPost(post.id);
+                          }}
                           sx={{
                             color: accentLight,
                             minWidth: "auto",
@@ -546,7 +593,6 @@ export default function ChatCards() {
                             expandedComment={expandedComment}
                             toggleExpanded={toggleExpanded}
                             userID={userID}
-                            openReplyPostId={postForReply}
                             setOpenModalPost={setIsPostModalOpen}
                             openModalPost={isPostModalOpen}
                           />

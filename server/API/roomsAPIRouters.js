@@ -119,7 +119,7 @@ router.get("/:id", async (req, res) => {
     // Ищем комнату по ID
     const findRoomID = await Room.findOne({
       where: { id },
-      include: [{ model: User, as: "owner", attributes: ["avatar"] }],
+      include: [{ model: User, as: "owner", attributes: ["avatar", "name"] }],
     });
     // вычисляем ко-во участников в данной комнате
     const acceptedCount = await RoomRequest.count({
